@@ -17,7 +17,7 @@ public interface MultiMap<K, V> extends Map<K, Collection<V>>
 	 * @param value The value
 	 * @return True if the map changed
 	 */
-	boolean put(K key, V value);
+	boolean putValue(K key, V value);
 	
 	/**
 	 * Removes a sepific value from the multimap
@@ -26,7 +26,7 @@ public interface MultiMap<K, V> extends Map<K, Collection<V>>
 	 * @param value The value to remove
 	 * @return True if a value was removed
 	 */
-	boolean remove(K key, V value);
+	boolean removeValue(K key, V value);
 	
 	/**
 	 * Returns true if the multimap contains the specified value or collection

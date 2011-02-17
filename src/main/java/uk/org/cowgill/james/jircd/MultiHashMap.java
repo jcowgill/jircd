@@ -13,7 +13,7 @@ public class MultiHashMap<K, V> implements MultiMap<K, V>
 	private HashMap<K, Collection<V>> data = new HashMap<K, Collection<V>>();
 
 	@Override
-	public boolean put(K key, V value)
+	public boolean putValue(K key, V value)
 	{
 		//Find key value
 		Collection<V> keyData = data.get(key);
@@ -30,7 +30,7 @@ public class MultiHashMap<K, V> implements MultiMap<K, V>
 	}
 
 	@Override
-	public boolean remove(K key, V value)
+	public boolean removeValue(K key, V value)
 	{		
 		//Find key value
 		boolean removeStatus = false;
@@ -58,14 +58,14 @@ public class MultiHashMap<K, V> implements MultiMap<K, V>
 		// otherwize check every collection
 		if(value instanceof Collection<?>)
 		{
-			return data.containsValue(value);
+			return data.containsValue((Collection<V>) value);
 		}
 		else
 		{
 			//Process each key
 			for(Map.Entry<K, Collection<V>> entry : data.entrySet())
 			{
-				if(entry.getValue().contains(value))
+				if(entry.getValue().contains((V) value))
 				{
 					return true;
 				}
@@ -82,7 +82,7 @@ public class MultiHashMap<K, V> implements MultiMap<K, V>
 		//Put each vaue separately
 		for(Map.Entry<? extends K, ? extends V> entry : map.entrySet())
 		{
-			this.put(entry.getKey(), entry.getValue());
+			this.putValue(entry.getKey(), entry.getValue());
 		}
 	}
 
@@ -152,7 +152,7 @@ public class MultiHashMap<K, V> implements MultiMap<K, V>
 	@Override
 	public boolean containsKey(Object key)
 	{
-		return data.containsKey(key);
+		return data.containsKey((K) key);
 	}
 
 	@Override
@@ -164,7 +164,7 @@ public class MultiHashMap<K, V> implements MultiMap<K, V>
 	@Override
 	public Collection<V> get(Object key)
 	{
-		return data.get(key);
+		return data.get((K) key);
 	}
 
 	@Override
@@ -188,7 +188,7 @@ public class MultiHashMap<K, V> implements MultiMap<K, V>
 	@Override
 	public Collection<V> remove(Object key)
 	{
-		return data.remove(key);
+		return data.remove((K) key);
 	}
 
 	@Override

@@ -408,12 +408,12 @@ public class ConfigBlock
 					
 				case ';':
 					//End of directive - name only
-					map.put(dName.toString(), new ConfigBlock(param, null));
+					map.putValue(dName.toString(), new ConfigBlock(param, null));
 					return true;
 					
 				case '{':
 					//Start subblock
-					map.put(dName.toString(), new ConfigBlock(param, parseDirectives(data, false)));
+					map.putValue(dName.toString(), new ConfigBlock(param, parseDirectives(data, false)));
 					return true;
 					
 				case '}':
