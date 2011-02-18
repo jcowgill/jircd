@@ -58,14 +58,14 @@ public class MultiHashMap<K, V> implements MultiMap<K, V>
 		// otherwize check every collection
 		if(value instanceof Collection<?>)
 		{
-			return data.containsValue((Collection<V>) value);
+			return data.containsValue(value);
 		}
 		else
 		{
 			//Process each key
 			for(Map.Entry<K, Collection<V>> entry : data.entrySet())
 			{
-				if(entry.getValue().contains((V) value))
+				if(entry.getValue().contains(value))
 				{
 					return true;
 				}
@@ -152,7 +152,7 @@ public class MultiHashMap<K, V> implements MultiMap<K, V>
 	@Override
 	public boolean containsKey(Object key)
 	{
-		return data.containsKey((K) key);
+		return data.containsKey(key);
 	}
 
 	@Override
@@ -164,7 +164,7 @@ public class MultiHashMap<K, V> implements MultiMap<K, V>
 	@Override
 	public Collection<V> get(Object key)
 	{
-		return data.get((K) key);
+		return data.get(key);
 	}
 
 	@Override
@@ -188,7 +188,7 @@ public class MultiHashMap<K, V> implements MultiMap<K, V>
 	@Override
 	public Collection<V> remove(Object key)
 	{
-		return data.remove((K) key);
+		return data.remove(key);
 	}
 
 	@Override

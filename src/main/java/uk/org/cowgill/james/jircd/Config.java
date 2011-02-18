@@ -6,16 +6,23 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 /**
  * Contains all the configuration information for a server instance
  * 
  * Configurations can be created and filled manually or use the built-in
  *  config reader which uses ConfigBlocks to parse the config file
  * 
+ * Valid config files never contain nulls in ANY field;
+ * 
  * @author James
  */
 public final class Config
 {
+	private final static Logger logger = LoggerFactory.getLogger(Config.class);
+	
 	/**
 	 * The server name
 	 */
@@ -164,9 +171,69 @@ public final class Config
 		public String reason;
 	}
 
+	/**
+	 * Parses a new config file from the specified InputStream
+	 *
+	 * Parse errors and warnings are logged
+	 * 
+	 * @param data InputStream data is from
+	 * @return The new config object
+	 * @throws IOException when an IOExeption reading data occurs
+	 */
 	public static Config parse(InputStream data) throws IOException
-	{
-            return null;
+	{ 
+		//Parse config blocks
+		Config config= new Config();
+		ConfigBlock root = ConfigBlock.parse(data);
+
+		//Read name and description
+		config.serverName = root.getSubBlockParam("name");
+		config.serverDescription = root.getSubBlockParam("description");
+
+		//Read admin lines
+		Collection<ConfigBlock> adminBlock = root.subBlocks.get("admin");
+		if(adminBlock == null)
+		{
+			//Empty admin block
+			config.admin = new String[0];
+		}
+		else
+		{
+			//Fill admin sections
+			config.admin = new String[adminBlock.size()];
+
+			int i = 0;
+			for(ConfigBlock block : adminBlock)
+			{
+				config.admin[i] = block.param;
+				i++;	
+			}
+		}
+
+		//MotD
+		Collection<ConfigBlock> motdBlock = root.subBlocks.get("motdfile");
+		String motdBaseStr;
+		
+		if(motdBlock == null)
+		{
+			//Try motd string
+			motdBlock = root.subBlocks.get("motdtext");
+			
+			if(motdBlock == null)
+			{
+				//No message of the day
+				motdBaseStr = "";
+				logger.warn("No message of the day found");
+			}
+			else
+			{
+				motdBaseStr = motdBlock.iter;
+			}
+		}
+		
+		TODO MOTD
+
+		//Ports to listen on
 	}
 
 }
