@@ -1,9 +1,11 @@
 package uk.org.cowgill.james.jircd;
 
 import java.io.File;
+import java.net.URL;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
-import org.apache.mina.core.service.IoAcceptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The main IRC Server class
@@ -12,8 +14,19 @@ import org.apache.mina.core.service.IoAcceptor;
  * 
  * @author James
  */
-public final class Server
+public abstract class Server
 {
+	/**
+	 * Currently running server
+	 */
+	private static Server globalServer;
+
+	/**
+	 * Class logger
+	 */
+	private final static Logger logger =
+		LoggerFactory.getLogger(Server.class);
+	
 	/**
 	 * Location of the server configuration file
 	 */
@@ -44,8 +57,6 @@ public final class Server
 	 */
 	private String stopReason = null;
 	
-	private IoAcceptor[] listeners;
-	
 	//--------------------------------------------
 	
 	/**
@@ -55,6 +66,13 @@ public final class Server
 	 */
 	public Server(File configFile)
 	{
+		//Set global server
+		if(globalServer == null)
+		{
+			globalServer = this;
+		}
+		
+		//Set config file
 		this.configFile = configFile;
 	}
 	
@@ -111,6 +129,16 @@ public final class Server
 	 */
 	public boolean run()
 	{
+		//Check if running
+		if(globalServer != null)
+		{
+			throw new UnsupportedOperationException("A server is already running");
+		}
+		globalServer = this;
+		
+		//Server notice
+		logger.info("JIRC Server 1.0  By James Cowgill");
+		
 		//Rehash if not done already
 		if(config == null && !rehash())
 		{
@@ -118,10 +146,12 @@ public final class Server
 			return false;
 		}
 		
-		//
-		listeners[0].
+		//Run server
+		runServer();
 		
-		return false;
+		//Return reason
+		globalServer = null;
+		return stopType == 2;
 	}
 	
 	/**
@@ -132,5 +162,95 @@ public final class Server
 	public Config getConfig()
 	{
 		return config;
+	}
+	
+	/**
+	 * Returns the currently running server
+	 * @return the the currently running server
+	 */
+	public static Server getServer()
+	{
+		return globalServer;
+	}
+	
+	/**
+	 * Utility to get the server config filename from the given command-line options
+	 * 
+	 * @param args Arguments to check
+	 * @return The server config file or null on error (reported)
+	 */
+	public static File getFileFromArgs(String[] args)
+	{
+		//Config file on command line?
+		String configFileName;
+		if(args.length != 0)
+		{
+			configFileName = args[0];
+		}
+		else
+		{
+			configFileName = "ircd.conf";
+		}
+		
+		//Attempt to open config file
+		File configFile;
+		
+		//Try to read from current directory first, then from JAR directory
+		configFile = new File(configFileName);
+		if(!configFile.canRead())
+		{
+			//Try jar path
+			URL jarFile = ServerStarter.class.getProtectionDomain().getCodeSource().getLocation();
+			if(jarFile.getProtocol().equals("file"))
+			{
+				configFile = new File(jarFile.getPath() + "/" + configFileName);
+				if(!configFile.canRead())
+				{
+					//Cannot find config file
+					logger.error("Cannot open configuration file \"" + configFileName + "\"");
+					return null;
+				}
+			}
+		}
+		
+		return configFile;
+	}
+	
+	//-------------------------------
+	// Abstract methods and abstract helpers
+	
+	/**
+	 * Event occurs after the server has been rehashed
+	 */
+	protected abstract void rehashed();
+	
+	/**
+	 * Event occurs after a stop or restart has been requested
+	 */
+	protected abstract void stopRequested();
+	
+	/**
+	 * Called to run the server
+	 */
+	protected abstract void runServer();
+	
+	/**
+	 * Checks weather the server should be stopped
+	 * 
+	 * This function also logs the stop and reports it to all users
+	 * 
+	 * @return true if the server should be stopped
+	 */
+	protected boolean checkAndNotifyStop()
+	{
+		//Check stop
+		if(stopType == 0)
+		{
+			return false;
+		}
+		
+		//Report stop
+		// TODO Report stop
+		return true;
 	}
 }
