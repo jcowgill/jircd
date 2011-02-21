@@ -200,7 +200,7 @@ public abstract class Server
 		if(!configFile.canRead())
 		{
 			//Try jar path
-			URL jarFile = ServerStarter.class.getProtectionDomain().getCodeSource().getLocation();
+			URL jarFile = Server.class.getProtectionDomain().getCodeSource().getLocation();
 			if(jarFile.getProtocol().equals("file"))
 			{
 				configFile = new File(jarFile.getPath() + "/" + configFileName);

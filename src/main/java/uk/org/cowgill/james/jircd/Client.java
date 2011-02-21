@@ -12,11 +12,11 @@ package uk.org.cowgill.james.jircd;
 public abstract class Client
 {	
 	/**
-	 * Sends a string of IRC data to a client
+	 * Sends IRC data to a client (data is converted to string with toString)
 	 * 
 	 * @param data Data to send
 	 */
-	public abstract void send(String data);
+	public abstract void send(Object data);
 	
 	/**
 	 * Performs client sepific close routines
@@ -70,15 +70,15 @@ public abstract class Client
 	 * 
 	 * @return true if this client is a remote user
 	 */
-	public final boolean isRemote()
+	public boolean isRemote()
 	{
-		return this instanceof NetworkClient;
+		return false;
 	}
 	
 	/**
 	 * Requests that this client be closed
 	 */
-	public void close()
+	public final void close()
 	{
 		//TODO Close
 	}
