@@ -103,6 +103,7 @@ public abstract class Server
 		if(stopTypeUpdater.compareAndSet(this, 0, 1))
 		{
 			stopReason = reason;
+			stopRequested();
 		}
 	}
 
@@ -120,6 +121,7 @@ public abstract class Server
 		if(stopTypeUpdater.compareAndSet(this, 0, 2))
 		{
 			stopReason = reason;
+			stopRequested();
 		}
 	}
 	
@@ -227,7 +229,9 @@ public abstract class Server
 	/**
 	 * Event occurs after a stop or restart has been requested
 	 */
-	protected abstract void stopRequested();
+	protected void stopRequested()
+	{
+	}
 	
 	/**
 	 * Called to run the server
