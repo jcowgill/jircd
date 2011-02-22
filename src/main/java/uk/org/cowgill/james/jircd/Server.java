@@ -4,8 +4,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 
 /**
  * The main IRC Server class
@@ -24,8 +23,7 @@ public abstract class Server
 	/**
 	 * Class logger
 	 */
-	private final static Logger logger =
-		LoggerFactory.getLogger(Server.class);
+	private final static Logger logger = Logger.getLogger(Server.class);
 	
 	/**
 	 * Location of the server configuration file

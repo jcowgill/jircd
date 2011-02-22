@@ -6,6 +6,7 @@ import static java.nio.channels.SelectionKey.OP_READ;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -88,6 +89,8 @@ final class NetworkServer extends Server
 		}
 		
 		//Process IO Events
+		int retryError = 0;
+		
 		for(;;)
 		{
 			try
@@ -102,8 +105,15 @@ final class NetworkServer extends Server
 				}
 				
 				//Check all selected keys
-				for(SelectionKey key : eventSelector.selectedKeys())
+				Iterator<SelectionKey> keyIter = eventSelector.selectedKeys().iterator();
+				SelectionKey key;
+				
+				while(keyIter.hasNext())
 				{
+					//Get key
+					key = keyIter.next();
+					keyIter.remove();
+					
 					if(key.isValid())
 					{
 						//Check accept
@@ -117,8 +127,15 @@ final class NetworkServer extends Server
 							NetworkClient client = new NetworkClient(sockChannel);
 							
 							//Register channel and attach client to it
-							SelectionKey clientKey = sockChannel.register(eventSelector, OP_READ);
-							clientKey.attach(client);
+							try
+							{
+								SelectionKey clientKey = sockChannel.register(eventSelector, OP_READ);
+								clientKey.attach(client);
+							}
+							catch(ClosedChannelException e)
+							{
+								logger.error("Accepted socket suddenly closed (WTF)", e);
+							}
 						}
 						else if(key.isReadable())
 						{
@@ -127,14 +144,18 @@ final class NetworkServer extends Server
 						}
 					}
 				}
-				
-				//Wipe keys and repeat
-				eventSelector.selectedKeys().clear();
+
+				retryError = 0;
 			}
-			catch (RuntimeException e)
+			catch (Exception e)
 			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				//Pretty bad error
+				logger.error("Exception in i/o loop", e);
+				
+				//Check for 5 errors in a row
+				retryError++;
+				logger.fatal("5 loop errors in a row - exiting");
+				break;
 			}
 		}
 	}

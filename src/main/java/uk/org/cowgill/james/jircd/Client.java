@@ -1,5 +1,7 @@
 package uk.org.cowgill.james.jircd;
 
+import java.util.ArrayList;
+
 /**
  * Represents a client in the server
  * 
@@ -10,33 +12,57 @@ package uk.org.cowgill.james.jircd;
  * @author James
  */
 public abstract class Client
-{	
+{
 	/**
-	 * Sends IRC data to a client (data is converted to string with toString)
-	 * 
-	 * @param data Data to send
+	 * List of clients to be closed when close queue is processed
 	 */
-	public abstract void send(Object data);
+	private static ArrayList<Client> queuedClosures = new ArrayList<Client>();
 	
 	/**
-	 * Performs client sepific close routines
-	 * 
-	 * @return Returns true if the close was a sucess. Returns false to abort the close.
+	 * Reason for this client's closure
 	 */
-	protected abstract boolean rawClose();
+	private String queuedCloseReason = null;
+	
+	/**
+	 * The client's id
+	 */
+	private IRCMask id;
+	
+	/**
+	 * Gets a mask containing the id of this client
+	 * @return a mask containing the id of this client
+	 */
+	public IRCMask getId()
+	{
+		return id.clone();
+	}
 
+	/**
+	 * Requests that this client be closed
+	 * 
+	 * @param quitStatus the string told to other users about why this client is exiting
+	 */
+	public final void close(String quitStatus)
+	{
+		//TODO Close
+	}
+	
 	/**
 	 * Changes the class of this client
 	 * @param clazz Class to change to
 	 * @param defaultClass True to change default class
+	 * @return false if there are not enough links in a class to change
 	 */
-	protected void changeClass(ConnectionClass clazz, boolean defaultClass)
+	protected boolean changeClass(ConnectionClass clazz, boolean defaultClass)
 	{
 		//Default = no class changes
+		return true;
 	}
 	
 	/**
 	 * Restores this client's class to the default class
+	 * 
+	 * (default class restores override the max links)
 	 */
 	public void restoreClass()
 	{
@@ -76,10 +102,53 @@ public abstract class Client
 	}
 	
 	/**
-	 * Requests that this client be closed
+	 * Marks this client for closure after the current client has finished processing
+	 * 
+	 * @param quitStatus the string told to other users about why this client is exiting
 	 */
-	public final void close()
+	public final void queueClose(String quitStatus)
 	{
-		//TODO Close
+		if(queuedCloseReason != null)
+		{
+			queuedCloseReason = quitStatus;
+			queuedClosures.add(this);
+		}
 	}
+	
+	/**
+	 * Gets weather this client is queued for closure
+	 * @return weather this client is queued for closure
+	 */
+	public boolean isQueuedForClose()
+	{
+		return queuedCloseReason != null;
+	}
+	
+	/**
+	 * Processes the close queue - closes all queued clients
+	 */
+	public static void processCloseQueue()
+	{
+		for(Client client : queuedClosures)
+		{
+			client.close(client.queuedCloseReason);
+		}
+		
+		queuedClosures.clear();
+	}
+	
+	/**
+	 * Sends IRC data to a client (data is converted to string with toString)
+	 * 
+	 * @param data Data to send
+	 */
+	public abstract void send(Object data);
+	
+	/**
+	 * Performs client sepific close routines
+	 * 
+	 * @return Returns true if the close was a sucess. Returns false to abort the close.
+	 */
+	protected abstract boolean rawClose();
+
 }
