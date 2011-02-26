@@ -27,7 +27,60 @@ public abstract class Client
 	 * The client's id
 	 */
 	public IRCMask id;
+	
+	/**
+	 * Flags used to see what parts of the registration process has been completed
+	 * 
+	 * @see RegistrationFlags
+	 */
+	private int registrationFlags;
 
+	//------------------------------------------------
+
+	/**
+	 * Creates a new client with a blank id and adds it to global collections
+	 */
+	public Client()
+	{
+		this(new IRCMask());
+	}
+
+	/**
+	 * Creates a new client and adds it to global collections
+	 * 
+	 * @param id the IRCMask representing this client's id
+	 */
+	public Client(IRCMask id)
+	{
+		//Set id
+		this.id = id;
+		
+		//TODO Add to global collections
+	}
+	
+	
+	/**
+	 * Gets weather this client has been fully registered
+	 * @return true if this client has been fully registered
+	 */
+	public boolean isRegistered()
+	{
+		return ~(registrationFlags & RegistrationFlags.AllFlags) == 0;
+	}
+	
+	/**
+	 * Sets a set of registration flags
+	 * 
+	 * If the client is already registered, this doesn't do anything useful
+	 * This method is thread safe
+	 * 
+	 * @param flags flags to set
+	 */
+	public synchronized void setRegistrationFlag(int flags)
+	{
+		registrationFlags |= flags;
+	}
+	
 	/**
 	 * Requests that this client be closed
 	 * 

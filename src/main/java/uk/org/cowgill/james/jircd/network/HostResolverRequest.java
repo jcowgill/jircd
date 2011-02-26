@@ -1,5 +1,7 @@
 package uk.org.cowgill.james.jircd.network;
 
+import uk.org.cowgill.james.jircd.RegistrationFlags;
+
 /**
  * A request to resolve the hostname of a client
  * 
@@ -26,9 +28,10 @@ class HostResolverRequest implements Runnable
 	public void run()
 	{
 		//Resolve hostname
-		String host = client.getRemoteAddress().getHostName();
+		final String host = client.getRemoteAddress().getHostName();
 		
-		//TODO Update host in ID
-		// No events should fire from this thread
+		//Update host in client
+		client.id.host = host;
+		client.setRegistrationFlag(RegistrationFlags.HostSet);
 	}
 }

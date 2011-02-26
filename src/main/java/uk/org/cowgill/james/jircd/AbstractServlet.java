@@ -23,7 +23,11 @@ public abstract class AbstractServlet extends Client
 	 */
 	public AbstractServlet(IRCMask id)
 	{
-		//TODO Register with ID
+		//Set ID
+		super(id);
+		
+		//Register
+		this.setRegistrationFlag(RegistrationFlags.AllFlags);
 	}
 	
 	@Override
