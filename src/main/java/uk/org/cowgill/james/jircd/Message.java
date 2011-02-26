@@ -28,8 +28,8 @@ public class Message
 	private String[] parameters;
 	
 	/**
-	 * Returns this message's command
-	 * @return this message's command
+	 * Returns this message's command in lowercase
+	 * @return this message's command in lowercase
 	 */
 	public String getCommand()
 	{

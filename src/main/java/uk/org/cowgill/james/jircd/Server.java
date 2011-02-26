@@ -36,6 +36,11 @@ public abstract class Server
 	private Config config;
 	
 	/**
+	 * The server's module manager
+	 */
+	private ModuleManager moduleMan = new ModuleManager();
+	
+	/**
 	 * The type of stop the server should shutdown by
 	 * 
 	 * 0 = No shutdown
@@ -146,8 +151,14 @@ public abstract class Server
 			return false;
 		}
 		
+		//Startup modules
+		moduleMan.serverStartupEvent();
+		
 		//Run server
 		runServer();
+		
+		//Stop modules
+		moduleMan.serverStopEvent();
 		
 		//Return reason
 		globalServer = null;
@@ -162,6 +173,16 @@ public abstract class Server
 	public Config getConfig()
 	{
 		return config;
+	}
+	
+	/**
+	 * Returns the module manager for this server
+	 * 
+	 * @return the module manager for this server
+	 */
+	public ModuleManager getModuleManager()
+	{
+		return moduleMan;
 	}
 	
 	/**

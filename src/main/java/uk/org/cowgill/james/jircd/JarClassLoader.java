@@ -30,6 +30,16 @@ final class JarClassLoader extends URLClassLoader
 		
 		return singleClassLoader;
 	}
+	
+	/**
+	 * Gets weather the Jar ClassLoader has been loaded
+	 * 
+	 * @return true if the class loader has been loaded
+	 */
+	public static boolean isLoaded()
+	{
+		return singleClassLoader != null;
+	}
 
 	/**
 	 * Adds a URL to this class loader

@@ -5,8 +5,6 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-
 import org.apache.log4j.Logger;
 
 /**
@@ -21,12 +19,12 @@ public final class ModuleManager
 	/**
 	 * Map of all loaded modules
 	 */
-	private HashMap<Class<?>, ModuleInfo> loadedModules = new HashMap<Class<?>, ModuleInfo>();
+	private HashMap<Class<?>, Module> loadedModules = new HashMap<Class<?>, Module>();
 	
 	/**
-	 * Current module context. null = root context
+	 * Map of all commands on the system
 	 */
-	private ModuleInfo currentContext = null;
+	private HashMap<String, Command> commands = new HashMap<String, Command>();
 	
 	/**
 	 * Event which starts up the modules in the configuration file
@@ -55,7 +53,54 @@ public final class ModuleManager
 	 */
 	void serverRehashEvent()
 	{
-		//
+		HashSet<Class<?>> rehashed = new HashSet<Class<?>>();
+		//Rehash all modules
+		for(ConfigBlock block : Server.getServer().getConfig().modules)
+		{
+			//Get class
+			Class<?> clazz = getClassFromString(block.param);
+
+			//Find in loaded modules
+			Module module = loadedModules.get(clazz);
+			
+			if(module == null)
+			{
+				//Not already loaded
+				logger.warn("Module " + block.param + " has not been loaded - new modules require a server restart");
+				continue;
+			}
+			
+			//Rehash module
+			try
+			{
+				module.rehash(block);
+			}
+			catch(Exception e)
+			{
+				logger.error("Module " + block.param + " threw exception while rehashing", e);
+			}
+			
+			rehashed.add(clazz);
+		}
+		
+		//Anything which has not been rehashed will be notified
+		for(Class<?> clazz : loadedModules.keySet())
+		{
+			if(!rehashed.contains(clazz))
+			{
+				logger.warn("Module " + clazz.getName() + " has not been unloaded - this requires a server restart");
+
+				//Rehash module
+				try
+				{
+					loadedModules.get(clazz).rehash(null);
+				}
+				catch(Exception e)
+				{
+					logger.error("Module " + clazz.getName() + " threw exception while rehashing", e);
+				}
+			}
+		}
 	}
 	
 	/**
@@ -64,44 +109,102 @@ public final class ModuleManager
 	void serverStopEvent()
 	{
 		//Unload all modules
+		for(Module module : loadedModules.values())
+		{
+			module.shutdown();
+		}
 		
+		loadedModules.clear();
 	}
 	
-	public Module loadModule(Class<?> moduleClass, ConfigBlock config)
+	/**
+	 * Finds the class for a given string
+	 * 
+	 * Errors are displayed
+	 * 
+	 * @param module Module string
+	 * @return the class or null on error
+	 */
+	private static Class<?> getClassFromString(String module)
+	{
+		try
+		{
+			if(JarClassLoader.isLoaded())
+			{
+				return JarClassLoader.getClassLoader().loadClass(module);
+			}
+			else
+			{
+				return ClassLoader.getSystemClassLoader().loadClass(module);
+			}
+		}
+		catch(LinkageError e)
+		{
+			logger.error("Module class " + module + " is corrupt and cannot be loaded", e);
+			return null;
+		}
+		catch(Exception e)
+		{
+			logger.error("Error loading module", e);
+			return null;
+		}
+	}
+	
+	/**
+	 * Loads a module with the given class and configuration
+	 * 
+	 * This silently returns true if the module has been loaded
+	 * 
+	 * @param moduleClass class of the module to load
+	 * @param config configuration
+	 * @return true if the module has been loaded
+	 */
+	public boolean loadModule(Class<?> moduleClass, ConfigBlock config)
 	{
 		//Find module in hashmap
-		ModuleInfo info = loadedModules.get(moduleClass);
+		Module module = loadedModules.get(moduleClass);
 		
 		//If null, create module
-		if(info == null)
+		if(module == null)
 		{
-			info = new ModuleInfo();
-			info.loadCount = 1;
-			
 			try
 			{
-				info.module = (Module) moduleClass.newInstance();
-				info.module.startup(config);
+				module = (Module) moduleClass.newInstance();
+				if(!module.startup(config))
+				{
+					//Failed to load
+					logger.error("Error loading module " + moduleClass.getName());
+					return false;
+				}
 			}
 			catch(Exception e)
 			{
-				logger.error("Error loading module", e);
-				return null;
+				logger.error("Error loading module " + moduleClass.getName(), e);
+				return false;
 			}
 			
 			//Add module to loadedModules
-			loadedModules.put(moduleClass, info);
+			loadedModules.put(moduleClass, module);
 		}
 		
-		//Return loaded module
-		return info.module;
+		//Module loaded
+		return true;
 	}
-	
-	public Module loadModule(String className, ConfigBlock config)
+
+	/**
+	 * Loads a module with the given class name and configuration
+	 * 
+	 * This silently returns true if the module has been loaded.
+	 * This function will also attempt to load any jar files in the module configuration.
+	 * 
+	 * @param className class name of the module to load
+	 * @param config configuration
+	 * @return true if the module has been loaded
+	 */
+	public boolean loadModule(String className, ConfigBlock config)
 	{
 		//If config block contains a jar directive, load the jars
 		Collection<ConfigBlock> jars = config.subBlocks.get("jar");
-		boolean jarsUsed = false;
 		
 		if(jars != null)
 		{
@@ -113,7 +216,6 @@ public final class ModuleManager
 					try
 					{
 						JarClassLoader.getClassLoader().addURL(new URL(jarBlock.param));
-						jarsUsed = true;
 					}
 					catch(MalformedURLException e)
 					{
@@ -131,35 +233,27 @@ public final class ModuleManager
 		}
 		
 		//Attempt to find class
-		Class<?> moduleClass = null;
+		Class<?> moduleClass = getClassFromString(className);
 		
-		try
+		if(moduleClass == null)
 		{
-			if(jarsUsed)
-			{
-				moduleClass = JarClassLoader.getClassLoader().loadClass(className);
-			}
-			else
-			{
-				moduleClass = ClassLoader.getSystemClassLoader().loadClass(className);
-			}
-		}
-		catch(LinkageError e)
-		{
-			logger.error("Module class " + className + " is corrupt and cannot be loaded", e);
-			return null;
-		}
-		catch(Exception e)
-		{
-			logger.error("Error loading module", e);
-			return null;
+			return false;
 		}
 		
 		//Call startup commands
 		return loadModule(moduleClass, config);
 	}
-	
-	public Module loadModule(ConfigBlock config)
+
+	/**
+	 * Loads a module with the given configuration
+	 * 
+	 * This silently returns true if the module has been loaded.
+	 * This function will also attempt to load any jar files in the module configuration.
+	 * 
+	 * @param config configuration for module
+	 * @return true if the module has been loaded
+	 */
+	public boolean loadModule(ConfigBlock config)
 	{
 		//Load module using parameter as class name
 		return loadModule(config.param, config);
@@ -169,7 +263,7 @@ public final class ModuleManager
 	 * Loads all the modules from the given module collection
 	 * 
 	 * @param moduleBlocks configuration blocks to load from
-	 * @return number of loaded modules
+	 * @return number of modules which were loaded successfully
 	 */
 	public int loadModules(Collection<ConfigBlock> moduleBlocks)
 	{
@@ -178,7 +272,7 @@ public final class ModuleManager
 		
 		for(ConfigBlock block : moduleBlocks)
 		{
-			if(loadModule(block) != null)
+			if(loadModule(block))
 			{
 				moduleCount++;
 			}
@@ -187,71 +281,86 @@ public final class ModuleManager
 		return moduleCount;
 	}
 	
-	public void unloadModules(Collection<ConfigBlock> module)
+	/**
+	 * Registers a command to receive events when it is used by a client
+	 * 
+	 * @param command Command object to register
+	 * @throws ModuleLoadException thrown if the command has already been registered
+	 */
+	public void registerCommand(Command command) throws ModuleLoadException
 	{
-	}
-	
-	public void unloadModule(ConfigBlock module)
-	{
-	}
-	
-	public void unloadModule(Class<?> module)
-	{
-	}
-	
-	public void unloadModule(String module)
-	{
-	}
-	
-	public void unloadModule(Module module)
-	{
-	}
-	
-	public Iterator<Module> iterator()
-	{
-		return null;
-	}
-	
-	public void registerCommand(Command command)
-	{
-	}
-	
-	public void registerCommand(Command command, Module module)
-	{
-	}
-	
-	public void unregisterCommand(Command command)
-	{
-	}
-	
-	public void unregisterCommand(Command command, Module module)
-	{
-	}
-	
-	public void executeCommand(Client client, Message msg)
-	{
-	}
-	
-	public Iterator<Command> commandIterator()
-	{
-		return null;
+		//Get module name and add it
+		String modName = command.getName();
+
+		//If we already have this command, raise exception
+		if(commands.containsKey(modName))
+		{
+			throw new ModuleLoadException("Command " + modName + " is already registered");
+		}
+		
+		//Add command if it has any valid flags
+		if((command.getFlags() & (Command.FLAG_NORMAL | Command.FLAG_REGISTRATION)) != 0)
+		{
+			commands.put(modName, command);
+		}
 	}
 	
 	/**
-	 * Stores information about a loaded module
+	 * Unregisters a command
 	 * 
-	 * @author James
+	 * You do not need to do this when shutting down - it is done automatically
+	 * 
+	 * @param command Command to unregister
 	 */
-	private class ModuleInfo
+	public void unregisterCommand(Command command)
 	{
-		/**
-		 * The loaded module
-		 */
-		public Module module;
+		//Find module
+		String modName = command.getName();
+		Command foundModule = commands.get(modName);
 		
-		/**
-		 * Number of references to this module (with dependencies)
-		 */
-		public int loadCount;
+		//Delete of the command is the same
+		if(foundModule == command)
+		{
+			commands.remove(modName);
+		}
+	}
+	
+	/**
+	 * Dispatches a message to the correct command handler
+	 * 
+	 * @param client Client who sent the message
+	 * @param msg Message to dispatch
+	 */
+	public void executeCommand(Client client, Message msg)
+	{
+		//Find command
+		Command command = commands.get(msg.getCommand());
+		
+		if(command == null)
+		{
+			//Unknown Command
+			// TODO Send unknown command
+			return;
+		}
+		
+		//Check max params
+		if(msg.paramCount() < command.getMinParameters())
+		{
+			//Not Enough Parameters
+			//TODO Send not enough parameters
+			return;
+		}
+		
+		//TODO Check if registered
+		
+		try
+		{
+			//Dispatch message
+			command.run(client, msg);
+		}
+		catch(Exception e)
+		{
+			logger.error("Exception occured while dispatching command", e);
+		}
 	}
 }
