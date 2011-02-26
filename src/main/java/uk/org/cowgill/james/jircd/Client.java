@@ -22,20 +22,11 @@ public abstract class Client
 	 * Reason for this client's closure
 	 */
 	private String queuedCloseReason = null;
-	
+
 	/**
 	 * The client's id
 	 */
-	private IRCMask id;
-	
-	/**
-	 * Gets a mask containing the id of this client
-	 * @return a mask containing the id of this client
-	 */
-	public IRCMask getId()
-	{
-		return id.clone();
-	}
+	public IRCMask id;
 
 	/**
 	 * Requests that this client be closed
@@ -85,7 +76,7 @@ public abstract class Client
 	 * 
 	 * @return The ip address of the client
 	 */
-	public String ipAddress()
+	public String getIpAddress()
 	{
 		//Default return
 		return "127.0.0.1";
@@ -150,5 +141,4 @@ public abstract class Client
 	 * @return Returns true if the close was a sucess. Returns false to abort the close.
 	 */
 	protected abstract boolean rawClose();
-
 }

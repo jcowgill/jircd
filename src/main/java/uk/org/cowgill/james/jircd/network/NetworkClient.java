@@ -1,7 +1,7 @@
 package uk.org.cowgill.james.jircd.network;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.SocketChannel;
@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import uk.org.cowgill.james.jircd.Client;
 import uk.org.cowgill.james.jircd.ConnectionClass;
 import uk.org.cowgill.james.jircd.Message;
+import uk.org.cowgill.james.jircd.Server;
 
 /**
  * A networking client implementation
@@ -94,7 +95,7 @@ final class NetworkClient extends Client
 	 * @param channel channel to setup from
 	 * @throws IOException thrown when an error occurs in setting socket options
 	 */
-	public NetworkClient(SocketChannel channel) throws IOException
+	NetworkClient(SocketChannel channel) throws IOException
 	{
 		//Setup channel options
 		channel.configureBlocking(false);
@@ -108,7 +109,7 @@ final class NetworkClient extends Client
 	/**
 	 * Called when a read event occurs
 	 */
-	public void processReadEvent() throws IOException
+	void processReadEvent() throws IOException
 	{
 		//Read message into buffer
 		int endByte = channel.read(localBuffer) + localBuffer.position();
@@ -138,7 +139,7 @@ final class NetworkClient extends Client
 				Message msg = Message.parse(cDecoder.decode(localBuffer).toString());
 				
 				//Dispatch message
-				// TODO dispatch message
+				Server.getServer().getModuleManager().executeCommand(this, msg);
 				
 				//Reset position and limit
 				localBuffer.position(i + 1);
@@ -216,10 +217,20 @@ final class NetworkClient extends Client
 		return true;
 	}
 	
-	@Override
-	public String ipAddress()
+	/**
+	 * Gets the remote address of this client
+	 * 
+	 * @return the remote address of this client
+	 */
+	InetAddress getRemoteAddress()
 	{
-		return ((InetSocketAddress) channel.socket().getRemoteSocketAddress()).getHostName();
+		return channel.socket().getInetAddress();
+	}
+	
+	@Override
+	public String getIpAddress()
+	{
+		return channel.socket().getInetAddress().getHostAddress();
 	}
 
 	private void forceChangeClass(ConnectionClass clazz)

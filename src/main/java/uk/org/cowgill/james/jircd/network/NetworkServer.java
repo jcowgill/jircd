@@ -88,6 +88,9 @@ final class NetworkServer extends Server
 			return;
 		}
 		
+		// Create host resolver
+		HostResolver resolver = new HostResolver();
+		
 		//Process IO Events
 		int retryError = 0;
 		
@@ -126,6 +129,9 @@ final class NetworkServer extends Server
 							SocketChannel sockChannel = channel.accept();
 							NetworkClient client = new NetworkClient(sockChannel);
 							
+							//Resolver host
+							resolver.sumbitRequest(client);
+							
 							//Register channel and attach client to it
 							try
 							{
@@ -158,6 +164,9 @@ final class NetworkServer extends Server
 				break;
 			}
 		}
+		
+		//Shutdown resolver
+		resolver.shutdown();
 	}
 	
 	/**
