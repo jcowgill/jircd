@@ -1,5 +1,6 @@
 package uk.org.cowgill.james.jircd;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
@@ -10,7 +11,6 @@ import java.util.Iterator;
 public class Message
 {
 	private static final String BLANK_STR = "";
-	private static final String[] EMPTY_ARRAY = new String[0];
 	
 	/**
 	 * The prefix (sender) of the message
@@ -25,11 +25,81 @@ public class Message
 	/**
 	 * Message parameters
 	 */
-	private String[] parameters;
+	private ArrayList<String> parameters = new ArrayList<String>();
+
+	/**
+	 * Creates a new message with a blank prefix
+	 * 
+	 * @param command command for the message
+	 */
+	public Message(String command)
+	{
+		this(command, (String) null);
+	}
+
+	/**
+	 * Creates a new message from a Client
+	 * 
+	 * @param command command for the message
+	 * @param client origin of this message
+	 */
+	public Message(String command, Client client)
+	{
+		this(command, client.id.toString());
+	}
+
+	/**
+	 * Creates a new message with an IRCMask prefix
+	 * 
+	 * @param command command for the message
+	 * @param id origin of this message
+	 */
+	public Message(String command, IRCMask id)
+	{
+		this(command, id.toString());
+	}
 	
 	/**
-	 * Returns this message's command in lowercase
-	 * @return this message's command in lowercase
+	 * Creates a new message
+	 * 
+	 * @param command command for the message
+	 * @param prefix origin of this message
+	 */
+	public Message(String command, String prefix)
+	{
+		if(prefix == null)
+		{
+			this.prefix = BLANK_STR;
+		}
+		else
+		{
+			this.prefix = prefix;
+		}
+		
+		if(command == null)
+		{
+			this.command = BLANK_STR;
+		}
+		else
+		{
+			this.command = command;
+		}
+	}
+	
+	/**
+	 * Creates a new message from the server
+	 * 
+	 * @param command command for the message
+	 * @return the new message
+	 */
+	public static Message newMessageFromServer(String command)
+	{
+		return new Message(command, Server.getServer().getConfig().serverName);
+	}
+	
+	/**
+	 * Returns this message's command in upper case
+	 * @return this message's command in upper case
 	 */
 	public String getCommand()
 	{
@@ -52,7 +122,44 @@ public class Message
 	 */
 	public String getParam(int index)
 	{
-		return parameters[index];
+		return parameters.get(index);
+	}
+	
+	/**
+	 * Appends a parameter to this message
+	 * @param str parameter to append
+	 */
+	public void appendParam(String str)
+	{
+		parameters.add(str);
+	}
+
+	@Override
+	public int hashCode()
+	{
+		int hash = prefix.hashCode();
+		
+		hash = hash * 47 + command.hashCode();
+		hash = hash * 37 + parameters.hashCode();
+		
+		return hash;
+	}
+	
+	@Override
+	public boolean equals(Object object)
+	{
+		if(object == null)
+			return false;
+		
+		if(object == this)
+			return true;
+		
+		if(object.getClass() != this.getClass())
+			return false;
+		
+		Message other = (Message) object;
+		
+		return toString().equals(other.toString());
 	}
 	
 	/**
@@ -61,21 +168,20 @@ public class Message
 	 */
 	public Iterator<String> paramIterator()
 	{
+		final Iterator<String> source = parameters.iterator();
+		
 		return new Iterator<String>()
 			{
-				private int pos = 0;
-				
-			
 				@Override
 				public boolean hasNext()
 				{
-					return parameters.length < pos;
+					return source.hasNext();
 				}
 
 				@Override
 				public String next()
 				{
-					return parameters[pos++];
+					return source.next();
 				}
 
 				@Override
@@ -92,7 +198,50 @@ public class Message
 	 */
 	public int paramCount()
 	{
-		return parameters.length;
+		return parameters.size();
+	}
+	
+	@Override
+	public String toString()
+	{
+		//Convert message to string
+		final StringBuilder builder = new StringBuilder();
+		
+		//Check for prefix
+		if(prefix.length() != 0)
+		{
+			builder.append(':');
+			builder.append(prefix);
+			builder.append(' ');
+		}
+		
+		//Add command
+		builder.append(command);
+		
+		//Add parameters
+		final Iterator<String> paramIter = parameters.iterator();
+		String param;
+		
+		while(paramIter.hasNext())
+		{
+			//Get param
+			param = paramIter.next();
+			
+			//Add space before param
+			builder.append(' ');
+			
+			//Check if parameter has spaces
+			// of if it is not the last parameter
+			if(!paramIter.hasNext() && param.indexOf(' ') != -1)
+			{
+				//Use prefix if last param has spaces
+				builder.append(':');
+			}
+			
+			builder.append(param);
+		}
+		
+		return builder.toString();
 	}
 	
 	/**
@@ -103,7 +252,98 @@ public class Message
 	 */
 	public static Message parse(String data)
 	{
-		//TODO message parser
-		return null;
+		int pos = 0;	//Current position in string
+		int oldPos;
+		
+		String prefix = BLANK_STR;
+		
+		//Trim the data
+		data = data.trim();
+		
+		try
+		{
+			//Extract prefix
+			if(data.charAt(0) == ':')
+			{
+				//Find first space and extract until that
+				pos = data.indexOf(' ') + 1;
+				prefix = data.substring(1, pos - 1);
+				
+				//Suck up spaces
+				while(data.charAt(pos) == ' ')
+				{
+					pos++;
+				}
+			}
+		}
+		catch(IndexOutOfBoundsException e)
+		{
+			//Invalid message
+			return new Message(null);
+		}
+		
+		//Extract command
+		String command;
+		
+		oldPos = pos;
+		pos = data.indexOf(' ', pos) + 1;
+		
+		if(pos == 0)
+		{
+			//Get till end of string
+			command = data.substring(oldPos);
+			pos = data.length();
+		}
+		else
+		{
+			//Get till space
+			command = data.substring(oldPos, pos - 1);
+		}
+		
+		//Create base message
+		final Message baseMsg = new Message(command.toUpperCase(), prefix);
+		
+		
+		//Extract parameters
+		while(pos < data.length())
+		{
+			//Suck up spaces
+			while(data.charAt(pos) == ' ')
+			{
+				pos++;
+			}
+			
+			//Test if character is a :
+			if(data.charAt(pos) == ':')
+			{
+				//Use all other characters as last parameter
+				if(pos != (data.length() - 1))
+				{
+					baseMsg.appendParam(data.substring(pos + 1));
+				}
+				
+				break;
+			}
+			else
+			{
+				//Find next space
+				oldPos = pos;
+				pos = data.indexOf(' ', pos) + 1;
+				
+				//Append parameter
+				if(pos == 0)
+				{
+					baseMsg.appendParam(data.substring(oldPos));
+					break;
+				}
+				else
+				{
+					baseMsg.appendParam(data.substring(oldPos, pos - 1));
+				}
+			}
+		}
+		
+		//Return finished message
+		return baseMsg;
 	}
 }

@@ -35,7 +35,7 @@ public interface Command
 	/**
 	 * Gets the name of this command used to tell when to run the command
 	 * 
-	 * This method should return the command in LOWERCASE
+	 * This method should return the command in UPPER CASE
 	 * 
 	 * @return the name of this command
 	 */
