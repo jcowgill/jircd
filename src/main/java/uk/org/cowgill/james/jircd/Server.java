@@ -2,6 +2,8 @@ package uk.org.cowgill.james.jircd;
 
 import java.io.File;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 import org.apache.log4j.Logger;
@@ -59,6 +61,11 @@ public abstract class Server
 	 * Reason for stop / restart (shown to all users and logged)
 	 */
 	private String stopReason = null;
+	
+	/**
+	 * Set of all clients connected to the server
+	 */
+	public Set<Client> clients = new HashSet<Client>();
 	
 	//--------------------------------------------
 	

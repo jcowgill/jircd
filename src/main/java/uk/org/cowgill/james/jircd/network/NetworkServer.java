@@ -14,9 +14,11 @@ import java.nio.channels.SocketChannel;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-
 import org.apache.log4j.Logger;
 
+import uk.org.cowgill.james.jircd.Client;
+import uk.org.cowgill.james.jircd.ModuleLoadException;
+import uk.org.cowgill.james.jircd.RegistrationFlags;
 import uk.org.cowgill.james.jircd.Server;
 
 /**
@@ -29,18 +31,7 @@ import uk.org.cowgill.james.jircd.Server;
  */
 final class NetworkServer extends Server
 {	
-	private Logger logger = Logger.getLogger(NetworkServer.class);
-	
-	/*
-	 * How to do idleness
-	 * ---------
-	 *  - Store time a command was last read from each socket in NetworkClient
-	 *  - Store last checked time in NetworkServer
-	 *  -  Every time an event occurs, if idleness has not be checked for 1s
-	 *      check all sockets for idleness
-	 *  - The selector has a timeout of 1s sepifically for this purpose
-	 *  - If noone is connected, consider not using a timeout
-	 */
+	private static final Logger logger = Logger.getLogger(NetworkServer.class);
 	
 	/**
 	 * Server event selector (all events are handled by this)
@@ -51,6 +42,11 @@ final class NetworkServer extends Server
 	 * Listening channels
 	 */
 	private Set<ServerSocketChannel> listeners = new HashSet<ServerSocketChannel>();
+	
+	/**
+	 * Time of the last ping check
+	 */
+	private long lastPingCheck;
 	
 	public NetworkServer(File configFile)
 	{
@@ -71,6 +67,18 @@ final class NetworkServer extends Server
 	protected void runServer()
 	{
 		//Server startup
+		try
+		{
+			// Register network commands
+			getModuleManager().registerCommand(new Ping());
+			getModuleManager().registerCommand(new Pong());
+		}
+		catch(ModuleLoadException e)
+		{
+			logger.error("Only the network subsystem can implement the PING and PONG commands", e);
+			return;
+		}
+		
 		// Create selector
 		try
 		{
@@ -89,7 +97,7 @@ final class NetworkServer extends Server
 		}
 		
 		// Create host resolver
-		HostResolver resolver = new HostResolver();
+		HostResolver resolver = new HostResolver(eventSelector);
 		
 		//Process IO Events
 		int retryError = 0;
@@ -99,12 +107,33 @@ final class NetworkServer extends Server
 			try
 			{
 				//Select anything to do
-				eventSelector.select();
+				eventSelector.select(1000);
 				
 				//Check shutdown condition
 				if(checkAndNotifyStop())
 				{
 					break;
+				}
+				
+				//Check for host resolver requests
+				NetworkClient client = resolver.drainOneFinished();
+				
+				while(client != null)
+				{
+					if(!client.isClosed() && !client.isRegistered())
+					{
+						//Set host bit
+						client.setRegistrationFlag(RegistrationFlags.HostSet);
+						
+						//If registered now, signal event
+						if(client.isRegistered())
+						{
+							client.registeredEvent();
+						}
+					}
+					
+					//Next client
+					client = resolver.drainOneFinished();
 				}
 				
 				//Check all selected keys
@@ -127,7 +156,7 @@ final class NetworkServer extends Server
 							
 							//Create new client from channel
 							SocketChannel sockChannel = channel.accept();
-							NetworkClient client = new NetworkClient(sockChannel);
+							client = new NetworkClient(sockChannel);
 							
 							//Resolver host
 							resolver.sumbitRequest(client);
@@ -149,6 +178,22 @@ final class NetworkServer extends Server
 							((NetworkClient) key.attachment()).processReadEvent();
 						}
 					}
+				}
+				
+				//Perform ping checks
+				if(System.currentTimeMillis() - 1000 > lastPingCheck)
+				{
+					//Iterate over all clients and ping if nessesary
+					for(Client locClient : clients)
+					{
+						if(locClient instanceof NetworkClient)
+						{
+							((NetworkClient) locClient).pingCheckEvent();
+						}
+					}
+					
+					lastPingCheck = System.currentTimeMillis();
+					Client.processCloseQueue();
 				}
 
 				retryError = 0;

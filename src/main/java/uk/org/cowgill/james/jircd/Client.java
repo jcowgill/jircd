@@ -34,6 +34,11 @@ public abstract class Client
 	 * @see RegistrationFlags
 	 */
 	private int registrationFlags;
+	
+	/**
+	 * True if client is closed
+	 */
+	private boolean closed = false;
 
 	//------------------------------------------------
 
@@ -72,13 +77,20 @@ public abstract class Client
 	 * Sets a set of registration flags
 	 * 
 	 * If the client is already registered, this doesn't do anything useful
-	 * This method is thread safe
 	 * 
 	 * @param flags flags to set
 	 */
-	public synchronized void setRegistrationFlag(int flags)
+	public void setRegistrationFlag(int flags)
 	{
 		registrationFlags |= flags;
+	}
+	
+	/**
+	 * Event which should be fired after all registration information has been set
+	 */
+	protected void registeredEvent()
+	{
+		//TODO Registered
 	}
 	
 	/**
@@ -89,6 +101,16 @@ public abstract class Client
 	public final void close(String quitStatus)
 	{
 		//TODO Close
+		closed = true;
+	}
+	
+	/**
+	 * Returns true if this client has been closed
+	 * @return true if this client has been closed
+	 */
+	public boolean isClosed()
+	{
+		return closed;
 	}
 	
 	/**
@@ -179,6 +201,16 @@ public abstract class Client
 		}
 		
 		queuedClosures.clear();
+	}
+	
+	/**
+	 * Creates a new message from this server with this client's nickname as the first parameter
+	 * 
+	 * @param command command of the message
+	 */
+	public Message newNickMessage(String command)
+	{
+		return Message.newMessageFromServer(command).appendParam(id.nick);
 	}
 	
 	/**

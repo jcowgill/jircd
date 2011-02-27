@@ -1,6 +1,7 @@
 package uk.org.cowgill.james.jircd.network;
 
-import uk.org.cowgill.james.jircd.RegistrationFlags;
+import java.nio.channels.Selector;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * A request to resolve the hostname of a client
@@ -10,15 +11,21 @@ import uk.org.cowgill.james.jircd.RegistrationFlags;
 class HostResolverRequest implements Runnable
 {
 	private NetworkClient client;
+	private BlockingQueue<NetworkClient> finishQueue;
+	private Selector eventSelector;
 	
 	/**
 	 * Creates a new host resolver request
 	 * 
 	 * @param client client whose host to resolve
+	 * @param finishQueue queue to add client to when the operation has been complete
+	 * @param eventSelector selector to wake up when done
 	 */
-	public HostResolverRequest(NetworkClient client)
+	public HostResolverRequest(NetworkClient client, BlockingQueue<NetworkClient> finishQueue, Selector eventSelector)
 	{
 		this.client = client;
+		this.finishQueue = finishQueue;
+		this.eventSelector = eventSelector;
 	}
 	
 	/**
@@ -32,6 +39,9 @@ class HostResolverRequest implements Runnable
 		
 		//Update host in client
 		client.id.host = host;
-		client.setRegistrationFlag(RegistrationFlags.HostSet);
+		
+		//Notify caller
+		finishQueue.offer(client);
+		eventSelector.wakeup();
 	}
 }

@@ -9,6 +9,8 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
+import java.util.Random;
+
 import org.apache.log4j.Logger;
 
 import uk.org.cowgill.james.jircd.Client;
@@ -23,25 +25,14 @@ import uk.org.cowgill.james.jircd.Server;
  */
 final class NetworkClient extends Client
 {
-	/**
-	 * Timeout after client has been immediately created
-	 */
-	public static final int START_TIMEOUT = 5;
+	private static final ConnectionClass DEFAULT_CONN_CLASS = new ConnectionClass();
+	
+	private static final Random randomGen = new Random();
 	
 	/**
 	 * Timeout after a ping has been sent to the client
 	 */
 	public static final int AFTER_PING_TIMEOUT = 5;
-	
-	/**
-	 * ReadQ for client after immediately created
-	 */
-	public static final int START_READQ = 1024;
-	
-	/**
-	 * SendQ for client after immediately created
-	 */
-	public static final int START_SENDQ = 1024;
 	
 	//----------------------------------
 
@@ -80,6 +71,16 @@ final class NetworkClient extends Client
 	private ByteBuffer localBuffer = ByteBuffer.wrap(localBufferData);
 	
 	/**
+	 * Time of the last message to be received by the server
+	 */
+	private long lastMessageTime;
+	
+	/**
+	 * Spoof check string
+	 */
+	String spoofCheckChars;
+	
+	/**
 	 * Default connection class
 	 */
 	private ConnectionClass defaultConnClass;
@@ -89,6 +90,17 @@ final class NetworkClient extends Client
 	 */
 	private ConnectionClass connClass;
 	
+	//Static constructor
+	static
+	{
+		//Setup default connection class
+		DEFAULT_CONN_CLASS.maxLinks = Integer.MAX_VALUE;
+		DEFAULT_CONN_CLASS.pingFreq = 0;	//No "extra" ping frequency
+		DEFAULT_CONN_CLASS.restricted = false;
+		DEFAULT_CONN_CLASS.readQueue = 1024;
+		DEFAULT_CONN_CLASS.sendQueue = 1024;
+	}
+	
 	/**
 	 * Sets up a new NetworkClient from a SocketChannel
 	 * 
@@ -97,13 +109,23 @@ final class NetworkClient extends Client
 	 */
 	NetworkClient(SocketChannel channel) throws IOException
 	{
-		//Setup channel options
-		channel.configureBlocking(false);
-		channel.socket().setSendBufferSize(START_SENDQ);
-		channel.socket().setReceiveBufferSize(START_READQ);
-		
 		//Save channel
 		this.channel = channel;
+		
+		//Setup channel options
+		channel.configureBlocking(false);
+		changeClass(DEFAULT_CONN_CLASS, true);
+		
+		//Begin spoof check
+		final StringBuffer buffer = new StringBuffer(10);
+		for(int i = 0; i < 10; ++i)
+		{
+			buffer.append((char) randomGen.nextInt('z' - 'A'));
+		}
+		
+		spoofCheckChars = buffer.toString();
+		
+		send(Message.newStringFromServer("PING :" + spoofCheckChars));
 	}
 	
 	/**
@@ -114,6 +136,9 @@ final class NetworkClient extends Client
 		//Read message into buffer
 		int endByte = channel.read(localBuffer) + localBuffer.position();
 		localBuffer.position(0);
+		
+		//Update message time
+		lastMessageTime = System.currentTimeMillis();
 		
 		//Find messages in buffer
 		for(int i = 1; i < endByte; i++)
@@ -156,6 +181,29 @@ final class NetworkClient extends Client
 		
 		//Process closure queue
 		processCloseQueue();
+	}
+
+	/**
+	 * Event which occurs when the ping timouts need checking
+	 */
+	void pingCheckEvent()
+	{
+		//Check for ping timeout
+		long diffInSeconds = (System.currentTimeMillis() - lastMessageTime) / 1000;
+		
+		if(diffInSeconds >= connClass.pingFreq)
+		{
+			//Check if completely timed out
+			if(diffInSeconds >= connClass.pingFreq + AFTER_PING_TIMEOUT)
+			{
+				queueClose("Ping Timeout");
+			}
+			else if(isRegistered())
+			{
+				//Send ping
+				send(Message.newStringFromServer("PING " + id.nick));
+			}
+		}
 	}
 	
 	@Override
@@ -217,6 +265,13 @@ final class NetworkClient extends Client
 		return true;
 	}
 	
+	@Override
+	protected void registeredEvent()
+	{
+		//Purpose of this is to allow NetworkServer access to this method
+		super.registeredEvent();
+	}
+	
 	/**
 	 * Gets the remote address of this client
 	 * 
@@ -235,9 +290,19 @@ final class NetworkClient extends Client
 
 	private void forceChangeClass(ConnectionClass clazz)
 	{
+		//Check if already in class
+		if(connClass == clazz)
+		{
+			return;
+		}
+		
 		//Update link count
 		clazz.currentLinks++;
-		connClass.currentLinks--;
+		
+		if(connClass != null)
+		{
+			connClass.currentLinks--;
+		}
 		
 		//Update buffer sizes
 		try
@@ -247,16 +312,15 @@ final class NetworkClient extends Client
 		}
 		catch(IOException e)
 		{
-			//TODO print id in error message
-			logger.error("Error setting buffer sizes for client " + clazz);
+			logger.error("Error setting buffer sizes for client " + id.toString());
 		}
 		
 		
 		//Update restricted flag
 		// TODO restricted
 		
-		//Update ping frequency
-		// TODO ping and idle timeouts
+		//Class changing causes an update in last message time
+		lastMessageTime = System.currentTimeMillis();
 		
 		//Set class
 		connClass = clazz;

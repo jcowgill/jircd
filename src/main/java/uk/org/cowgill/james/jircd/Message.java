@@ -98,6 +98,17 @@ public class Message
 	}
 	
 	/**
+	 * Creates a new message as a string from the server
+	 * 
+	 * @param command command for the message - you are allowed to add parameters here as well
+	 * @return the new message as a string
+	 */
+	public static String newStringFromServer(String command)
+	{
+		return ":" + Server.getServer().getConfig().serverName + " " + command;
+	}
+	
+	/**
 	 * Returns this message's command in upper case
 	 * @return this message's command in upper case
 	 */
@@ -128,10 +139,12 @@ public class Message
 	/**
 	 * Appends a parameter to this message
 	 * @param str parameter to append
+	 * @return this message
 	 */
-	public void appendParam(String str)
+	public Message appendParam(String str)
 	{
 		parameters.add(str);
+		return this;
 	}
 
 	@Override

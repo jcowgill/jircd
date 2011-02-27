@@ -8,7 +8,7 @@ package uk.org.cowgill.james.jircd;
 public class ConnectionClass
 {
 	/**
-	 * The ping frequency of connections on this class
+	 * The ping frequency of connections on this class in seconds
 	 */
 	public int pingFreq;
 	

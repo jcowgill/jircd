@@ -334,12 +334,20 @@ public final class ModuleManager
 	public void executeCommand(Client client, Message msg)
 	{
 		//Find command
+		boolean registeredCheck = false;
 		Command command = commands.get(msg.getCommand());
 		
 		if(command == null)
 		{
-			//Unknown Command
-			// TODO Send unknown command
+			//Only notify if command != nothing
+			if(msg.getCommand().trim().length() != 0)
+			{
+				//Unknown Command
+				client.send(Message.newMessageFromServer("421")
+						.appendParam(msg.getCommand())
+						.appendParam("Unknown Command"));
+			}
+
 			return;
 		}
 		
@@ -347,11 +355,37 @@ public final class ModuleManager
 		if(msg.paramCount() < command.getMinParameters())
 		{
 			//Not Enough Parameters
-			//TODO Send not enough parameters
+			client.send(Message.newMessageFromServer("461")
+					.appendParam(msg.getCommand())
+					.appendParam("Not enough parameters"));
+
 			return;
 		}
 		
-		//TODO Check if registered
+		//Check if registered
+		if(client.isRegistered())
+		{
+			//Allow registered only
+			if((command.getFlags() & Command.FLAG_NORMAL) == 0)
+			{
+				client.send(Message.newMessageFromServer("462")
+								.appendParam(msg.getCommand())
+								.appendParam("You cannot reregister"));
+				
+				return;
+			}
+		}
+		else
+		{
+			//Allow registration commands only
+			if((command.getFlags() & Command.FLAG_REGISTRATION) == 0)
+			{
+				client.send(Message.newStringFromServer("451 :You have not registered"));
+				return;
+			}
+			
+			registeredCheck = true;
+		}
 		
 		try
 		{
@@ -361,6 +395,12 @@ public final class ModuleManager
 		catch(Exception e)
 		{
 			logger.error("Exception occured while dispatching command", e);
+		}
+		
+		//Check if registered
+		if(registeredCheck && client.isRegistered())
+		{
+			client.registeredEvent();
 		}
 	}
 }
