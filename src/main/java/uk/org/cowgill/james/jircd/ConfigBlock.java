@@ -58,13 +58,12 @@ public class ConfigBlock
 	}
 	
 	/**
-	 * Gets the parameter of the given sub block - requiring the block exists once
+	 * Gets the parameter of the given sub block
 	 * 
 	 * @param key The key of the sub-block
-	 * @return The parameter
-	 * @throws ConfigException If the block does not exist exactly once or has no parameter
+	 * @return The parameter or null if not found
 	 */
-	public String getSubBlockParam(String key) throws ConfigException
+	public String getSubBlockParamOptional(String key)
 	{
 		//Get collection
 		Collection<ConfigBlock> blocks = subBlocks.get(key);
@@ -80,9 +79,30 @@ public class ConfigBlock
 				return block.param;
 			}
 		}
+
+		//Not found
+		return null;
+	}
+	
+	/**
+	 * Gets the parameter of the given sub block - requiring the block exists once
+	 * 
+	 * @param key The key of the sub-block
+	 * @return The parameter
+	 * @throws ConfigException If the block does not exist exactly once or has no parameter
+	 */
+	public String getSubBlockParam(String key) throws ConfigException
+	{
+		String retVal = getSubBlockParamOptional(key);
 		
-		//Error occured
-		throw new ConfigException("Directive " + key + " must exist exactly once and have a parameter");
+		if(retVal == null)
+		{
+			throw new ConfigException("Directive " + key + " must exist exactly once and have a parameter");
+		}
+		else
+		{
+			return retVal;
+		}
 	}
 	
 	//-----------------------------------------------------

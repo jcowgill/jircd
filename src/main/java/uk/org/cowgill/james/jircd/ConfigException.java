@@ -36,6 +36,20 @@ public class ConfigException extends Exception
 		this.charNo = 0;
 	}
 	
+	public ConfigException(String str, Throwable err)
+	{
+		super(str, err);
+		this.lineNo = 0;
+		this.charNo = 0;
+	}
+	
+	public ConfigException(Throwable err)
+	{
+		super(err);
+		this.lineNo = 0;
+		this.charNo = 0;
+	}
+	
 	public ConfigException(String str, int lineNo, int charNo)
 	{
 		super(str);

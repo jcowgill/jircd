@@ -9,9 +9,7 @@ import java.util.Iterator;
  * @author James
  */
 public class Message
-{
-	private static final String BLANK_STR = "";
-	
+{	
 	/**
 	 * The prefix (sender) of the message
 	 */
@@ -69,7 +67,7 @@ public class Message
 	{
 		if(prefix == null)
 		{
-			this.prefix = BLANK_STR;
+			this.prefix = "";
 		}
 		else
 		{
@@ -78,7 +76,7 @@ public class Message
 		
 		if(command == null)
 		{
-			this.command = BLANK_STR;
+			this.command = "";
 		}
 		else
 		{
@@ -268,7 +266,7 @@ public class Message
 		int pos = 0;	//Current position in string
 		int oldPos;
 		
-		String prefix = BLANK_STR;
+		String prefix = "";
 		
 		//Trim the data
 		data = data.trim();

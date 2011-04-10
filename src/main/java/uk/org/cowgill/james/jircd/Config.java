@@ -1,14 +1,26 @@
 package uk.org.cowgill.james.jircd;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Serializable;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.security.MessageDigest;
+import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * Contains all the configuration information for a server instance
@@ -20,9 +32,16 @@ import org.slf4j.Logger;
  * 
  * @author James
  */
-public final class Config
+public final class Config implements Serializable
 {
-	private final static Logger logger = LoggerFactory.getLogger(Config.class);
+	private static final long serialVersionUID = 1L;
+
+	private static final Logger logger = Logger.getLogger(Config.class);
+
+	/**
+	 * ASCII character set encoder
+	 */
+	private static final CharsetEncoder cEncoder = Charset.forName("US-ASCII").newEncoder();
 	
 	/**
 	 * The server name
@@ -40,41 +59,48 @@ public final class Config
 	public String[] admin;
 	
 	/**
-	 * MotD. This is formatted with IRC commands ready to send
+	 * MotD. Each entry in the array is 1 MotD line.
 	 */
-	public String motdFormatted;
+	public List<String> motd = new ArrayList<String>();
 	
 	/**
 	 * Ports the server should listen on
 	 */
-	public Set<Integer> ports;
+	public Set<Integer> ports = new HashSet<Integer>();
+	
+	/**
+	 * Map containing all connection classes
+	 * 
+	 * Used mostly during rehash to merge connection class changes
+	 */
+	public Map<String, ConnectionClass> classes = new HashMap<String, ConnectionClass>();
 	
 	/**
 	 * List of accept lines
 	 * 
-	 * The list is ordered with the most sepific at the beginning
+	 * The list is ordered with the most specific at the beginning
 	 */
-	public List<Accept> accepts;
+	public List<Accept> accepts = new ArrayList<Accept>();
 	
 	/**
 	 * Map of operators
 	 */
-	public Map<String, Operator> operators;
+	public Map<String, Operator> operators = new HashMap<String, Operator>();
 	
 	/**
 	 * Collection of banned nicknames - checked when nickname changes
 	 */
-	public Collection<Ban> banNick;
+	public Collection<Ban> banNick = new ArrayList<Ban>();
 	
 	/**
 	 * Collection of banned ip addresses - checked ASAP after connect
 	 */
-	public Collection<Ban> banIP;
+	public Collection<Ban> banIP = new ArrayList<Ban>();
 	
 	/**
 	 * Collection of user and host bans - checked at end of registration
 	 */
-	public Collection<Ban> banUserHost;
+	public Collection<Ban> banUserHost = new ArrayList<Ban>();
 	
 	/**
 	 * Collection of modules to load
@@ -87,12 +113,12 @@ public final class Config
 	/**
 	 * Set of permissions granted to operators
 	 */
-	public int permissionsOp;
+	public int permissionsOp = 0;
 	
 	/**
 	 * Set of permissions granted to super operators
 	 */
-	public int permissionsSuperOp;
+	public int permissionsSuperOp = 0;
 	
 	/**
 	 * Represents an accept entry
@@ -145,6 +171,8 @@ public final class Config
 		
 		/**
 		 * New connection class
+		 * 
+		 * This can be null if the class should not be changed
 		 */
 		public ConnectionClass newClass;
 		
@@ -167,9 +195,138 @@ public final class Config
 		public String mask;
 		
 		/**
-		 * Reason for banning
+		 * Reason for banning (or null if no reason)
 		 */
 		public String reason;
+	}
+	
+	/**
+	 * Finds a connection class
+	 * 
+	 * @param name name of the class to find
+	 * @param mergeWith previous configuration to merge with or null
+	 * @return the connection class found
+	 * @throws ConfigException thrown if the class requested was not found
+	 */
+	private ConnectionClass findClass(String name, Config mergeWith) throws ConfigException
+	{
+		//Must be in this list
+		if(classes.containsKey(name))
+		{
+			//Try other first, then use ours
+			if(mergeWith != null)
+			{
+				ConnectionClass clazz = mergeWith.classes.get(name);
+				
+				if(clazz != null)
+				{
+					return clazz;
+				}
+			}
+
+			return classes.get(name);
+		}
+		
+		throw new ConfigException("Unknown class " + name);
+	}
+
+	/**
+	 * Uses SHA-1 to hash a given password
+	 * 
+	 * @param password password to hash
+	 * @return a byte array containing the hash
+	 */
+	public static byte[] passwordHash(String password) throws Exception
+	{
+		MessageDigest md = MessageDigest.getInstance("sha-1");
+		
+		return md.digest(cEncoder.encode(CharBuffer.wrap(password)).array());
+	}
+	
+	/**
+	 * Parses a hexadecimal string into a byte array
+	 * 
+	 * @param str String to parse
+	 * @return The parsed byte array
+	 * @throws ParseException Part of the string is not a hex character
+	 */
+	public static byte[] hexStringToByteArray(String str) throws ParseException
+	{
+	    int len = str.length();
+	    byte[] data = new byte[len / 2];
+	    
+	    //Process each byte
+	    for (int i = 0; i < len; i += 2)
+	    {
+	    	int digit = Character.digit(str.charAt(i), 16) << 4;
+	    	
+	    	if(digit < -1)
+	    	{
+	    		throw new ParseException("Password must be in hex format", i);
+	    	}
+
+	    	digit += Character.digit(str.charAt(i + 1), 16);
+	    	
+	    	if(digit < -1)
+	    	{
+	    		throw new ParseException("Password must be in hex format", i + 1);
+	    	}
+	    	
+	    	data[i / 2] = (byte) digit;
+	    }
+	    
+	    return data;
+	}
+	
+	/**
+	 * Calculates the permission mask from the given text input
+	 * 
+	 * @param permissions Permissions to calculate from
+	 * @return Permissions as an int
+	 * @throws ConfigException Thrown when an error occurs in calculating permissions
+	 */
+	private static int calculatePermissions(Collection<ConfigBlock> permissions) throws ConfigException
+	{
+		int notMask = 0;
+		int mask = 0;
+		
+		try
+		{
+			//Process blocks
+			if(permissions != null)
+			{
+				for(ConfigBlock headBlock : permissions)
+				{
+					for(Entry<String, Collection<ConfigBlock>> block : headBlock.subBlocks.entrySet())
+					{
+						//Is it a not?
+						if(block.getKey().equals("not"))
+						{
+							//Use collection of parameters
+							for(ConfigBlock perm : block.getValue())
+							{
+								notMask |= Permissions.class.getField(perm.param).getInt(null);
+							}
+						}
+						else
+						{
+							//Use key
+							mask |= Permissions.class.getField(block.getKey()).getInt(null);
+						}
+					}
+				}
+			}
+		}
+		catch (NoSuchFieldException e)
+		{
+			throw new ConfigException("Unknown permission " + e.getMessage(), e);
+		}
+		catch (Exception e)
+		{
+			throw new ConfigException("Error calculating permissions", e);
+		}
+		
+		return mask & (~notMask);
 	}
 
 	/**
@@ -178,21 +335,24 @@ public final class Config
 	 * Parse errors and warnings are logged
 	 * 
 	 * @param data InputStream data is from
+	 * @param mergeWith previous config to merge classes with
+	 * 
 	 * @return The new config object
+	 * @throws ConfigException 
 	 * @throws IOException when an IOExeption reading data occurs
 	 */
-	public static Config parse(InputStream data) throws IOException
+	public static Config parse(InputStream data, Config mergeWith) throws ConfigException, IOException
 	{ 
 		//Parse config blocks
-		Config config= new Config();
-		ConfigBlock root = ConfigBlock.parse(data);
+		final Config config = new Config();
+		final ConfigBlock root = ConfigBlock.parse(data);
 
 		//Read name and description
 		config.serverName = root.getSubBlockParam("name");
 		config.serverDescription = root.getSubBlockParam("description");
 
 		//Read admin lines
-		Collection<ConfigBlock> adminBlock = root.subBlocks.get("admin");
+		final Collection<ConfigBlock> adminBlock = root.subBlocks.get("admin");
 		if(adminBlock == null)
 		{
 			//Empty admin block
@@ -213,7 +373,6 @@ public final class Config
 
 		//MotD
 		Collection<ConfigBlock> motdBlock = root.subBlocks.get("motdfile");
-		String motdBaseStr;
 		
 		if(motdBlock == null)
 		{
@@ -223,18 +382,214 @@ public final class Config
 			if(motdBlock == null)
 			{
 				//No message of the day
-				motdBaseStr = "";
 				logger.warn("No message of the day found");
 			}
 			else
 			{
-				motdBaseStr = motdBlock.iter;
+				//Create message
+				for(ConfigBlock line : motdBlock)
+				{
+					//Split line and add to list
+					String[] subLines = line.param.split("\n");
+					
+					for(int i = 0; i < subLines.length; ++i)
+					{
+						config.motd.add(subLines[i].trim());
+					}
+				}
+			}
+		}
+		else
+		{
+			try
+			{
+				//Read file line by line
+				BufferedReader reader = new BufferedReader(
+											new InputStreamReader(
+											new FileInputStream(motdBlock.iterator().next().param)));
+				
+				String currLine = reader.readLine();
+				
+				while(currLine != null)
+				{
+					config.motd.add(currLine);
+					currLine = reader.readLine();
+				}
+			}
+			catch(IOException e)
+			{
+				//Propogate upwards
+				throw new ConfigException("Failed to read MotD file", e);
 			}
 		}
 		
-		TODO MOTD
+		//Ports
+		for(ConfigBlock block : root.subBlocks.get("listen"))
+		{
+			config.ports.add(block.getParamAsInt());
+		}
+		
+		//Classes
+		for(ConfigBlock block : root.subBlocks.get("class"))
+		{
+			//Read sub information
+			ConnectionClass clazz = new ConnectionClass();
+			
+			clazz.readQueue = Integer.parseInt(block.getSubBlockParam("readq"));
+			clazz.sendQueue = Integer.parseInt(block.getSubBlockParam("sendq"));
+			clazz.maxLinks = Integer.parseInt(block.getSubBlockParam("maxlinks"));
+			clazz.pingFreq = Integer.parseInt(block.getSubBlockParam("pingfreq"));
+			clazz.restricted = Boolean.parseBoolean(block.getSubBlockParam("pingfreq"));
+			
+			//Read class name
+			String name = block.param;
+			if(name.trim().length() == 0)
+			{
+				throw new ConfigException("All classes must have names");
+			}
+			
+			//Add to our config temporarily
+			config.classes.put(name, clazz);
+		}
+		
+		//Accept lines
+		for(ConfigBlock block : root.subBlocks.get("accept"))
+		{
+			//Create new accept line
+			Accept acceptLine = new Accept();
+			
+			//Must have host, ip or both
+			acceptLine.hostMask = block.getSubBlockParamOptional("host");
+			acceptLine.ipMask = block.getSubBlockParamOptional("ip");
+			
+			if(acceptLine.hostMask == null && acceptLine.ipMask == null)
+			{
+				throw new ConfigException("Accept line " + block.param + " must have a host or ip mask");
+			}
+			
+			//Get clones
+			String maxClones = block.getSubBlockParamOptional("maxclones");
+			if(maxClones == null)
+			{
+				acceptLine.maxClones = Integer.MAX_VALUE;
+			}
+			else
+			{
+				acceptLine.maxClones = Integer.parseInt(maxClones);
+			}
 
-		//Ports to listen on
+			//Get class
+			acceptLine.classLine = config.findClass(block.getSubBlockParam("class"), mergeWith);
+			
+			//Add to config
+			config.accepts.add(acceptLine);
+		}
+		
+		//Operators
+		for(ConfigBlock block : root.subBlocks.get("operator"))
+		{
+			//Create new operator line
+			Operator operator = new Operator();
+			
+			//Get mask
+			operator.mask = block.getSubBlockParam("mask");
+			
+			//Get isSuperOp
+			operator.isSuperOp = block.subBlocks.containsKey("superop");
+			
+			//Find class
+			String className = block.getSubBlockParamOptional("class");
+			if(className != null)
+			{
+				operator.newClass = config.findClass(className, mergeWith);
+			}
+			
+			//Read password
+			try
+			{
+				operator.password = hexStringToByteArray(block.getSubBlockParam("password"));
+			}
+			catch (ParseException e)
+			{
+				throw new ConfigException("Error parsing operator password", e);
+			}
+			
+			//Add to config
+			String opName = block.param;
+			if(opName.length() == 0)
+			{
+				throw new ConfigException("Operators must have names as parameters");
+			}
+			
+			if(config.operators.put(opName, operator) != null)
+			{
+				throw new ConfigException("Duplicate operator " + opName);
+			}
+		}
+		
+		//Bans
+		for(ConfigBlock block : root.subBlocks.get("ban"))
+		{
+			//Create new ban line
+			Ban ban = new Ban();
+			
+			//Get mask
+			ban.mask = block.getSubBlockParam("mask");
+			
+			//Get reason
+			ban.reason = block.getSubBlockParamOptional("reason");
+			
+			//Place in relevant section
+			if(block.param.equals("nick"))
+			{
+				config.banNick.add(ban);
+			}
+			else if(block.param.equals("user"))
+			{
+				config.banUserHost.add(ban);
+			}
+			else if(block.param.equals("ip"))
+			{
+				config.banIP.add(ban);
+			}
+			else
+			{
+				throw new ConfigException("Ban types must be in parameters (nick, user or ip)");
+			}
+		}
+
+		//Modules
+		config.modules = root.subBlocks.get("module");
+		
+		//Permissions
+		final ConfigBlock permBlock = root.subBlocks.get("permissions").iterator().next();
+		if(permBlock != null)
+		{
+			config.permissionsSuperOp = calculatePermissions(permBlock.subBlocks.get("superop"));
+			config.permissionsOp = calculatePermissions(permBlock.subBlocks.get("op"));
+		}
+		
+		//Merge classes with previous config
+		for(Entry<String, ConnectionClass> classEntry : config.classes.entrySet())
+		{
+			//If class is in previous config, merge users
+			ConnectionClass otherClass = mergeWith.classes.get(classEntry.getKey());
+			
+			if(otherClass != null)
+			{
+				//Copy class options
+				otherClass.readQueue = classEntry.getValue().readQueue;
+				otherClass.sendQueue = classEntry.getValue().sendQueue;
+				otherClass.maxLinks = classEntry.getValue().maxLinks;
+				otherClass.pingFreq = classEntry.getValue().pingFreq;
+				otherClass.restricted = classEntry.getValue().restricted;
+				
+				//Use other class
+				classEntry.setValue(otherClass);
+			}
+		}
+		
+		//Return parsed config
+		return config;
 	}
-
 }
