@@ -28,11 +28,6 @@ public class ConnectionClass
 	public int readQueue;
 	
 	/**
-	 * True if connections in this class gain the restricted (+r) flag
-	 */
-	public boolean restricted;
-	
-	/**
 	 * Current number of connections using this class
 	 */
 	public int currentLinks;

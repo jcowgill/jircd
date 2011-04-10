@@ -96,7 +96,6 @@ final class NetworkClient extends Client
 		//Setup default connection class
 		DEFAULT_CONN_CLASS.maxLinks = Integer.MAX_VALUE;
 		DEFAULT_CONN_CLASS.pingFreq = 0;	//No "extra" ping frequency
-		DEFAULT_CONN_CLASS.restricted = false;
 		DEFAULT_CONN_CLASS.readQueue = 1024;
 		DEFAULT_CONN_CLASS.sendQueue = 1024;
 	}
@@ -314,10 +313,6 @@ final class NetworkClient extends Client
 		{
 			logger.error("Error setting buffer sizes for client " + id.toString());
 		}
-		
-		
-		//Update restricted flag
-		// TODO restricted
 		
 		//Class changing causes an update in last message time
 		lastMessageTime = System.currentTimeMillis();

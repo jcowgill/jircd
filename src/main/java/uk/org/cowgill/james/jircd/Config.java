@@ -439,7 +439,6 @@ public final class Config implements Serializable
 			clazz.sendQueue = Integer.parseInt(block.getSubBlockParam("sendq"));
 			clazz.maxLinks = Integer.parseInt(block.getSubBlockParam("maxlinks"));
 			clazz.pingFreq = Integer.parseInt(block.getSubBlockParam("pingfreq"));
-			clazz.restricted = Boolean.parseBoolean(block.getSubBlockParam("pingfreq"));
 			
 			//Read class name
 			String name = block.param;
@@ -582,7 +581,6 @@ public final class Config implements Serializable
 				otherClass.sendQueue = classEntry.getValue().sendQueue;
 				otherClass.maxLinks = classEntry.getValue().maxLinks;
 				otherClass.pingFreq = classEntry.getValue().pingFreq;
-				otherClass.restricted = classEntry.getValue().restricted;
 				
 				//Use other class
 				classEntry.setValue(otherClass);
