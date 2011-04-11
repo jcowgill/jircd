@@ -1,10 +1,10 @@
-package uk.org.cowgill.james.jircd;
+package uk.org.cowgill.james.jircd.util;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
 
-class PushbackLineInputStream extends PushbackInputStream
+public class PushbackLineInputStream extends PushbackInputStream
 {
 	private int lineNo;
 	private int charNo;

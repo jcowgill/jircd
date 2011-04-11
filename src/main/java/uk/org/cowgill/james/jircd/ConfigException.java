@@ -1,5 +1,7 @@
 package uk.org.cowgill.james.jircd;
 
+import uk.org.cowgill.james.jircd.util.PushbackLineInputStream;
+
 /**
  * Exception which is thrown when an error is encountered parsing a config file
  * 

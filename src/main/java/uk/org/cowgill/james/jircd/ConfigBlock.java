@@ -4,6 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 
+import uk.org.cowgill.james.jircd.util.MultiHashMap;
+import uk.org.cowgill.james.jircd.util.MultiMap;
+import uk.org.cowgill.james.jircd.util.PushbackLineInputStream;
+
 /**
  * Represents a generic block in a configuration file
  * 

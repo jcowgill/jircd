@@ -1,4 +1,4 @@
-package uk.org.cowgill.james.jircd;
+package uk.org.cowgill.james.jircd.util;
 
 import java.util.Collection;
 import java.util.Map;
