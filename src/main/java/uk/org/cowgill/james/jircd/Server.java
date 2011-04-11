@@ -67,6 +67,11 @@ public abstract class Server
 	 */
 	public Set<Client> clients = new HashSet<Client>();
 	
+	/**
+	 * Set of all channels on the server (all begin with #)
+	 */
+	public Set<Channel> channels = new HashSet<Channel>();
+	
 	//--------------------------------------------
 	
 	/**
