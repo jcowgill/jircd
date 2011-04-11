@@ -204,6 +204,20 @@ public abstract class Client
 	}
 	
 	/**
+	 * Sends a message to a collection of clients
+	 * 
+	 * @param clients clients to send data to
+	 * @param data data to send
+	 */
+	public static void sendTo(Iterable<? extends Client> clients, Object data)
+	{
+		for(Client client : clients)
+		{
+			client.send(data);
+		}
+	}
+	
+	/**
 	 * Creates a new message from this server with this client's nickname as the first parameter
 	 * 
 	 * @param command command of the message
