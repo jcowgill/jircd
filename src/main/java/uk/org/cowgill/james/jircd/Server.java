@@ -2,7 +2,9 @@ package uk.org.cowgill.james.jircd;
 
 import java.io.File;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
@@ -68,9 +70,14 @@ public abstract class Server
 	public Set<Client> clients = new HashSet<Client>();
 	
 	/**
-	 * Set of all channels on the server (all begin with #)
+	 * Map of all registered clients on the server stored by nickname
 	 */
-	public Set<Channel> channels = new HashSet<Channel>();
+	public Map<String, Client> clientsByNick = new HashMap<String, Client>();
+	
+	/**
+	 * Map of all channels on the server (all begin with #)
+	 */
+	public Map<String, Channel> channels = new HashMap<String, Channel>();
 	
 	//--------------------------------------------
 	

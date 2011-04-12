@@ -12,37 +12,37 @@ public class ChannelMemberMode
 	/**
 	 * Set if the ban lists have been checked for this member since they were last updated
 	 */
-	public static final int banChecked = 1;
+	public static final int BANCHECKED = 1;
 
 	/**
 	 * Set if member is banned (do not believe if banChecked is clear)
 	 */
-	public static final int banned = 2;
+	public static final int BANNED = 2;
 
 	/**
 	 * Set if member is voiced
 	 */
-	public static final int voice = 4;
+	public static final int VOICE = 4;
 
 	/**
 	 * Set if member is a half operator=
 	 */
-	public static final int halfOp = 8;
+	public static final int HALFOP = 8;
 
 	/**
 	 * Set if member is an operator
 	 */
-	public static final int op = 16;
+	public static final int OP = 16;
 
 	/**
 	 * Set if member is an administrator
 	 */
-	public static final int admin = 32;
+	public static final int ADMIN = 32;
 	
 	/**
 	 * Set if member is a channel owner
 	 */
-	public static final int owner = 64;
+	public static final int OWNER = 64;
 	
 	/**
 	 * Finds the highest mode of a member

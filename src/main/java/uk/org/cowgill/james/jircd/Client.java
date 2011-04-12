@@ -1,6 +1,9 @@
 package uk.org.cowgill.james.jircd;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Represents a client in the server
@@ -27,6 +30,11 @@ public abstract class Client
 	 * The client's id
 	 */
 	public IRCMask id;
+	
+	/**
+	 * Set of joined channels
+	 */
+	Set<Channel> channels = new HashSet<Channel>();
 	
 	/**
 	 * Flags used to see what parts of the registration process has been completed
@@ -111,6 +119,16 @@ public abstract class Client
 	public boolean isClosed()
 	{
 		return closed;
+	}
+	
+	/**
+	 * Returns the channels which this client has joined
+	 * 
+	 * @return channels this client has joined
+	 */
+	public Set<Channel> getChannels()
+	{
+		return Collections.unmodifiableSet(channels);
 	}
 	
 	/**
@@ -211,9 +229,34 @@ public abstract class Client
 	 */
 	public static void sendTo(Iterable<? extends Client> clients, Object data)
 	{
+		sendTo(clients, data, null);
+	}
+	
+	/**
+	 * Sends a message to a collection of clients
+	 * 
+	 * @param clients clients to send data to
+	 * @param data data to send
+	 * @param except do not send message to this client
+	 */
+	public static void sendTo(Iterable<? extends Client> clients, Object data, Client except)
+	{
+		//Send strings to remote clients
+		String remoteSend = data.toString();
+		
 		for(Client client : clients)
 		{
-			client.send(data);
+			if(client != except)
+			{
+				if(client.isRemote())
+				{
+					client.send(remoteSend);
+				}
+				else
+				{
+					client.send(data);
+				}
+			}
 		}
 	}
 	
