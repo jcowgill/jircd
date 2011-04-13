@@ -23,8 +23,20 @@ public class Message
 	/**
 	 * Message parameters
 	 */
-	private ArrayList<String> parameters = new ArrayList<String>();
+	private ArrayList<String> parameters;
 
+	/**
+	 * Creates a new message as a copy of another message
+	 * 
+	 * @param msg message to copy
+	 */
+	public Message(Message msg)
+	{
+		this.prefix = msg.prefix;
+		this.command = msg.command;
+		this.parameters = new ArrayList<String>(msg.parameters);
+	}
+	
 	/**
 	 * Creates a new message with a blank prefix
 	 * 
@@ -65,6 +77,8 @@ public class Message
 	 */
 	public Message(String command, String prefix)
 	{
+		this.parameters = new ArrayList<String>();
+		
 		if(prefix == null)
 		{
 			this.prefix = "";
@@ -290,7 +304,7 @@ public class Message
 		catch(IndexOutOfBoundsException e)
 		{
 			//Invalid message
-			return new Message(null);
+			return new Message((String) null);
 		}
 		
 		//Extract command
