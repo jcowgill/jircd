@@ -106,4 +106,82 @@ public class ChannelMemberMode
 	{
 		return (this.mode & mode) != 0;
 	}
+	
+	/**
+	 * Returns the mode string for this member
+	 */
+	public String toModeString()
+	{
+		String str = "+";
+		
+		if((mode & OWNER) != 0)
+		{
+			str += 'q';
+		}
+		if((mode & ADMIN) != 0)
+		{
+			str += 'a';
+		}
+		if((mode & OP) != 0)
+		{
+			str += 'o';
+		}
+		if((mode & HALFOP) != 0)
+		{
+			str += 'h';
+		}
+		if((mode & VOICE) != 0)
+		{
+			str += 'v';
+		}
+		
+		if(str.length() == 1)
+		{
+			return "";
+		}
+		else
+		{
+			return str;
+		}
+	}
+	
+	/**
+	 * Returns the prefix string for this member
+	 * 
+	 * @param oneChar return only the highest prefix
+	 */
+	public String toPrefixString(boolean oneChar)
+	{
+		String str = "";
+		
+		if((mode & OWNER) != 0)
+		{
+			str += '~';
+		}
+		if((mode & ADMIN) != 0)
+		{
+			str += '!';
+		}
+		if((mode & OP) != 0)
+		{
+			str += '@';
+		}
+		if((mode & HALFOP) != 0)
+		{
+			str += '%';
+		}
+		if((mode & VOICE) != 0)
+		{
+			str += '+';
+		}
+		
+		if(oneChar && str.length() >= 2)
+		{
+			return str.substring(0, 1);
+		}
+		else
+		{
+			return str;
+		}
+	}
 }

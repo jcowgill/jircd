@@ -6,6 +6,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import uk.org.cowgill.james.jircd.Channel;
+import uk.org.cowgill.james.jircd.Client;
+
 /**
  * Class which can parse a string passed to the MODE command
  * 
@@ -70,6 +73,15 @@ public class ModesParser
 		printMode = false;
 		toList = null;
 		toChange = null;
+	}
+	
+	//TODO javadoc
+	public void setModes(Channel channel, Client setter)
+	{
+		for(ChangeInfo entry : toChange)
+		{
+			channel.setMode(setter, entry.add, entry.flag, entry.param);
+		}
 	}
 	
 	/**

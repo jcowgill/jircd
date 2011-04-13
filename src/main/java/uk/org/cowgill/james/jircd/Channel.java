@@ -4,9 +4,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import uk.org.cowgill.james.jircd.util.ModeType;
+
+/*
+ * TODO
+ * 
+ * Note difference between +p and +s
+ * ----
+ * +p has secret MEMBERSHIP. Channel does not appear on /whois, /who, /names unless your in it
+ * +s is a completely secret channel. Channel does not appear on /list or /topic.
+ */
 
 /**
  * Represents an IRC channel
@@ -108,7 +118,7 @@ public final class Channel
 	private Map<String, SetInfo> inviteExceptList = new HashMap<String, SetInfo>();
 	private Set<Client> invited = new HashSet<Client>();
 	private Map<Client, ChannelMemberMode> members = new HashMap<Client, ChannelMemberMode>();
-
+	
 	//Field getters
 	
 	/**
@@ -235,6 +245,82 @@ public final class Channel
 		return Collections.unmodifiableMap(members);
 	}
 	
+	//Mode testing
+	
+	/**
+	 * Tests whether a channel mode has been set
+	 * 
+	 * <p>This method does not work with list modes
+	 * 
+	 * @param mode the mode to test
+	 * @return whether the mode is set
+	 */
+	public boolean isModeSet(char mode)
+	{
+		switch(mode)
+		{
+		case 'l':
+			return limit != 0;
+			
+		case 'k':
+			return key != null;
+			
+		default:
+			//Check modes bitset
+			if(mode >= 'A' && mode <= 'Z')
+			{
+				return (this.mode & (1 << ('Z' - mode))) != 0;
+			}
+			else if(mode >= 'a' && mode <= 'a')
+			{
+				return (this.mode & ((1 << 32) << ('z' - mode))) != 0;
+			}
+			else
+			{
+				//Invalid modes are never set
+				return false;
+			}
+		}
+	}
+	
+	/**
+	 * Sets a mode in the mode variable
+	 * 
+	 * <p>This assumes mode is a valid mode
+	 * 
+	 * @param mode mode to set
+	 */
+	private void rawSetMode(char mode)
+	{
+		if(mode >= 'a')
+		{
+			this.mode |= (1 << 32) << ('z' - mode);
+		}
+		else
+		{
+			this.mode |= 1 << ('Z' - mode);			
+		}
+	}
+
+	/**
+	 * Clears a mode in the mode variable
+	 * 
+	 * <p>This assumes mode is a valid mode
+	 * 
+	 * @param mode mode to clear
+	 */
+	private void rawClearMode(char mode)
+	{
+		if(mode >= 'a')
+		{
+			this.mode &= ~((1 << 32) << ('z' - mode));
+		}
+		else
+		{
+			this.mode &= ~(1 << ('Z' - mode));			
+		}
+	}
+	
 	//Channel creation
 	private Channel(String name, boolean deletable)
 	{
@@ -242,6 +328,10 @@ public final class Channel
 		this.name = name;
 		this.deletable = deletable;
 		this.creationTime = System.currentTimeMillis();
+		
+		//Default mode is +nt
+		rawSetMode('n');
+		rawSetMode('t');
 	}
 	
 	/**
@@ -301,17 +391,123 @@ public final class Channel
 		Client.sendTo(members.keySet(), data, except);
 	}
 	
+	//Information Senders
+	
 	/**
-	 * Causes a client to join this channel with the specified mode
+	 * Sends a client the response of a topic request to this channel
+	 * @param client client to send topic to
+	 */
+	public void sendTopic(Client client)
+	{
+		if(topic == null)
+		{
+			//No topic set
+			Message msg = client.newNickMessage("331");
+			msg.appendParam(name);
+			msg.appendParam("No topic set");
+			client.send(msg);
+		}
+		else
+		{
+			//Send channel topic
+			Message msg = client.newNickMessage("332");
+			msg.appendParam(name);
+			msg.appendParam(topic);
+			client.send(msg);
+	
+			//Send channel topic info
+			msg = client.newNickMessage("333");
+			msg.appendParam(name);
+			msg.appendParam(topicInfo.getNick());
+			msg.appendParam(String.valueOf(topicInfo.getTime() << 1000));
+			client.send(msg);
+		}
+	}
+
+	/**
+	 * Sends a client the response of a names request to this channel
+	 * @param client client to send names to
+	 */
+	public void sendNames(Client client)
+	{
+		//TODO NAMESX and UHNAMES support
+		
+		//Construct prefix
+		Message namesPrefix = client.newNickMessage("353");
+		
+		if(isModeSet('s'))
+		{
+			namesPrefix.appendParam("@");
+		}
+		else if(isModeSet('p'))
+		{
+			namesPrefix.appendParam("*");
+		}
+		else
+		{
+			namesPrefix.appendParam("=");
+		}
+		
+		namesPrefix.appendParam(name);
+		
+		//Send up to 8 names per line
+		StringBuilder builder = new StringBuilder();
+		int namesThisLine = 0;
+		Message msg = null;
+		
+		for(Entry<Client, ChannelMemberMode> entry : members.entrySet())
+		{
+			//Setup new message
+			if(msg == null)
+			{
+				msg = new Message(namesPrefix);
+			}
+			else
+			{
+				builder.append(' ');
+			}
+			
+			//Add name
+			builder.append(entry.getValue().toPrefixString(true));
+			builder.append(entry.getKey().id.nick);
+			namesThisLine++;
+			
+			//If 8 names, send message
+			if(namesThisLine >= 8)
+			{
+				msg.appendParam(builder.toString());
+				client.send(msg);
+				
+				msg = null;
+				namesThisLine = 0;
+			}
+		}
+		
+		//Send ending
+		if(msg != null)
+		{
+			client.send(msg);
+		}
+		
+		msg = client.newNickMessage("366");
+		msg.appendParam(name);
+		msg.appendParam("End of /NAMES list");
+		client.send(msg);
+	}
+	
+	//Channel Actions
+	
+	/**
+	 * Causes a client to join this channel
 	 * 
 	 * <p>No checks are performed by this method. Do NOT just let anyone use this without checks.
-	 * <p>If the mode passed has BANCHECKED set, the banned flag is used
+	 * <p>If no-one is on the channel, the client joins with OPS. Otherwise, the user has no extra modes.
 	 * 
 	 * @param client Client to add
-	 * @param mode Mode to add with
+	 * @param banChecked set to true if the ban lists have been checked and this client is not banned
 	 * @return true on sucess, false if the client is already on the channel
 	 */
-	public boolean join(Client client, int mode)
+	public boolean join(Client client, boolean banChecked)
 	{
 		//Check for member
 		if(members.containsKey(client))
@@ -321,11 +517,15 @@ public final class Channel
 		 
 		//Setup mode
 		ChannelMemberMode chanMode = new ChannelMemberMode();
-		chanMode.setAllModes(mode);
-		chanMode.clearMode(ChannelMemberMode.BANNED);
+		if(banChecked)
+		{
+			chanMode.setMode(ChannelMemberMode.BANCHECKED);
+		}
 		
-		//TODO notify others about the mode change
-		//TODO send topic, names, mode to caller
+		if(members.size() == 0)
+		{
+			chanMode.setMode(ChannelMemberMode.OP);
+		}
 		
 		//Add member
 		members.put(client, chanMode);
@@ -334,6 +534,15 @@ public final class Channel
 		Message msg = new Message("JOIN", client);
 		msg.appendParam(this.name);
 		send(msg);
+		
+		//Send topic
+		if(topic != null)
+		{
+			sendTopic(client);
+		}
+		
+		//Send channel names
+		sendNames(client);
 		
 		return true;
 	}
@@ -393,7 +602,7 @@ public final class Channel
 	/**
 	 * Speaks a message into the channel
 	 * 
-	 * @param client client who spoke the message
+	 * @param client client who spoke the message (or null for server)
 	 * @param command command message was sent with (PRIVMSG or NOTICE)
 	 * @param data data to send
 	 */
@@ -418,14 +627,23 @@ public final class Channel
 		send(msg, client);
 	}
 	
-	/*
-	 * TODO list
-	 * ------
-	 * 
-	 * KICK
-	 * INVITE
-	 * TOPIC
-	 * PRIVMSG / NOTICE
-	 * SET MODE (onoff, params, lists, member lists)
-	 */
+	public boolean kick(Client kicker, Client kicked)
+	{
+		//TODO Kick
+	}
+	
+	public void invite(Client inviter, Client invited)
+	{
+		//TODO Invite
+	}
+	
+	public void setTopic(Client setter, String topic)
+	{
+		//TODO SetTopic
+	}
+	
+	public void setMode(Client setter, boolean add, char mode, String param)
+	{
+		//TODO SetMode
+	}
 }
