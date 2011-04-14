@@ -50,12 +50,12 @@ public class Message
 	/**
 	 * Creates a new message from a Client
 	 * 
-	 * @param command command for the message
+	 * @param command command for the message (if null is passed, the server will be used)
 	 * @param client origin of this message
 	 */
 	public Message(String command, Client client)
 	{
-		this(command, client.id.toString());
+		this(command, client == null ? Server.getServer().getConfig().serverName : client.id.toString());
 	}
 
 	/**

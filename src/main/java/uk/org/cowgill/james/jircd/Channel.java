@@ -69,13 +69,20 @@ public final class Channel
 		/**
 		 * Creates a new set info object
 		 * 
-		 * @param time time the object was set
-		 * @param nick the nickname who set the object (can be server's name)
+		 * @param nick the client who set the object (null for server's name)
 		 */
-		public SetInfo(long time, String nick)
+		public SetInfo(Client client)
 		{
-			this.time = time;
-			this.nick = nick;
+			this.time = System.currentTimeMillis();
+			
+			if(client == null)
+			{
+				this.nick = Server.getServer().getConfig().serverName;
+			}
+			else
+			{
+				this.nick = client.id.nick;
+			}
 		}
 		
 		/**
@@ -116,7 +123,7 @@ public final class Channel
 	private Map<String, SetInfo> banList = new HashMap<String, SetInfo>();
 	private Map<String, SetInfo> banExceptList = new HashMap<String, SetInfo>();
 	private Map<String, SetInfo> inviteExceptList = new HashMap<String, SetInfo>();
-	private Set<Client> invited = new HashSet<Client>();
+	private Set<Client> invited = new HashSet<Client>();		//Set of clients invited by ops
 	private Map<Client, ChannelMemberMode> members = new HashMap<Client, ChannelMemberMode>();
 	
 	//Field getters
@@ -494,7 +501,7 @@ public final class Channel
 		msg.appendParam("End of /NAMES list");
 		client.send(msg);
 	}
-	
+
 	//Channel Actions
 	
 	/**
@@ -529,6 +536,10 @@ public final class Channel
 		
 		//Add member
 		members.put(client, chanMode);
+		if(invited.remove(client))
+		{
+			client.invited.remove(this);
+		}
 		
 		//Notify others
 		Message msg = new Message("JOIN", client);
@@ -608,42 +619,420 @@ public final class Channel
 	 */
 	public void speak(Client client, String command, String data)
 	{
-		Message msg;
-		String origin;
-		
-		if(client == null)
-		{
-			origin = Server.getServer().getConfig().serverName;
-		}
-		else
-		{
-			origin = client.id.toString();
-		}
-		
-		msg = new Message(command, origin);
+		Message msg = new Message(command, client);
 		msg.appendParam(name);
 		msg.appendParam(data);
 		
 		send(msg, client);
 	}
 	
-	public boolean kick(Client kicker, Client kicked)
+	/**
+	 * Kicks a client from this channel
+	 * 
+	 * @param kicker client who is kicking
+	 * @param kicked client to be kicked
+	 * @param kickMsg kick message
+	 * @return true is the client was kicked, false if kicked is not in the channel
+	 */
+	public boolean kick(Client kicker, Client kicked, String kickMsg)
 	{
-		//TODO Kick
+		//Construct message
+		Message msg = new Message("KICK", kicker);
+		msg.appendParam(name);
+		msg.appendParam(kicked.id.toString());
+		msg.appendParam(kickMsg);
+		
+		//Forward
+		return part(kicked, msg, true);
 	}
 	
-	public void invite(Client inviter, Client invited)
+	/**
+	 * Invites a client into a channel
+	 * 
+	 * @param inviter client giving the invitation
+	 * @param invitedClient client to be invited
+	 */
+	public void invite(Client inviter, Client invitedClient)
 	{
-		//TODO Invite
+		//Add to invited list if inviter is an op
+		ChannelMemberMode inviterMode = members.get(inviter);
+		Message msg;
+		
+		if(inviterMode != null && inviterMode.getMode() >= ChannelMemberMode.OP)
+		{
+			//Add to invited
+			if(this.invited.add(invitedClient))
+			{
+				invitedClient.invited.add(this);
+			}
+			
+			//Notify other opers
+			msg = Message.newMessageFromServer("NOTICE");
+			msg.appendParam("@" + name);
+			msg.appendParam(inviter.id.nick + " invited " + invitedClient.id.nick + " into the channel");
+			
+			for(Entry<Client, ChannelMemberMode> entry : members.entrySet())
+			{
+				//Is op?
+				if(entry.getValue().getMode() >= ChannelMemberMode.OP)
+				{
+					entry.getKey().send(msg);
+				}
+			}
+		}
+		
+		//Notify relevant people		
+		if(inviter != null)
+		{
+			msg = inviter.newNickMessage("341");
+			msg.appendParam(invitedClient.id.nick);
+			msg.appendParam(name);
+			inviter.send(msg);
+		}
+		
+		msg = new Message("INVITE", inviter);
+		msg.appendParam(invitedClient.id.nick);
+		msg.appendParam(name);
+		invitedClient.send(msg);
 	}
 	
+	/**
+	 * Sets the channel topic
+	 * 
+	 * @param setter client who set the topic
+	 * @param topic the new topic
+	 */
 	public void setTopic(Client setter, String topic)
 	{
-		//TODO SetTopic
+		//Update topic and info
+		this.topic = topic;
+		this.topicInfo = new SetInfo(setter);
+		
+		//Tell everyone
+		Message msg = new Message("TOPIC", setter);
+		msg.appendParam(name);
+		msg.appendParam(topic);
+		send(msg);
 	}
 	
-	public void setMode(Client setter, boolean add, char mode, String param)
+	//Set mode
+	
+	/**
+	 * The reason why a setMode request failed
+	 * 
+	 * @author James
+	 */
+	public enum SetModeFailReason
 	{
-		//TODO SetMode
+		/**
+		 * The mode has successfully been set
+		 */
+		OK,
+		
+		/**
+		 * The parameter in a +l request is not a number
+		 */
+		InvalidNumber,
+		
+		/**
+		 * The mode has already been set / unset
+		 */
+		AlreadySet,
+		
+		/**
+		 * In a client mode change, the client does not exist
+		 */
+		InvalidClient,
+
+		/**
+		 * In a client mode change, the client is not a member
+		 */
+		ClientNotMember,
+	}
+	
+	/**
+	 * Processes a set mode for list request
+	 * 
+	 * @param setter mode setting client
+	 * @param add whether the mode shuold be added
+	 * @param list the list to modify
+	 * @param param mode parameter
+	 * @param msg output message
+	 * @return the fail reason
+	 */
+	private SetModeFailReason processList(Client setter, boolean add, Map<String, SetInfo> list,
+			Object param, Message msg)
+	{
+		//Sanitize param
+		String entry = IRCMask.sanitize(param.toString());
+		
+		//Process list
+		if(add)
+		{
+			if(list.containsKey(entry))
+			{
+				return SetModeFailReason.AlreadySet;
+			}
+			
+			list.put(entry, new SetInfo(setter));
+		}
+		else
+		{
+			if(list.remove(entry) == null)
+			{
+				return SetModeFailReason.AlreadySet;
+			}
+		}
+		
+		msg.appendParam(entry);
+		return SetModeFailReason.OK;
+	}
+	
+	/**
+	 * Processes a member mode change
+	 * 
+	 * @param add whether to add the mode
+	 * @param modeVal mode integer value
+	 * @param param client to change
+	 * @param msg message to modify
+	 * @return the fail reason
+	 */
+	private SetModeFailReason processMember(boolean add, int modeVal, Object param, Message msg)
+	{
+		//Lookup client
+		Client client;
+		
+		if(param instanceof Client)
+		{
+			client = (Client) param;
+		}
+		else
+		{
+			//Lookup client
+			client = Server.getServer().clientsByNick.get(param.toString());
+			
+			if(client == null)
+			{
+				return SetModeFailReason.InvalidClient;
+			}
+		}
+		
+		//Find client in members list
+		ChannelMemberMode mode = members.get(client);
+		
+		//Check membership
+		if(mode == null)
+		{
+			return SetModeFailReason.ClientNotMember;
+		}
+		
+		//Change mode
+		if(add)
+		{
+			if((mode.getMode() & modeVal) == 0)
+			{
+				mode.setMode(modeVal);
+			}
+			else
+			{
+				return SetModeFailReason.AlreadySet;
+			}
+		}
+		else
+		{
+			if((mode.getMode() & modeVal) != 0)
+			{
+				mode.clearMode(modeVal);
+			}
+			else
+			{
+				return SetModeFailReason.AlreadySet;
+			}
+		}
+		
+		msg.appendParam(client.id.nick);
+		return SetModeFailReason.OK;
+	}
+	
+	/**
+	 * Sets a channel's mode and tells the channel about it
+	 * 
+	 * @param setter client who set the mode (or null if server set it)
+	 * @param add whether the mode is being added or deleted
+	 * @param mode mode to set
+	 * @param param mode parameter (can be integer for +l or client for +vhoaq)
+	 */
+	public SetModeFailReason setMode(Client setter, boolean add, char mode, Object param)
+	{
+		SetModeFailReason error = SetModeFailReason.OK;
+		
+		//Setup mode message
+		Message msg = new Message("MODE", setter);
+		msg.appendParam(name);
+
+		if(mode != 'p' && mode != 's')
+		{
+			if(add)
+			{
+				msg.appendParam("+" + mode);
+			}
+			else
+			{
+				msg.appendParam("-" + mode);
+			}
+		}
+		
+		//Check for special modes
+		switch(mode)
+		{
+		case 'l':
+			//Channel limit
+			if(add)
+			{
+				//Set limit from param
+				int newLimit;
+				
+				if(param instanceof Integer)
+				{
+					newLimit = ((Integer) param).intValue();
+				}
+				else
+				{
+					try
+					{
+						newLimit = Integer.parseInt(param.toString());
+					}
+					catch(NumberFormatException e)
+					{
+						//Number parse error
+						return SetModeFailReason.InvalidNumber;
+					}
+				}
+				
+				//Limit must be >= 0
+				if(newLimit < 0)
+				{
+					return SetModeFailReason.InvalidNumber;
+				}
+				
+				//Set limit
+				this.limit = newLimit;
+				msg.appendParam(Integer.toString(newLimit));
+			}
+			else
+			{
+				//Limit is unset to 0
+				this.limit = 0;
+			}
+			
+			break;
+		
+		case 'k':
+			//Set key
+			if(add)
+			{
+				this.key = param.toString();
+				msg.appendParam(this.key);
+			}
+			else
+			{
+				this.key = null;
+			}
+			
+			break;
+			
+		case 'b':
+			//Set lists
+			error = processList(setter, add, this.banList, param, msg);
+			break;
+			
+		case 'e':
+			error = processList(setter, add, this.banExceptList, param, msg);
+			break;
+			
+		case 'I':
+			error = processList(setter, add, this.inviteExceptList, param, msg);
+			break;
+			
+		case 'v':
+			error = processMember(add, ChannelMemberMode.VOICE, param, msg);
+			break;
+			
+		case 'h':
+			error = processMember(add, ChannelMemberMode.HALFOP, param, msg);
+			break;
+			
+		case 'o':
+			error = processMember(add, ChannelMemberMode.OP, param, msg);
+			break;
+			
+		case 'a':
+			error = processMember(add, ChannelMemberMode.ADMIN, param, msg);
+			break;
+			
+		case 'q':
+			error = processMember(add, ChannelMemberMode.OWNER, param, msg);
+			break;
+			
+		case 'p':
+		case 's':
+			//Remove the other when adding
+			if(add)
+			{
+				String modeStr = "+" + mode;
+				
+				if(mode == 'p')
+				{
+					//Remove secret mode
+					rawSetMode('p');
+					
+					if(isModeSet('s'))
+					{
+						rawClearMode('s');
+						modeStr += "-s";
+					}
+				}
+				else
+				{
+					//Remove private mode
+					rawSetMode('s');
+					
+					if(isModeSet('p'))
+					{
+						rawClearMode('p');
+						modeStr += "-p";
+					}
+				}
+				
+				msg.appendParam(modeStr);
+			}
+			else
+			{
+				//Clear mode
+				rawClearMode(mode);
+				msg.appendParam("-" + mode);
+			}
+			break;
+			
+		default:
+			//Standard mode
+			if(add)
+			{
+				rawSetMode(mode);
+			}
+			else
+			{
+				rawClearMode(mode);
+			}
+			break;
+		}
+		
+		//Send mode message
+		if(error == SetModeFailReason.OK)
+		{
+			send(msg);
+		}
+		
+		return error;
 	}
 }

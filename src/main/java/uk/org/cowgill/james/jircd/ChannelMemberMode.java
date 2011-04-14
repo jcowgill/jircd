@@ -74,7 +74,7 @@ public class ChannelMemberMode
 	 * Sets all modes to the specified value
 	 * @param mode all modes
 	 */
-	public void setAllModes(int mode)
+	void setAllModes(int mode)
 	{
 		this.mode = mode;
 	}
@@ -83,7 +83,7 @@ public class ChannelMemberMode
 	 * Sets a mode
 	 * @param mode mode to set
 	 */
-	public void setMode(int mode)
+	void setMode(int mode)
 	{
 		this.mode |= mode;
 	}
@@ -92,7 +92,7 @@ public class ChannelMemberMode
 	 * Clears a mode
 	 * @param mode mode to clear
 	 */
-	public void clearMode(int mode)
+	void clearMode(int mode)
 	{
 		this.mode &= ~mode;
 	}

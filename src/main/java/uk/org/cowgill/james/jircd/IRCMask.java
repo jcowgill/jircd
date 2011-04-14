@@ -278,4 +278,50 @@ public class IRCMask implements Cloneable, Comparable<IRCMask>
 		
 		return mask;
 	}
+	
+	/**
+	 * Sanitizes the irc mask given
+	 * 
+	 * <p>This adds any parts of the mask not given and assigns them * (wildcard) names
+	 * 
+	 * @param mask mask to sanitize
+	 * @return the sanitized mask
+	 */
+	public static String sanitize(String mask)
+	{
+		//Sanitize mask
+		mask = mask.trim();
+		
+		//Find whether there is a ! or @
+		int exPos = mask.indexOf('!');
+		int atPos = mask.indexOf('@');
+		
+		//Test what to output
+		if(exPos == -1)
+		{
+			if(atPos == -1)
+			{
+				//Nothing, nick supplied
+				return mask + "!*@*";
+			}
+			else
+			{
+				//@ only, no nick supplied
+				return "*!" + mask;
+			}
+		}
+		else
+		{
+			if(atPos == -1)
+			{
+				//! only, no host supplied
+				return mask + "@*";
+			}
+			else
+			{
+				//All supplied, mask is good
+				return mask;
+			}
+		}
+	}
 }

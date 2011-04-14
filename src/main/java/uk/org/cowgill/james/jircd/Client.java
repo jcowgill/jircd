@@ -37,6 +37,11 @@ public abstract class Client
 	Set<Channel> channels = new HashSet<Channel>();
 	
 	/**
+	 * Set of channels you've been invited
+	 */
+	Set<Channel> invited = new HashSet<Channel>();
+	
+	/**
 	 * Flags used to see what parts of the registration process has been completed
 	 * 
 	 * @see RegistrationFlags
