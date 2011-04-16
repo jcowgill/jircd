@@ -49,6 +49,11 @@ public abstract class Client
 	private int registrationFlags;
 	
 	/**
+	 * This client's IRC user mode
+	 */
+	private long mode;
+	
+	/**
 	 * True if client is closed
 	 */
 	private boolean closed = false;
@@ -73,7 +78,8 @@ public abstract class Client
 		//Set id
 		this.id = id;
 		
-		//TODO Add to global collections
+		//Add to global collections
+		Server.getServer().clients.add(this);
 	}
 	
 	
@@ -83,7 +89,7 @@ public abstract class Client
 	 */
 	public boolean isRegistered()
 	{
-		return ~(registrationFlags & RegistrationFlags.AllFlags) == 0;
+		return (~registrationFlags & RegistrationFlags.AllFlags) == 0;
 	}
 	
 	/**
@@ -103,7 +109,118 @@ public abstract class Client
 	 */
 	protected void registeredEvent()
 	{
-		//TODO Registered
+		//Validate registration
+		if(registrationFlags != (RegistrationFlags.AllFlags - RegistrationFlags.RegComplete))
+		{
+			return;
+		}
+
+		Message msg;
+		Server server = Server.getServer();
+		Config config = server.getConfig();
+		
+		// * Check nick is not registered
+		if(server.clientsByNick.containsKey(id.nick))
+		{
+			msg = Message.newMessageFromServer("433");
+			msg.appendParam("*");
+			msg.appendParam(id.nick);
+			msg.appendParam("Nickname already in use");
+			send(msg);
+			
+			id.nick = null;			
+			registrationFlags &= ~ RegistrationFlags.NickSet;
+			return;
+		}
+		
+		// * Check bans
+		for(Config.Ban ban : config.banNick)
+		{
+			if(IRCMask.wildcardCompare(id.nick, ban.mask))
+			{
+				//Banned
+				msg = Message.newMessageFromServer("432");
+				msg.appendParam("*");
+				msg.appendParam(id.nick);
+				msg.appendParam("Nickname banned: " + ban.reason);
+				send(msg);
+				
+				id.nick = null;			
+				registrationFlags &= ~ RegistrationFlags.NickSet;
+				return;
+			}
+		}
+
+		for(Config.Ban ban : config.banUserHost)
+		{
+			if(IRCMask.wildcardCompare(id.user + "@" + id.host, ban.mask))
+			{
+				//Banned
+				msg = newNickMessage("465");
+				msg.appendParam("Banned: " + ban.reason);
+				send(msg);
+				
+				close("Banned");
+				return;
+			}
+		}
+		
+		// TODO ip bans (network only)
+		// TODO client actions
+		
+		// * Check accept lines
+		Config.Accept myAcceptLine = null;
+		
+		for(Config.Accept accept : config.accepts)
+		{
+			if(IRCMask.wildcardCompare(id.user + "@" + id.host, accept.hostMask) ||
+					IRCMask.wildcardCompare(this.getIpAddress(), accept.ipMask))
+			{
+				//Accept using this line
+				myAcceptLine = accept;
+				break;
+			}
+		}
+		
+		if(myAcceptLine == null)
+		{
+			msg = newNickMessage("465");
+			msg.appendParam("No accept lines for your host");
+			send(msg);
+			
+			close("No accept lines for your host");
+			return;
+		}
+		
+		// * Check max ip clones
+		//TODO ip clone checking
+		
+		// * Change default connection class
+		if(!this.changeClass(myAcceptLine.classLine, true))
+		{
+			msg = newNickMessage("465");
+			msg.appendParam("The server is full");
+			send(msg);
+			
+			close("The server is full");
+			return;
+		}
+		
+		// * Add to global nick arrays
+		server.clientsByNick.put(id.nick, this);
+		
+		// * Update peek users
+		//TODO peek users
+		
+		// * Display LUSERS, MOTD and MODE
+		ModuleManager moduleMan = server.getModuleManager();
+		moduleMan.executeCommand(this, new Message("LUSERS"));
+		moduleMan.executeCommand(this, new Message("MOTD"));
+		
+		if(this.mode != 0)
+		{
+			//TODO Issue "you have set mode +blah"
+		}
 	}
 	
 	/**

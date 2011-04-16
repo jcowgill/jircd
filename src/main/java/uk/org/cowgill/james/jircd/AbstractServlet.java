@@ -20,14 +20,25 @@ public abstract class AbstractServlet extends Client
 	 * To avoid confusion - servlets should use either 127.0.0.1 or localhost as the hostname
 	 * 
 	 * @param id ID of this servlet
+	 * @throws ModuleLoadException thrown if the nickname already exists
 	 */
-	public AbstractServlet(IRCMask id)
+	public AbstractServlet(IRCMask id) throws ModuleLoadException
 	{
 		//Set ID
 		super(id);
 		
+		//Validate nickname
+		Server server = Server.getServer();
+		if(server.clientsByNick.containsKey(id.nick))
+		{
+			//Error
+			server.clients.remove(this);
+			throw new ModuleLoadException("Nickname for servlet already registered"); 
+		}
+		
 		//Register
 		this.setRegistrationFlag(RegistrationFlags.AllFlags);
+		server.clientsByNick.put(id.nick, this);
 	}
 	
 	@Override

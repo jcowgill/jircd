@@ -34,7 +34,12 @@ public final class RegistrationFlags
 	public static final int ServerCustom = 8;
 	
 	/**
+	 * Flag set when registration is complete
+	 */
+	public static final int RegComplete = 16;
+	
+	/**
 	 * All the registration flags together
 	 */
-	public static final int AllFlags = 15;
+	public static final int AllFlags = 31;
 }

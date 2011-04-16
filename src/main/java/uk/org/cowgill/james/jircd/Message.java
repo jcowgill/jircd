@@ -3,6 +3,8 @@ package uk.org.cowgill.james.jircd;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+//TODO toString caching?
+
 /**
  * A parsed irc message
  * 

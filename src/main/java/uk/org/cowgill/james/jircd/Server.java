@@ -2,13 +2,16 @@ package uk.org.cowgill.james.jircd;
 
 import java.io.File;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 import org.apache.log4j.Logger;
+
+import uk.org.cowgill.james.jircd.util.CaseInsensitiveHashMap;
+
+//TODO Server wide actions
 
 /**
  * The main IRC Server class
@@ -72,12 +75,12 @@ public abstract class Server
 	/**
 	 * Map of all registered clients on the server stored by nickname
 	 */
-	public Map<String, Client> clientsByNick = new HashMap<String, Client>();
+	public Map<String, Client> clientsByNick = new CaseInsensitiveHashMap<Client>();
 	
 	/**
 	 * Map of all channels on the server (all begin with #)
 	 */
-	public Map<String, Channel> channels = new HashMap<String, Channel>();
+	public Map<String, Channel> channels = new CaseInsensitiveHashMap<Channel>();
 	
 	//--------------------------------------------
 	

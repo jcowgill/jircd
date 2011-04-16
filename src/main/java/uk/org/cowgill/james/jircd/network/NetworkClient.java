@@ -9,8 +9,7 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
-import java.util.Random;
-
+import java.security.SecureRandom;
 import org.apache.log4j.Logger;
 
 import uk.org.cowgill.james.jircd.Client;
@@ -27,7 +26,7 @@ final class NetworkClient extends Client
 {
 	private static final ConnectionClass DEFAULT_CONN_CLASS = new ConnectionClass();
 	
-	private static final Random randomGen = new Random();
+	private static final SecureRandom randomGen = new SecureRandom();
 	
 	/**
 	 * Timeout after a ping has been sent to the client
