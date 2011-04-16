@@ -113,7 +113,6 @@ public final class Channel
 	//Collection of channel fields
 	// These are documented in the relevent getters
 	private final String name;
-	private final boolean deletable;
 	private final long creationTime;
 	private String topic;
 	private SetInfo topicInfo;
@@ -136,16 +135,6 @@ public final class Channel
 	public String getName()
 	{
 		return name;
-	}
-	
-	/**
-	 * Gets whether the channel will delete itself when the last client leaves it
-	 * 
-	 * @return whether the channel is deletable
-	 */
-	public boolean isDeletable()
-	{
-		return deletable;
 	}
 
 	/**
@@ -329,11 +318,10 @@ public final class Channel
 	}
 	
 	//Channel creation
-	private Channel(String name, boolean deletable)
+	private Channel(String name)
 	{
 		//Setup default channel stuff
 		this.name = name;
-		this.deletable = deletable;
 		this.creationTime = System.currentTimeMillis();
 		
 		//Default mode is +nt
@@ -351,25 +339,11 @@ public final class Channel
 	 */
 	public static Channel createChannel(String name)
 	{
-		return createChannel(name, true);
-	}
-	
-	/**
-	 * Creates a new blank channel with the specified name
-	 * 
-	 * <p>If the channel already exists, null is returned
-	 * 
-	 * @param name the name of the channel
-	 * @param deletable if false, when the last client leaves, the channel is not deleted
-	 * @return the new channel
-	 */
-	public static Channel createChannel(String name, boolean deletable)
-	{
 		//Check whether channel exists
 		if(!Server.getServer().channels.containsKey(name))
 		{
 			//Create channel
-			return new Channel(name, deletable);
+			return new Channel(name);
 		}
 		else
 		{
@@ -579,7 +553,7 @@ public final class Channel
 			client.channels.remove(this);
 			
 			//If channel is empty, delete
-			if(members.isEmpty() && deletable)
+			if(members.isEmpty())
 			{
 				Server.getServer().channels.remove(name);
 			}
