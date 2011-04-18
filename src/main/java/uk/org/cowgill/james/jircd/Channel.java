@@ -122,7 +122,7 @@ public final class Channel
 	private Map<String, SetInfo> banList = new HashMap<String, SetInfo>();
 	private Map<String, SetInfo> banExceptList = new HashMap<String, SetInfo>();
 	private Map<String, SetInfo> inviteExceptList = new HashMap<String, SetInfo>();
-	private Set<Client> invited = new HashSet<Client>();		//Set of clients invited by ops
+	Set<Client> invited = new HashSet<Client>();		//Set of clients invited by ops
 	private Map<Client, ChannelMemberMode> members = new HashMap<Client, ChannelMemberMode>();
 	
 	//Field getters
@@ -540,17 +540,22 @@ public final class Channel
 	 * @param sendToSelf whether to send the quit message to the client
 	 * @return false if the client is not on the channel
 	 */
-	boolean part(Client client, Object partMsg, boolean sendToSelf)
+	private boolean part(Client client, Object partMsg, boolean forQuit)
 	{
 		//Check for member
 		if(members.containsKey(client))
 		{
-			//Send message
-			send(partMsg, (sendToSelf ? null : client));
+			if(!forQuit)
+			{
+				//Send message
+				send(partMsg);
+				
+				//Update client list
+				client.channels.remove(this);
+			}
 			
-			//Update lists
+			//Update member list
 			members.remove(client);
-			client.channels.remove(this);
 			
 			//If channel is empty, delete
 			if(members.isEmpty())
@@ -563,6 +568,26 @@ public final class Channel
 		else
 		{
 			return false;
+		}
+	}
+	
+	/**
+	 * Causes a client to part this channel without sending a message or updating client channels list
+	 * 
+	 * @param client client parting channel
+	 * @return the collection of remaining members
+	 */
+	Set<Client> partForQuit(Client client)
+	{
+		if(part(client, null, true))
+		{
+			//Return members collection
+			return members.keySet();
+		}
+		else
+		{
+			//Not in channel
+			return Collections.emptySet();
 		}
 	}
 	
@@ -581,7 +606,7 @@ public final class Channel
 		msg.appendParam(partMsg);
 		
 		//Forward
-		return part(client, msg, true);
+		return part(client, msg, false);
 	}
 	
 	/**
@@ -617,7 +642,7 @@ public final class Channel
 		msg.appendParam(kickMsg);
 		
 		//Forward
-		return part(kicked, msg, true);
+		return part(kicked, msg, false);
 	}
 	
 	/**

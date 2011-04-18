@@ -226,12 +226,88 @@ public abstract class Client
 	/**
 	 * Requests that this client be closed
 	 * 
-	 * @param quitStatus the string told to other users about why this client is exiting
+	 * @param quitMsg the string told to other users about why this client is exiting
 	 */
-	public final void close(String quitStatus)
+	public final void close(String quitMsg)
 	{
-		//TODO Close
+		//Send info + close client
+		if(!this.closeForShutdown(quitMsg))
+		{
+			return;
+		}		
+
+		//Generate client collection to send to
+		HashSet<Client> toSendTo = new HashSet<Client>();
+		Set<Client> chanSet;
+
+		for(Channel channel : this.channels)
+		{
+			//Part channel
+			chanSet = channel.partForQuit(this);
+			
+			//Organise sending
+			if(chanSet != null)
+			{
+				toSendTo.addAll(chanSet);
+			}
+		}
+
+		//Send notifications
+		sendTo(toSendTo, new Message("QUIT", this).appendParam(quitMsg));
+
+		//Remove Any Channel Invites
+		for (Channel invite : invited)
+		{
+			invite.invited.remove(this);
+		}
+
+		
+		//Remove nick from global nick array
+		Server server = Server.getServer();
+		
+		if (isRegistered())
+		{
+			//Remove from clients by nick
+			server.clientsByNick.remove(id.nick);
+			
+			//TODO ip clone checking
+		}
+
+		//Remove from global array
+		server.clients.remove(this);
+	}
+	
+	/**
+	 * Closes a client connection but does not bother with freeing resources
+	 * 
+	 * @param quitMsg quit message
+	 * @return whether the close was successful
+	 */
+	boolean closeForShutdown(String quitMsg)
+	{
+		//Shield from multiple closures
+		if (closed)
+		{
+			return false;
+		}
 		closed = true;
+
+		//Send Notification To Client (if it isn't a servlet)
+		if (isRemote())
+		{
+			if(quitMsg == null || quitMsg.length() == 0)
+			{
+				send(Message.newStringFromServer("ERROR :Closing Link"));
+			}
+			else
+			{
+				send(Message.newStringFromServer("ERROR :Closing Link - ") + quitMsg);
+			}
+		}
+
+		//Close Socket
+		closed = this.rawClose();
+		return closed;
 	}
 	
 	/**
