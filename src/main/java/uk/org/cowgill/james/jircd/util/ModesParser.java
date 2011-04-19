@@ -75,7 +75,12 @@ public class ModesParser
 		toChange = null;
 	}
 	
-	//TODO javadoc
+	/**
+	 * Sets all the modes in this mode parser
+	 * 
+	 * @param channel channel to set modes on
+	 * @param setter client who set the modes
+	 */
 	public void setModes(Channel channel, Client setter)
 	{
 		for(ChangeInfo entry : toChange)

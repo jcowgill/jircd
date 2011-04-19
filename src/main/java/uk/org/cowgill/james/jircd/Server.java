@@ -2,6 +2,7 @@ package uk.org.cowgill.james.jircd;
 
 import java.io.File;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -10,8 +11,10 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import org.apache.log4j.Logger;
 
 import uk.org.cowgill.james.jircd.util.CaseInsensitiveHashMap;
+import uk.org.cowgill.james.jircd.util.MutableInteger;
 
 //TODO Server wide actions
+//TODO oper logging
 
 /**
  * The main IRC Server class
@@ -35,7 +38,7 @@ public abstract class Server
 	/**
 	 * Location of the server configuration file
 	 */
-	public final File configFile;
+	private final File configFile;
 	
 	/**
 	 * Server configuration field
@@ -70,17 +73,22 @@ public abstract class Server
 	/**
 	 * Set of all clients connected to the server
 	 */
-	public Set<Client> clients = new HashSet<Client>();
+	protected Set<Client> clients = new HashSet<Client>();
 	
 	/**
 	 * Map of all registered clients on the server stored by nickname
 	 */
-	public Map<String, Client> clientsByNick = new CaseInsensitiveHashMap<Client>();
+	Map<String, Client> clientsByNick = new CaseInsensitiveHashMap<Client>();
 	
 	/**
 	 * Map of all channels on the server (all begin with #)
 	 */
-	public Map<String, Channel> channels = new CaseInsensitiveHashMap<Channel>();
+	Map<String, Channel> channels = new CaseInsensitiveHashMap<Channel>();
+	
+	/**
+	 * Map of all ips and number of uses
+	 */
+	Map<String, MutableInteger> ipClones = new HashMap<String, MutableInteger>();
 	
 	//--------------------------------------------
 	
@@ -110,7 +118,7 @@ public abstract class Server
 	 */
 	public boolean rehash()
 	{
-		//
+		//TODO rehash
 		return false;
 	}
 	
@@ -185,6 +193,98 @@ public abstract class Server
 		//Return reason
 		globalServer = null;
 		return stopType == 2;
+	}
+	
+	/**
+	 * Increments the number of ip usages
+	 * 
+	 * @param ip ip address to increment
+	 * @param maxClones maximum number of clones to allow
+	 * @return false if the maximum number of clones has been reached
+	 */
+	boolean ipClonesIncrement(String ip, int maxClones)
+	{
+		MutableInteger clones = ipClones.get(ip);
+		
+		if(clones == null)
+		{
+			//Check stupid clones
+			if(maxClones == 0)
+			{
+				return false;
+			}
+			else
+			{
+				ipClones.put(ip, new MutableInteger(1));
+				return true;
+			}
+		}
+		else
+		{
+			//Increment
+			if(clones.intValue() >= maxClones)
+			{
+				return false;
+			}
+			else
+			{
+				clones.increment();
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Decrements the number of ip usages
+	 * 
+	 * @param ip ip address to decrement
+	 */
+	void ipClonesDecrement(String ip)
+	{
+		MutableInteger clones = ipClones.get(ip);
+		
+		if(clones != null)
+		{
+			clones.decrement();
+			
+			if(clones.intValue() == 0)
+			{
+				ipClones.remove(ip);
+			}
+		}
+	}
+
+	/**
+	 * Gets a client from the specified nickname
+	 * 
+	 * @param nick nickname to search for
+	 * @return client requested or null if the nick does not exist
+	 */
+	public Client getClient(String nick)
+	{
+		return clientsByNick.get(nick);
+	}
+	
+	/**
+	 * Gets a channel with the specified name
+	 * 
+	 * @param name the name of the channel with a leading #
+	 * @return the channel
+	 */
+	public Channel getChannel(String name)
+	{
+		return channels.get(name);
+	}
+	
+	/**
+	 * Returns the server configuration filename
+	 * 
+	 * @return configuration filename
+	 */
+	public File getConfigFile()
+	{
+		return configFile;
 	}
 	
 	/**

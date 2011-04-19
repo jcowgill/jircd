@@ -343,7 +343,9 @@ public final class Channel
 		if(!Server.getServer().channels.containsKey(name))
 		{
 			//Create channel
-			return new Channel(name);
+			Channel channel = new Channel(name);
+			Server.getServer().channels.put(name, channel);
+			return channel;
 		}
 		else
 		{
@@ -808,7 +810,7 @@ public final class Channel
 		else
 		{
 			//Lookup client
-			client = Server.getServer().clientsByNick.get(param.toString());
+			client = Server.getServer().getClient(param.toString());
 			
 			if(client == null)
 			{

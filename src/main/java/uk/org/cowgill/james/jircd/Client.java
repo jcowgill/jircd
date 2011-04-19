@@ -193,7 +193,15 @@ public abstract class Client
 		}
 		
 		// * Check max ip clones
-		//TODO ip clone checking
+		if(isRemote() && !server.ipClonesIncrement(getIpAddress(), myAcceptLine.maxClones))
+		{
+			msg = newNickMessage("465");
+			msg.appendParam("Too many connections from your host");
+			send(msg);
+			
+			close("Too many connections from your host");
+			return;
+		}
 		
 		// * Change default connection class
 		if(!this.changeClass(myAcceptLine.classLine, true))
@@ -211,6 +219,8 @@ public abstract class Client
 		
 		// * Update peek users
 		//TODO peek users
+		
+		//TODO diaplay 001 etc messages
 		
 		// * Display LUSERS, MOTD and MODE
 		ModuleManager moduleMan = server.getModuleManager();
@@ -260,7 +270,6 @@ public abstract class Client
 		{
 			invite.invited.remove(this);
 		}
-
 		
 		//Remove nick from global nick array
 		Server server = Server.getServer();
@@ -270,7 +279,11 @@ public abstract class Client
 			//Remove from clients by nick
 			server.clientsByNick.remove(id.nick);
 			
-			//TODO ip clone checking
+			//Ip Clone check
+			if(isRemote())
+			{
+				server.ipClonesDecrement(getIpAddress());
+			}
 		}
 
 		//Remove from global array
@@ -308,6 +321,18 @@ public abstract class Client
 		//Close Socket
 		closed = this.rawClose();
 		return closed;
+	}
+	
+	/**
+	 * Sets the nickname of this client
+	 * 
+	 * @param nick new nickname
+	 * @return false if the nick is in use
+	 */
+	public boolean setNick(String nick)
+	{
+		//TODO set nickname
+		return false;
 	}
 	
 	/**
