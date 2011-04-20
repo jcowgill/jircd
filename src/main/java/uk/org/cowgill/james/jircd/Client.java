@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import uk.org.cowgill.james.jircd.util.ModesParser;
+
 /**
  * Represents a client in the server
  * 
@@ -234,7 +236,7 @@ public abstract class Client
 		
 		if(this.mode != 0)
 		{
-			//TODO Issue "you have set mode +blah"
+			send(new Message("MODE", this).appendParam(id.nick).appendParam(ModesParser.getModeString(mode)));
 		}
 	}
 	
@@ -376,6 +378,83 @@ public abstract class Client
 	public boolean isClosed()
 	{
 		return closed;
+	}
+	
+	/**
+	 * Gets the client's mode
+	 * @return mode of the client
+	 */
+	public long getMode()
+	{
+		return mode;
+	}
+	
+	/**
+	 * Gets whether a user mode is set
+	 * 
+	 * @param mode the mode to test
+	 * @return true if the mode is set
+	 */
+	public boolean isModeSet(char mode)
+	{
+		//TODO Refactor all the modes stuff out into a separate class
+		//Check modes bitset
+		if(mode >= 'A' && mode <= 'Z')
+		{
+			return (this.mode & (1 << ('Z' - mode))) != 0;
+		}
+		else if(mode >= 'a' && mode <= 'a')
+		{
+			return (this.mode & ((1 << 32) << ('z' - mode))) != 0;
+		}
+		else
+		{
+			//Invalid modes are never set
+			return false;
+		}
+	}
+	
+	/**
+	 * Sets a usermode and tells the client
+	 * 
+	 * @param mode mode to set
+	 * @param adding whether to add the mode (false to delete it)
+	 */
+	public void setMode(char mode, boolean adding)
+	{
+		//Check mode setting
+		if(isModeSet(mode) != adding)
+		{
+			//Change mode
+			String str;
+			long modeMask;
+
+			if(mode >= 'A' && mode <= 'Z')
+			{
+				modeMask = 1 << ('Z' - mode);
+			}
+			else if(mode >= 'a' && mode <= 'a')
+			{
+				modeMask = (1 << 32) << ('z' - mode);
+			}
+			else
+			{
+				throw new IllegalArgumentException("mode");
+			}
+			
+			if(adding)
+			{
+				str = "+" + mode;
+				this.mode |= modeMask;
+			}
+			else
+			{
+				str = "-" + mode;
+				this.mode &= ~modeMask;
+			}
+			
+			send(new Message("MODE", this).appendParam(id.nick).appendParam(str));
+		}
 	}
 	
 	/**
