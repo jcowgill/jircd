@@ -1,17 +1,18 @@
 package uk.org.cowgill.james.jircd;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
-
-//TODO toString caching? (transient)
 
 /**
  * A parsed irc message
  * 
  * @author James
  */
-public class Message
-{	
+public class Message implements Serializable
+{
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * The prefix (sender) of the message
 	 */

@@ -2,6 +2,8 @@ package uk.org.cowgill.james.jircd;
 
 import java.io.File;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -26,6 +28,16 @@ import uk.org.cowgill.james.jircd.util.MutableInteger;
 public abstract class Server
 {
 	/**
+	 * The IRC Server version
+	 */
+	public final static String VERSION = "jircd0.1";
+	
+	/**
+	 * The longer IRC Server version
+	 */
+	public final static String VERSION_STR = "JIRC Server 0.1";
+	
+	/**
 	 * Currently running server
 	 */
 	private static Server globalServer;
@@ -48,7 +60,12 @@ public abstract class Server
 	/**
 	 * The server's module manager
 	 */
-	private ModuleManager moduleMan = new ModuleManager();
+	private final ModuleManager moduleMan = new ModuleManager();
+	
+	/**
+	 * The server's supported modes and limits
+	 */
+	private final ServerISupport iSupport = new ServerISupport();
 	
 	/**
 	 * The type of stop the server should shutdown by
@@ -89,6 +106,16 @@ public abstract class Server
 	 * Map of all ips and number of uses
 	 */
 	Map<String, MutableInteger> ipClones = new HashMap<String, MutableInteger>();
+	
+	/**
+	 * The time this server was created
+	 */
+	public final Date creationTime = new Date();
+	
+	/**
+	 * The time the server was created in string format
+	 */
+	public final String creationTimeStr = new SimpleDateFormat("EEE dd MMM yyyy HH:mm:ss zzz").format(creationTime);
 	
 	//--------------------------------------------
 	
@@ -172,7 +199,7 @@ public abstract class Server
 		globalServer = this;
 		
 		//Server notice
-		logger.info("JIRC Server 1.0  By James Cowgill");
+		logger.info(VERSION_STR + "  By James Cowgill");
 		
 		//Rehash if not done already
 		if(config == null && !rehash())
@@ -305,6 +332,16 @@ public abstract class Server
 	public ModuleManager getModuleManager()
 	{
 		return moduleMan;
+	}
+	
+	/**
+	 * Returns the isupport object for this server
+	 * 
+	 * @return the isupport object for this server
+	 */
+	public ServerISupport getISupport()
+	{
+		return iSupport;
 	}
 	
 	/**

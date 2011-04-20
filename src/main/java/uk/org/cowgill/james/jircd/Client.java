@@ -220,7 +220,12 @@ public abstract class Client
 		// * Update peek users
 		//TODO peek users
 		
-		//TODO diaplay 001 etc messages
+		//Display welcome messages
+		send(this.newNickMessage("001").appendParam("Welcome to the Internet Relay Network " + id.toString()));
+		send(this.newNickMessage("002").appendParam("Your host is " + config.serverName +
+				" running version " + Server.VERSION_STR));
+		send(this.newNickMessage("003").appendParam("This server was created " + server.creationTime));
+		server.getISupport().sendISupportMsgs(this);		//Sends 004 and 005
 		
 		// * Display LUSERS, MOTD and MODE
 		ModuleManager moduleMan = server.getModuleManager();

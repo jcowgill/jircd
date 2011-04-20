@@ -349,6 +349,11 @@ public final class Config implements Serializable
 
 		//Read name and description
 		config.serverName = root.getSubBlockParam("name");
+		if(config.serverName.length() > 32)
+		{
+			throw new ConfigException("Server name cannot be more than 32 characters long");
+		}
+		
 		config.serverDescription = root.getSubBlockParam("description");
 
 		//Read admin lines

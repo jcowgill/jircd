@@ -160,7 +160,7 @@ public class ChannelMemberMode
 		}
 		if((mode & ADMIN) != 0)
 		{
-			str += '!';
+			str += '&';
 		}
 		if((mode & OP) != 0)
 		{
