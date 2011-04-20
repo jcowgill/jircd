@@ -1,6 +1,11 @@
 package uk.org.cowgill.james.jircd;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -145,7 +150,31 @@ public abstract class Server
 	 */
 	public boolean rehash()
 	{
-		//TODO rehash
+		try
+		{
+			//Open config file
+			InputStream stream = new BufferedInputStream(new FileInputStream(configFile));
+			
+			//Parse configuration file
+			Config config = Config.parse(stream, this.config);
+			
+			//Store config
+			this.config = config;
+			return true;
+		}
+		catch(ConfigException e)
+		{
+			logger.error("Config error: " + e.toString());
+		}
+		catch (FileNotFoundException e)
+		{
+			logger.error("Error reading config file: " + e.toString());
+		}
+		catch (IOException e)
+		{
+			logger.error("Error reading config file: " + e.toString());
+		}
+	
 		return false;
 	}
 	

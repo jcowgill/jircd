@@ -332,7 +332,7 @@ public final class Config implements Serializable
 	/**
 	 * Parses a new config file from the specified InputStream
 	 *
-	 * Parse errors and warnings are logged
+	 * Throws errors, logs warnings
 	 * 
 	 * @param data InputStream data is from
 	 * @param mergeWith previous config to merge classes with
