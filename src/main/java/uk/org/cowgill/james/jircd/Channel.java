@@ -911,11 +911,17 @@ public final class Channel
 			
 		case 'b':
 			//Set lists
-			error = processList(setter, add, this.banList, param, msg);
+			if((error = processList(setter, add, this.banList, param, msg)) == SetModeFailReason.OK)
+			{
+				invalidateBanCache(add);
+			}
 			break;
 			
 		case 'e':
-			error = processList(setter, add, this.banExceptList, param, msg);
+			if((error = processList(setter, add, this.banExceptList, param, msg)) == SetModeFailReason.OK)
+			{
+				invalidateBanCache(!add);
+			}
 			break;
 			
 		case 'I':
@@ -1002,5 +1008,139 @@ public final class Channel
 		}
 		
 		return error;
+	}
+
+	//Banning methods
+	
+	/**
+	 * Looks up the mode of a channel member
+	 * 
+	 * <p>Will return null if the client is not a member of this channel
+	 * 
+	 * @param client the client to lookup
+	 * @return the mode of the client
+	 */
+	public ChannelMemberMode lookupMember(Client client)
+	{
+		return members.get(client);
+	}
+	
+	/**
+	 * Returns true if the given mask is on the specified list
+	 * 
+	 * @param list list to check
+	 * @param mask mask to compare with
+	 * @return true if the mask matches any 1 of the entries in the list
+	 */
+	private boolean tranverseList(Map<String, SetInfo> list, String mask)
+	{
+		//Check each entry in the list
+		for(String entry : list.keySet())
+		{
+			//Compare mask
+			if(IRCMask.wildcardCompare(mask, entry))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
+	/**
+	 * Invalidates the member ban cache when the ban list is changed
+	 * 
+	 * @param addingBan true if MORE people could be banned by the mode change
+	 */
+	private void invalidateBanCache(boolean addingBan)
+	{
+		//If adding a ban, invalidate the non banned members
+		for(ChannelMemberMode mode : members.values())
+		{
+			if(mode.isModeSet(ChannelMemberMode.BANNED) != addingBan)
+			{
+				mode.clearMode(ChannelMemberMode.BANCHECKED);
+			}
+		}
+	}
+	
+	/**
+	 * Determines whether a client is banned from the channel
+	 * 
+	 * @param client the client to check
+	 * @param skipMemberCheck if true, skips checking the member cache
+	 * @return true if the member is banned
+	 */
+	private boolean isBanned(Client client, boolean skipMemberCheck)
+	{
+		ChannelMemberMode mode = null;
+		
+		//If a member, check the cache first
+		if(!skipMemberCheck)
+		{
+			mode = members.get(client);
+			
+			//Check banned
+			if(mode != null && mode.isModeSet(ChannelMemberMode.BANCHECKED))
+			{
+				return mode.isModeSet(ChannelMemberMode.BANNED);
+			}
+		}
+		
+		//Tranverse ban lists
+		String mask = client.id.toString();
+		boolean banned = tranverseList(banList, mask) && !tranverseList(banExceptList, mask);
+		
+		//Cache result
+		if(mode != null)
+		{
+			if(banned)
+			{
+				mode.setMode(ChannelMemberMode.BANNED);
+			}
+			else
+			{
+				mode.clearMode(ChannelMemberMode.BANNED);
+			}
+			
+			mode.setMode(ChannelMemberMode.BANCHECKED);
+		}
+		
+		return banned;
+	}
+
+	/**
+	 * Determines whether a client is banned from the channel
+	 * 
+	 * @param client the client to check
+	 * @return true if the member is banned
+	 */
+	public boolean isBanned(Client client)
+	{
+		return isBanned(client, false);
+	}
+
+	/**
+	 * Determines whether a client is banned from the channel without checking the member cache
+	 * 
+	 * @param client the client to check
+	 * @return true if the member is banned
+	 * @see isBanned
+	 */
+	public boolean isBannedSkipMember(Client client)
+	{
+		return isBanned(client, true);
+	}
+	
+	/**
+	 * Determines whether a client is on the invite exception list
+	 * 
+	 * @param client the client to checl
+	 * @return true if the member is on the invite exception list
+	 */
+	public boolean isOnInviteExceptList(Client client)
+	{
+		//No caching here
+		return tranverseList(inviteExceptList, client.id.toString());
 	}
 }
