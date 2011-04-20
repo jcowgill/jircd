@@ -331,13 +331,42 @@ public abstract class Client
 	/**
 	 * Sets the nickname of this client
 	 * 
+	 * <p>This does not perform any checks whether the user is allowed to change nickname
+	 * 
 	 * @param nick new nickname
 	 * @return false if the nick is in use
 	 */
 	public boolean setNick(String nick)
 	{
-		//TODO set nickname
-		return false;
+		//Check for same nick
+		if(nick.equalsIgnoreCase(id.nick))
+		{
+			return true;
+		}
+		
+		//Check whether nick is in use
+		Server server = Server.getServer();
+		if(server.clientsByNick.containsKey(nick))
+		{
+			return false;
+		}
+		
+		//Generate nick change message
+		Message msg = new Message("NICK", this);
+		msg.appendParam(nick);
+		
+		//Find all members of all joined channels to send to
+		Set<Client> toSendTo = new HashSet<Client>();
+		for(Channel channel : channels)
+		{
+			toSendTo.addAll(channel.getMembers().keySet());
+		}
+		
+		sendTo(toSendTo, msg);
+		
+		//Change nick
+		id.nick = nick;
+		return true;
 	}
 	
 	/**
