@@ -152,6 +152,7 @@ public abstract class Server
 	{
 		try
 		{
+			//TODO Should rehashing be done in a separate thread?
 			//Open config file
 			InputStream stream = new BufferedInputStream(new FileInputStream(configFile));
 			
@@ -160,6 +161,9 @@ public abstract class Server
 			
 			//Store config
 			this.config = config;
+			
+			//Notify rehash
+			moduleMan.serverRehashEvent();
 			return true;
 		}
 		catch(ConfigException e)
@@ -220,11 +224,15 @@ public abstract class Server
 	 */
 	public boolean run()
 	{
-		//Check if running
+		//Check if running or run
 		if(globalServer != null)
 		{
 			throw new UnsupportedOperationException("A server is already running");
 		}
+		if(stopType != 0)
+		{
+			throw new UnsupportedOperationException("run() has already been called on this server");
+		}		
 		globalServer = this;
 		
 		//Server notice
@@ -448,20 +456,47 @@ public abstract class Server
 	/**
 	 * Checks weather the server should be stopped
 	 * 
-	 * This function also logs the stop and reports it to all users
+	 * <p>If it should be shutdown, it logs the event, notifies all clients and terminates their connections.
 	 * 
 	 * @return true if the server should be stopped
 	 */
 	protected boolean checkAndNotifyStop()
 	{
-		//Check stop
-		if(stopType == 0)
-		{
+		String stopTypeStr;
+		
+		//Check stop type
+		switch(stopType)
+		{			
+		case 1:
+			stopTypeStr = "shutdown";
+			break;
+			
+		case 2:
+			stopTypeStr = "restart";
+			break;
+			
+		default:
 			return false;
 		}
 		
+		//Log the stop
+		String stopMsg = "The server is about to " + stopTypeStr + ". Reason:" + stopReason;
+		logger.warn(stopMsg);
+		
 		//Report stop
-		// TODO Report stop
+		Message msg = Message.newMessageFromServer("NOTICE");
+		msg.appendParam("*");
+		msg.appendParam(stopMsg);
+		
+		Client.sendTo(this.clients, msg);
+		
+		//Close all clients
+		String quitMsg = "Server " + stopTypeStr;
+		for(Client client : this.clients)
+		{
+			client.closeForShutdown(quitMsg);
+		}
+		
 		return true;
 	}
 }
