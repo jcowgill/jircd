@@ -171,8 +171,6 @@ public abstract class Client
 			}
 		}
 		
-		// TODO client actions
-		
 		// * Check accept lines
 		Config.Accept myAcceptLine = null;
 		
@@ -223,7 +221,11 @@ public abstract class Client
 		server.clientsByNick.put(id.nick, this);
 		
 		// * Update peek users
-		//TODO peek users
+		int clientCount = server.getClientCount();
+		if(clientCount > server.peekClients)
+		{
+			server.peekClients = clientCount;
+		}
 		
 		//Display welcome messages
 		send(this.newNickMessage("001").appendParam("Welcome to the Internet Relay Network " + id.toString()));

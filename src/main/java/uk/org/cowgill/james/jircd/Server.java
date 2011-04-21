@@ -21,8 +21,6 @@ import org.apache.log4j.spi.LoggingEvent;
 import uk.org.cowgill.james.jircd.util.CaseInsensitiveHashMap;
 import uk.org.cowgill.james.jircd.util.MutableInteger;
 
-//TODO Server wide actions
-
 /**
  * The main IRC Server class
  * 
@@ -110,6 +108,11 @@ public abstract class Server
 	 * Contains the set of IRC operators
 	 */
 	Set<Client> operators = new HashSet<Client>();
+	
+	/**
+	 * Peek number of clients the server has served
+	 */
+	int peekClients = 0;
 	
 	/**
 	 * The time this server was created
@@ -323,6 +326,26 @@ public abstract class Server
 				ipClones.remove(ip);
 			}
 		}
+	}
+	
+	/**
+	 * Returns the peek number of clients to connect to the server
+	 * 
+	 * @return the peek number of clients to connect to the server
+	 */
+	public int getClientCountPeek()
+	{
+		return peekClients;
+	}
+	
+	/**
+	 * Returns the number of registered clients connected to the server
+	 * 
+	 * @return the number of registered clients connected to the server
+	 */
+	public int getClientCount()
+	{
+		return clientsByNick.size();
 	}
 
 	/**
