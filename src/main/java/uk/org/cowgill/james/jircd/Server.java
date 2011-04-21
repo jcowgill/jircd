@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,13 +16,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
+import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Logger;
+import org.apache.log4j.spi.LoggingEvent;
 
 import uk.org.cowgill.james.jircd.util.CaseInsensitiveHashMap;
 import uk.org.cowgill.james.jircd.util.MutableInteger;
 
 //TODO Server wide actions
-//TODO oper logging
 
 /**
  * The main IRC Server class
@@ -111,6 +113,11 @@ public abstract class Server
 	 * Map of all ips and number of uses
 	 */
 	Map<String, MutableInteger> ipClones = new HashMap<String, MutableInteger>();
+	
+	/**
+	 * Contains the set of IRC operators
+	 */
+	Set<Client> operators = new HashSet<Client>();
 	
 	/**
 	 * The time this server was created
@@ -248,8 +255,15 @@ public abstract class Server
 		//Startup modules
 		moduleMan.serverStartupEvent();
 		
+		//Add operators to root logger
+		OperLogger opLogger = new OperLogger();
+		Logger.getRootLogger().addAppender(opLogger);
+		
 		//Run server
 		runServer();
+		
+		//Remove operators logger
+		Logger.getRootLogger().removeAppender(opLogger);
 		
 		//Stop modules
 		moduleMan.serverStopEvent();
@@ -369,6 +383,16 @@ public abstract class Server
 	public ModuleManager getModuleManager()
 	{
 		return moduleMan;
+	}
+	
+	/**
+	 * Returns an unmodifiable set of the IRC operators on the server
+	 * 
+	 * @return the server's irc operators
+	 */
+	public Set<Client> getIRCOperators()
+	{
+		return Collections.unmodifiableSet(operators);
 	}
 	
 	/**
@@ -498,5 +522,42 @@ public abstract class Server
 		}
 		
 		return true;
+	}
+	
+	//TODO stort out this atomic stop types thing
+	
+	/**
+	 * Sends logging events to IRC operators
+	 * 
+	 * @author James
+	 */
+	private class OperLogger extends AppenderSkeleton
+	{
+		@Override
+		protected void append(LoggingEvent event)
+		{
+			String msg = Message.newStringFromServer("NOTICE ");
+			String logMsg = ":" + layout.format(event);
+			
+			//Go though everyone in the operator cache
+			for(Client client : operators)
+			{
+				if(client.hasPermission(Permissions.seeServerNotices))
+				{
+					client.send(msg + client.id.nick + logMsg);
+				}
+			}
+		}
+		
+		@Override
+		public void close()
+		{			
+		}
+
+		@Override
+		public boolean requiresLayout()
+		{
+			return false;
+		}
 	}
 }

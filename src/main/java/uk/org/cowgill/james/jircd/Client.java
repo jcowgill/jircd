@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
+
 import uk.org.cowgill.james.jircd.util.ModesParser;
 
 /**
@@ -18,6 +20,8 @@ import uk.org.cowgill.james.jircd.util.ModesParser;
  */
 public abstract class Client
 {
+	private static Logger logger = Logger.getLogger(Client.class);
+	
 	/**
 	 * List of clients to be closed when close queue is processed
 	 */
@@ -293,7 +297,8 @@ public abstract class Client
 			}
 		}
 
-		//Remove from global array
+		//Remove from global array + operator cache
+		server.operators.remove(this);
 		server.clients.remove(this);
 	}
 	
@@ -381,6 +386,37 @@ public abstract class Client
 	}
 	
 	/**
+	 * Returns the permissions granted to this client
+	 * @return permission mask of this client
+	 */
+	public int getPermissionMask()
+	{
+		//Check oper modes
+		if(isModeSet('o'))
+		{
+			return Server.getServer().getConfig().permissionsOp;
+		}
+		else if(isModeSet('O'))
+		{
+			return Server.getServer().getConfig().permissionsSuperOp;
+		}
+		else
+		{
+			return 0;
+		}	
+	}
+	
+	/**
+	 * Determines whether a client has an extra permission
+	 * @param permission permission to check
+	 * @return true if the client has that permission
+	 */
+	public boolean hasPermission(int permission)
+	{
+		return (getPermissionMask() & permission) != 0;
+	}
+	
+	/**
 	 * Gets the client's mode
 	 * @return mode of the client
 	 */
@@ -415,6 +451,41 @@ public abstract class Client
 	}
 	
 	/**
+	 * Sets a client mode without checking or notification
+	 * 
+	 * @param mode mode to set
+	 * @param adding true to add the mode
+	 */
+	private void setModeRaw(char mode, boolean adding)
+	{
+		long modeMask;
+		
+		//Get mask representing correct mode bit
+		if(mode >= 'A' && mode <= 'Z')
+		{
+			modeMask = 1 << ('Z' - mode);
+		}
+		else if(mode >= 'a' && mode <= 'a')
+		{
+			modeMask = (1 << 32) << ('z' - mode);
+		}
+		else
+		{
+			throw new IllegalArgumentException("mode");
+		}
+		
+		//Change mode
+		if(adding)
+		{
+			this.mode |= modeMask;
+		}
+		else
+		{
+			this.mode &= ~modeMask;
+		}
+	}
+	
+	/**
 	 * Sets a usermode and tells the client
 	 * 
 	 * @param mode mode to set
@@ -426,33 +497,48 @@ public abstract class Client
 		if(isModeSet(mode) != adding)
 		{
 			//Change mode
-			String str;
-			long modeMask;
-
-			if(mode >= 'A' && mode <= 'Z')
+			String str = "+" + mode;
+			
+			//Check for special modes
+			if(mode == 'o' || mode == 'O')
 			{
-				modeMask = 1 << ('Z' - mode);
-			}
-			else if(mode >= 'a' && mode <= 'a')
-			{
-				modeMask = (1 << 32) << ('z' - mode);
-			}
-			else
-			{
-				throw new IllegalArgumentException("mode");
+				if(adding)
+				{
+					//Check existing modes
+					if(isModeSet('o') || isModeSet('O'))
+					{
+						//Unset other mode
+						char c;
+						if(mode == 'o')
+						{
+							c = 'O';
+						}
+						else
+						{
+							c = 'o';
+						}
+						
+						setModeRaw(c, false);
+						str += "-" + c;
+					}
+					else
+					{
+						//Add to oper cache
+						Server.getServer().operators.add(this);
+					}
+	
+					//Log change
+					logger.info(id.toString() + " has set mode " + str);
+				}
+				else
+				{
+					//Remove from oper cache
+					Server.getServer().operators.remove(this);
+				}
 			}
 			
-			if(adding)
-			{
-				str = "+" + mode;
-				this.mode |= modeMask;
-			}
-			else
-			{
-				str = "-" + mode;
-				this.mode &= ~modeMask;
-			}
-			
+			//Change mode
+			setModeRaw(mode, adding);
 			send(new Message("MODE", this).appendParam(id.nick).appendParam(str));
 		}
 	}
