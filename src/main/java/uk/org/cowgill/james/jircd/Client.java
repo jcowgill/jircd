@@ -171,7 +171,6 @@ public abstract class Client
 			}
 		}
 		
-		// TODO ip bans (network only)
 		// TODO client actions
 		
 		// * Check accept lines

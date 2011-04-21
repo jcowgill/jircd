@@ -17,6 +17,8 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import uk.org.cowgill.james.jircd.Client;
+import uk.org.cowgill.james.jircd.Config.Ban;
+import uk.org.cowgill.james.jircd.IRCMask;
 import uk.org.cowgill.james.jircd.ModuleLoadException;
 import uk.org.cowgill.james.jircd.RegistrationFlags;
 import uk.org.cowgill.james.jircd.Server;
@@ -51,6 +53,31 @@ final class NetworkServer extends Server
 	public NetworkServer(File configFile)
 	{
 		super(configFile);
+	}
+	
+	/**
+	 * Checks whether a client is ip banned
+	 * 
+	 * @param client client to check
+	 * @return true if banned (informed)
+	 */
+	private boolean handleIPBans(SocketChannel channel) throws IOException
+	{
+		String ipAddress = NetworkClient.getIpAddress(channel);
+		
+		//Process everything in ip ban list
+		for(Ban ipBan : getConfig().banIP)
+		{
+			//Compare
+			if(IRCMask.wildcardCompare(ipAddress, ipBan.mask))
+			{
+				//Banned
+				channel.close();
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
 	@Override
@@ -156,6 +183,13 @@ final class NetworkServer extends Server
 							
 							//Create new client from channel
 							SocketChannel sockChannel = channel.accept();
+							
+							if(handleIPBans(sockChannel))
+							{
+								//Ignore
+								continue;
+							}
+							
 							client = new NetworkClient(sockChannel);
 							
 							//Resolver host

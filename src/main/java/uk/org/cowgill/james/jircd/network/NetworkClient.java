@@ -280,6 +280,17 @@ final class NetworkClient extends Client
 		return channel.socket().getInetAddress();
 	}
 	
+	/**
+	 * Returns the ip address corresponding to a given channel
+	 * 
+	 * @param channel network channel to check
+	 * @return ip address string
+	 */
+	public static String getIpAddress(SocketChannel channel)
+	{
+		return channel.socket().getInetAddress().getHostAddress();
+	}
+	
 	@Override
 	public String getIpAddress()
 	{
