@@ -14,8 +14,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
@@ -81,13 +79,7 @@ public abstract class Server
 	 * 1 = Stop
 	 * 2 = Restart
 	 */
-	private volatile int stopType = 0;
-	
-	/**
-	 * Atomic updater for stopType
-	 */
-	private AtomicIntegerFieldUpdater<Server> stopTypeUpdater =
-		AtomicIntegerFieldUpdater.newUpdater(Server.class, "stopType");
+	private int stopType = 0;
 	
 	/**
 	 * Reason for stop / restart (shown to all users and logged)
@@ -193,15 +185,15 @@ public abstract class Server
 	 * Requests a server stop
 	 * 
 	 * The stop will occur when the current command is finished.
-	 * This method is thread-safe.
 	 * 
 	 * @param reason The reason for the stop (this should include the user who initiated it)
 	 */
 	public void requestStop(String reason)
 	{
 		//Check and update stop type
-		if(stopTypeUpdater.compareAndSet(this, 0, 1))
+		if(stopType == 0)
 		{
+			stopType = 1;
 			stopReason = reason;
 			stopRequested();
 		}
@@ -211,15 +203,15 @@ public abstract class Server
 	 * Requests a server restart
 	 * 
 	 * The stop will occur when the current command is finished
-	 * This method is thread-safe.
 	 * 
 	 * @param reason The reason for the restart (this should include the user who initiated it)
 	 */
 	public void requestRestart(String reason)
 	{
 		//Check and update stop type
-		if(stopTypeUpdater.compareAndSet(this, 0, 2))
+		if(stopType == 0)
 		{
+			stopType = 2;
 			stopReason = reason;
 			stopRequested();
 		}
@@ -523,8 +515,6 @@ public abstract class Server
 		
 		return true;
 	}
-	
-	//TODO stort out this atomic stop types thing
 	
 	/**
 	 * Sends logging events to IRC operators
