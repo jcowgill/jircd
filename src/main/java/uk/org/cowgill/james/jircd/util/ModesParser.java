@@ -90,50 +90,6 @@ public class ModesParser
 	}
 	
 	/**
-	 * Converts a mode bitmask to a string
-	 * 
-	 * @param mode the mode bitmask
-	 * @return the string containing the mode
-	 */
-	public static String getModeString(long mode)
-	{
-		StringBuilder modeStr = new StringBuilder("+");
-		
-		//Lowercase first
-		for(char c = 'a'; c <= 'z'; c++)
-		{
-			//Test most significant bit
-			if((mode & (1 << 63)) != 0)
-			{
-				modeStr.append(c);
-			}
-			
-			mode <<= 1;
-		}
-		
-		//Uppercase
-		for(char c = 'A'; c <= 'Z'; c++)
-		{
-			//Test most significant bit
-			if((mode & (1 << 63)) != 0)
-			{
-				modeStr.append(c);
-			}
-			
-			mode <<= 1;
-		}
-		
-		if(modeStr.length() == 1)
-		{
-			return "";
-		}
-		else
-		{
-			return modeStr.toString();
-		}
-	}
-	
-	/**
 	 * Parses the given collection of parameters into the mode parser
 	 * 
 	 * <p>The result of the parsing is stored within the ModeParser and the results are found using the get methods

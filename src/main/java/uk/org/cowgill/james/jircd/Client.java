@@ -7,7 +7,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import uk.org.cowgill.james.jircd.util.ModesParser;
+import uk.org.cowgill.james.jircd.util.ModeUtils;
 
 /**
  * Represents a client in the server
@@ -241,7 +241,7 @@ public abstract class Client
 		
 		if(this.mode != 0)
 		{
-			send(new Message("MODE", this).appendParam(id.nick).appendParam(ModesParser.getModeString(mode)));
+			send(new Message("MODE", this).appendParam(id.nick).appendParam(ModeUtils.toString(mode)));
 		}
 	}
 	
@@ -434,56 +434,7 @@ public abstract class Client
 	 */
 	public boolean isModeSet(char mode)
 	{
-		//TODO Refactor all the modes stuff out into a separate class
-		//Check modes bitset
-		if(mode >= 'A' && mode <= 'Z')
-		{
-			return (this.mode & (1 << ('Z' - mode))) != 0;
-		}
-		else if(mode >= 'a' && mode <= 'a')
-		{
-			return (this.mode & ((1 << 32) << ('z' - mode))) != 0;
-		}
-		else
-		{
-			//Invalid modes are never set
-			return false;
-		}
-	}
-	
-	/**
-	 * Sets a client mode without checking or notification
-	 * 
-	 * @param mode mode to set
-	 * @param adding true to add the mode
-	 */
-	private void setModeRaw(char mode, boolean adding)
-	{
-		long modeMask;
-		
-		//Get mask representing correct mode bit
-		if(mode >= 'A' && mode <= 'Z')
-		{
-			modeMask = 1 << ('Z' - mode);
-		}
-		else if(mode >= 'a' && mode <= 'a')
-		{
-			modeMask = (1 << 32) << ('z' - mode);
-		}
-		else
-		{
-			throw new IllegalArgumentException("mode");
-		}
-		
-		//Change mode
-		if(adding)
-		{
-			this.mode |= modeMask;
-		}
-		else
-		{
-			this.mode &= ~modeMask;
-		}
+		return ModeUtils.isModeSet(this.mode, mode);
 	}
 	
 	/**
@@ -519,7 +470,7 @@ public abstract class Client
 							c = 'o';
 						}
 						
-						setModeRaw(c, false);
+						this.mode = ModeUtils.clearMode(this.mode, c);
 						str += "-" + c;
 					}
 					else
@@ -539,7 +490,7 @@ public abstract class Client
 			}
 			
 			//Change mode
-			setModeRaw(mode, adding);
+			this.mode = ModeUtils.changeMode(this.mode, mode, adding);
 			send(new Message("MODE", this).appendParam(id.nick).appendParam(str));
 		}
 	}

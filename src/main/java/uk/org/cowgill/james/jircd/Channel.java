@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import uk.org.cowgill.james.jircd.util.ModeUtils;
+
 /*
  * TODO
  * 
@@ -229,58 +231,7 @@ public final class Channel
 			return key != null;
 			
 		default:
-			//Check modes bitset
-			if(mode >= 'A' && mode <= 'Z')
-			{
-				return (this.mode & (1 << ('Z' - mode))) != 0;
-			}
-			else if(mode >= 'a' && mode <= 'a')
-			{
-				return (this.mode & ((1 << 32) << ('z' - mode))) != 0;
-			}
-			else
-			{
-				//Invalid modes are never set
-				return false;
-			}
-		}
-	}
-	
-	/**
-	 * Sets a mode in the mode variable
-	 * 
-	 * <p>This assumes mode is a valid mode
-	 * 
-	 * @param mode mode to set
-	 */
-	private void rawSetMode(char mode)
-	{
-		if(mode >= 'a')
-		{
-			this.mode |= (1 << 32) << ('z' - mode);
-		}
-		else
-		{
-			this.mode |= 1 << ('Z' - mode);			
-		}
-	}
-
-	/**
-	 * Clears a mode in the mode variable
-	 * 
-	 * <p>This assumes mode is a valid mode
-	 * 
-	 * @param mode mode to clear
-	 */
-	private void rawClearMode(char mode)
-	{
-		if(mode >= 'a')
-		{
-			this.mode &= ~((1 << 32) << ('z' - mode));
-		}
-		else
-		{
-			this.mode &= ~(1 << ('Z' - mode));			
+			return ModeUtils.isModeSet(this.mode, mode);
 		}
 	}
 	
@@ -292,8 +243,8 @@ public final class Channel
 		this.creationTime = System.currentTimeMillis();
 		
 		//Default mode is +nt
-		rawSetMode('n');
-		rawSetMode('t');
+		mode = ModeUtils.setMode(mode, 'n');
+		mode = ModeUtils.setMode(mode, 't');
 	}
 	
 	/**
@@ -958,22 +909,22 @@ public final class Channel
 				if(mode == 'p')
 				{
 					//Remove secret mode
-					rawSetMode('p');
+					this.mode = ModeUtils.setMode(this.mode, 'p');
 					
 					if(isModeSet('s'))
 					{
-						rawClearMode('s');
+						this.mode = ModeUtils.clearMode(this.mode, 's');
 						modeStr += "-s";
 					}
 				}
 				else
 				{
 					//Remove private mode
-					rawSetMode('s');
+					this.mode = ModeUtils.setMode(this.mode, 's');
 					
 					if(isModeSet('p'))
 					{
-						rawClearMode('p');
+						this.mode = ModeUtils.clearMode(this.mode, 'p');
 						modeStr += "-p";
 					}
 				}
@@ -983,21 +934,14 @@ public final class Channel
 			else
 			{
 				//Clear mode
-				rawClearMode(mode);
+				this.mode = ModeUtils.clearMode(this.mode, mode);
 				msg.appendParam("-" + mode);
 			}
 			break;
 			
 		default:
 			//Standard mode
-			if(add)
-			{
-				rawSetMode(mode);
-			}
-			else
-			{
-				rawClearMode(mode);
-			}
+			this.mode = ModeUtils.changeMode(this.mode, 's', add);
 			break;
 		}
 		
