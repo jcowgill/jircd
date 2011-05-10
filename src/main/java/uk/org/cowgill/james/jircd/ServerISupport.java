@@ -5,11 +5,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 import uk.org.cowgill.james.jircd.util.ModeType;
 
 /**
  * Contains a list of server limits and options sent in ISUPPORT messages
+ * 
+ * <p>Also contains the string validation routines
  * 
  * @author James
  */
@@ -69,6 +72,11 @@ public class ServerISupport
 	 * Maximum length of nickname
 	 */
 	public final static int NICKLEN = 30;
+	
+	/**
+	 * Maximum length of username
+	 */
+	public final static int USERLEN = 30;
 	
 	/**
 	 * Maxmimum topic length
@@ -279,5 +287,33 @@ public class ServerISupport
 		{
 			client.send(startMsg + entry);
 		}
+	}
+	
+	//############################
+	// Validation Checks
+	//############################
+	
+	private final static Pattern nameValidate = Pattern.compile("[a-zA-z]([a-zA-Z0-9\\[\\]\\\\`^{}-])*");
+	
+	/**
+	 * Checks whether a nickname is allowed
+	 * 
+	 * @param nick nickname to check
+	 * @return whether it is allowed
+	 */
+	public static boolean validateNick(String nick)
+	{
+		return nick.length() <= NICKLEN && nameValidate.matcher(nick).matches();			
+	}
+	
+	/**
+	 * Checks whether a username is allowed
+	 * 
+	 * @param user username to check
+	 * @return whether it is allowed
+	 */
+	public static boolean validateUser(String user)
+	{
+		return user.length() <= USERLEN && nameValidate.matcher(user).matches();			
 	}
 }

@@ -398,7 +398,7 @@ public final class ModuleManager
 		}
 		
 		//Check if registered
-		if(registeredCheck && client.isRegistered())
+		if(registeredCheck)
 		{
 			client.registeredEvent();
 		}
