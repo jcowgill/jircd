@@ -274,6 +274,8 @@ public final class Channel
 	/**
 	 * Sends this channel a message
 	 * 
+	 * <p>To speak in a channel, use speak() instead
+	 * 
 	 * @param data message to send
 	 */
 	public void send(Object data)
@@ -283,6 +285,8 @@ public final class Channel
 	
 	/**
 	 * Sends this channel a message
+	 * 
+	 * <p>To speak in a channel, use speak() instead
 	 * 
 	 * @param data message to send
 	 * @param except do not send data to this client
@@ -1079,12 +1083,26 @@ public final class Channel
 	/**
 	 * Determines whether a client is on the invite exception list
 	 * 
-	 * @param client the client to checl
+	 * @param client the client to check
 	 * @return true if the member is on the invite exception list
 	 */
 	public boolean isOnInviteExceptList(Client client)
 	{
 		//No caching here
 		return tranverseList(inviteExceptList, client.id.toString());
+	}
+	
+	/**
+	 * Determines whether a client has been given an invite to this channel
+	 * 
+	 * <p>Does not check the invite exception list
+	 * 
+	 * @param client the client to check
+	 * @return true if the member has been invited by an oper
+	 */
+	public boolean isInvited(Client client)
+	{
+		//Use client list as it's probably smaller
+		return client.invited.contains(this);
 	}
 }
