@@ -58,4 +58,28 @@ public abstract class AbstractServlet extends Client
 		
 		messageReceived(msg);
 	}
+
+	@Override
+	protected boolean changeClass(ConnectionClass clazz, boolean defaultClass)
+	{
+		//Fake good class change
+		return true;
+	}
+
+	@Override
+	public void restoreClass()
+	{
+	}
+
+	@Override
+	public String getIpAddress()
+	{
+		return "127.0.0.1";
+	}
+
+	@Override
+	public boolean isRemote()
+	{
+		return false;
+	}
 }

@@ -20,7 +20,7 @@ import uk.org.cowgill.james.jircd.util.ModeUtils;
  */
 public abstract class Client
 {
-	private static Logger logger = Logger.getLogger(Client.class);
+	private static final Logger logger = Logger.getLogger(Client.class);
 	
 	/**
 	 * List of clients to be closed when close queue is processed
@@ -511,21 +511,14 @@ public abstract class Client
 	 * @param defaultClass True to change default class
 	 * @return false if there are not enough links in a class to change
 	 */
-	protected boolean changeClass(ConnectionClass clazz, boolean defaultClass)
-	{
-		//Default = no class changes
-		return true;
-	}
+	protected abstract boolean changeClass(ConnectionClass clazz, boolean defaultClass);
 	
 	/**
 	 * Restores this client's class to the default class
 	 * 
 	 * (default class restores override the max links)
 	 */
-	public void restoreClass()
-	{
-		//Default = no class changes
-	}
+	public abstract void restoreClass();
 	
 	/**
 	 * Changes the class of this client
@@ -543,21 +536,14 @@ public abstract class Client
 	 * 
 	 * @return The ip address of the client
 	 */
-	public String getIpAddress()
-	{
-		//Default return
-		return "127.0.0.1";
-	}
+	public abstract String getIpAddress();
 	
 	/**
 	 * Returns true if this client is a remote user
 	 * 
 	 * @return true if this client is a remote user
 	 */
-	public boolean isRemote()
-	{
-		return false;
-	}
+	public abstract boolean isRemote();
 	
 	/**
 	 * Marks this client for closure after the current client has finished processing
