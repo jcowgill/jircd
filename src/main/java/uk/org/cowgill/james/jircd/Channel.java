@@ -1029,9 +1029,18 @@ public final class Channel
 			mode = members.get(client);
 			
 			//Check banned
-			if(mode != null && mode.isModeSet(ChannelMemberMode.BANCHECKED))
+			if(mode != null)
 			{
-				return mode.isModeSet(ChannelMemberMode.BANNED);
+				//If client is voiced or higher, they are not banned
+				if(mode.getHighestMode() >= ChannelMemberMode.VOICE)
+				{
+					return false;
+				}
+				
+				if(mode.isModeSet(ChannelMemberMode.BANCHECKED))
+				{
+					return mode.isModeSet(ChannelMemberMode.BANNED);
+				}
 			}
 		}
 		
@@ -1059,6 +1068,9 @@ public final class Channel
 
 	/**
 	 * Determines whether a client is banned from the channel
+	 * 
+	 * <p>If the client has voice or higher, this returns false.
+	 * To ignore this, use isBannedSkipMember()
 	 * 
 	 * @param client the client to check
 	 * @return true if the member is banned
