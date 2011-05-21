@@ -423,7 +423,7 @@ public final class Channel
 			chanMode.setMode(ChannelMemberMode.BANCHECKED);
 		}
 		
-		if(members.size() == 0)
+		if(members.isEmpty())
 		{
 			chanMode.setMode(ChannelMemberMode.OP);
 		}
