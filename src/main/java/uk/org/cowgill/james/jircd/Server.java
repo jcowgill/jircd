@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -368,6 +369,18 @@ public abstract class Server
 	public Channel getChannel(String name)
 	{
 		return channels.get(name);
+	}
+	
+	/**
+	 * Gets an unmodifiable collection of all the channels on the server
+	 * 
+	 * <p>The collection updates itself as channels are created and destroyed
+	 * 
+	 * @return unmodifiable collection of all the channels
+	 */
+	public Collection<Channel> getChannels()
+	{
+		return Collections.unmodifiableCollection(channels.values());
 	}
 	
 	/**

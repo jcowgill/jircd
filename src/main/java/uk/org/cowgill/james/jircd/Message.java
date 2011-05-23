@@ -359,7 +359,11 @@ public class Message implements Serializable
 			if(data.charAt(pos) == ':')
 			{
 				//Use all other characters as last parameter
-				if(pos != (data.length() - 1))
+				if(pos == (data.length() - 1))
+				{
+					baseMsg.appendParam("");
+				}
+				else
 				{
 					baseMsg.appendParam(data.substring(pos + 1));
 				}

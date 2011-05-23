@@ -70,4 +70,18 @@ public class Part implements Command
 	{
 		return FLAG_NORMAL;
 	}
+	
+	/**
+	 * The LEAVE command - alias of PART
+	 * 
+	 * @author James
+	 */
+	public static class Leave extends Part
+	{
+		@Override
+		public String getName()
+		{
+			return "LEAVE";
+		}
+	}
 }
