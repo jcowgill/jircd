@@ -123,7 +123,12 @@ public abstract class Server
 	/**
 	 * The time the server was created in string format
 	 */
-	public final String creationTimeStr = new SimpleDateFormat("EEE dd MMM yyyy HH:mm:ss zzz").format(creationTime);
+	public final String creationTimeStr = DATE_FORMAT.format(creationTime);
+	
+	/**
+	 * The format dates are formatted in
+	 */
+	public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("EEE dd MMM yyyy HH:mm:ss zzz"); 
 	
 	//--------------------------------------------
 	
@@ -337,6 +342,16 @@ public abstract class Server
 	public int getClientCountPeek()
 	{
 		return peekClients;
+	}
+	
+	/**
+	 * Returns the number of unregisterd clients connected to the server
+	 * 
+	 * @return the number of unregisterd clients connected to the server
+	 */
+	public int getUnregisteredClients()
+	{
+		return clientsByNick.size() - clients.size();
 	}
 	
 	/**

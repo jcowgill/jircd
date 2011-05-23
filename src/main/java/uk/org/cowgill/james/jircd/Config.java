@@ -60,6 +60,8 @@ public final class Config implements Serializable
 	
 	/**
 	 * MotD. Each entry in the array is 1 MotD line.
+	 * 
+	 * <p>If no MotD is in use, this list is empty
 	 */
 	public List<String> motd = new ArrayList<String>();
 	
