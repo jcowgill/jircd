@@ -49,6 +49,7 @@ public class ModesParser
 	 * Creates a new modes parser with the specified avaliable modes
 	 * 
 	 * @param modes the avaliable modes
+	 * 	<p>User and Channel modes can be found in the ServerISupport class
 	 */
 	public ModesParser(Map<Character, ModeType> modes)
 	{

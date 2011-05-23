@@ -316,4 +316,15 @@ public class ServerISupport
 	{
 		return user.length() <= USERLEN && nameValidate.matcher(user).matches();			
 	}
+	
+	/**
+	 * Checks whether a channel is allowed
+	 * 
+	 * @param user username to check
+	 * @return whether it is allowed
+	 */
+	public static boolean validateChannel(String user)
+	{
+		return user.length() <= USERLEN && nameValidate.matcher(user).matches();			
+	}
 }

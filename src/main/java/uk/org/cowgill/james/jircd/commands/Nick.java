@@ -1,7 +1,6 @@
 package uk.org.cowgill.james.jircd.commands;
 
 import uk.org.cowgill.james.jircd.Channel;
-import uk.org.cowgill.james.jircd.ChannelMemberMode;
 import uk.org.cowgill.james.jircd.Client;
 import uk.org.cowgill.james.jircd.Command;
 import uk.org.cowgill.james.jircd.Message;
@@ -39,7 +38,9 @@ public class Nick implements Command
 			if(chan.isBanned(client))
 			{
 				//Cannot change nick
-				//TODO send cannot change nick
+				client.send(client.newNickMessage("437").
+						appendParam("Cannot change nickname while banned on a channel"));
+				return;
 			}
 		}
 		
@@ -51,7 +52,7 @@ public class Nick implements Command
 	@Override
 	public int getMinParameters()
 	{
-		return 0;  
+		return 0;
 	}
 
 	@Override

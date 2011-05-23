@@ -235,6 +235,19 @@ public final class Channel
 		}
 	}
 	
+	/**
+	 * Returns the single mode long
+	 * 
+	 * <p>Use ModeUtils to read
+	 * <p>Does not contain lists or l and k
+	 * 
+	 * @return long containing the single modes
+	 */
+	public long getSingleMode()
+	{
+		return mode;
+	}
+	
 	//Channel creation
 	private Channel(String name)
 	{
@@ -401,6 +414,20 @@ public final class Channel
 	}
 
 	//Channel Actions
+
+	/**
+	 * Causes a client to join this channel
+	 * 
+	 * <p>No checks are performed by this method. Do NOT just let anyone use this without checks.
+	 * <p>If no-one is on the channel, the client joins with OPS. Otherwise, the user has no extra modes.
+	 * 
+	 * @param client Client to add
+	 * @return true on sucess, false if the client is already on the channel
+	 */
+	public boolean join(Client client)
+	{
+		return join(client, false);
+	}
 	
 	/**
 	 * Causes a client to join this channel
