@@ -68,6 +68,11 @@ public abstract class Client
 	 * True if client is closed
 	 */
 	private boolean closed = false;
+	
+	/**
+	 * Time of login
+	 */
+	private long signonTime;
 
 	//------------------------------------------------
 
@@ -248,6 +253,18 @@ public abstract class Client
 		{
 			send(new Message("MODE", this).appendParam(id.nick).appendParam(ModeUtils.toString(mode)));
 		}
+		
+		signonTime = System.currentTimeMillis();
+	}
+	
+	/**
+	 * Returns the time the client signed on in mulliseconds since the UNIX Epoch
+	 * 
+	 * @return the time the client signed on
+	 */
+	public long getSignonTime()
+	{
+		return signonTime;
 	}
 	
 	/**
@@ -667,4 +684,11 @@ public abstract class Client
 	 * @return Returns true if the close was a sucess. Returns false to abort the close.
 	 */
 	protected abstract boolean rawClose();
+	
+	/**
+	 * Returns the the in milliseconds this cient has been idle for
+	 * 
+	 * @return idle time of this client in milliseconds
+	 */
+	public abstract long getIdleTime();
 }

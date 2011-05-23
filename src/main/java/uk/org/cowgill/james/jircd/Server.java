@@ -374,6 +374,16 @@ public abstract class Server
 	{
 		return clientsByNick.get(nick);
 	}
+
+	/**
+	 * Gets an unmodifiable collection of the clients registered on this server
+	 * 
+	 * @return an unmodifiable collection of the clients registered on this server
+	 */
+	public Collection<Client> getRegisteredClients()
+	{
+		return Collections.unmodifiableCollection(clientsByNick.values());
+	}
 	
 	/**
 	 * Gets a channel with the specified name

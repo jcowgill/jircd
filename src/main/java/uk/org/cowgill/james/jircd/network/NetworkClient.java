@@ -357,4 +357,10 @@ final class NetworkClient extends Client
 	{
 		forceChangeClass(defaultConnClass);
 	}
+	
+	@Override
+	public long getIdleTime()
+	{
+		return System.currentTimeMillis() - lastMessageTime;
+	}
 }
