@@ -102,8 +102,10 @@ public class Whois implements Command
 			}
 			
 			//TODO enforce isupport limits (why is this todo here?)
-			//TODO Away
 			
+			//Away message
+			other.sendAwayMsgTo(client);
+
 			client.send(client.newNickMessage("317").
 					appendParam(other.id.nick).
 					appendParam(Long.toString(other.getIdleTime() / 1000)).

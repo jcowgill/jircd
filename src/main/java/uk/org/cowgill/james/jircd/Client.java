@@ -43,6 +43,11 @@ public abstract class Client
 	public String realName = "";
 	
 	/**
+	 * The client's away message or null if the client is not away
+	 */
+	public String awayMsg;
+	
+	/**
 	 * Set of joined channels
 	 */
 	Set<Channel> channels = new HashSet<Channel>();
@@ -98,6 +103,29 @@ public abstract class Client
 		Server.getServer().clients.add(this);
 	}
 	
+	/**
+	 * Returns true if this client is away
+	 * @return true if this client is away
+	 */
+	public boolean isAway()
+	{
+		return awayMsg != null;
+	}
+
+	/**
+	 * Sends this client's away message to the specified client if there is one
+	 * 
+	 * <p>If this client does not have an away message, nothing is sent
+	 * 
+	 * @param client client to send away message to
+	 */
+	public void sendAwayMsgTo(Client client)
+	{
+		if(isAway())
+		{
+			client.send(client.newNickMessage("301").appendParam(id.nick).appendParam(awayMsg));
+		}
+	}
 	
 	/**
 	 * Gets weather this client has been fully registered

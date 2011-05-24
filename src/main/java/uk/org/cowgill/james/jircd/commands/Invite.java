@@ -37,6 +37,9 @@ public class Invite implements Command
 				
 				if(error == ChannelCheckError.OK)
 				{
+					//Away message
+					other.sendAwayMsgTo(client);
+					
 					//Do the invite
 					channel.invite(client, other);
 				}

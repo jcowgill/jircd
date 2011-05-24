@@ -49,6 +49,9 @@ public abstract class Msg implements Command
 			
 			if(other != null)
 			{
+				//Away message
+				other.sendAwayMsgTo(client);
+				
 				//Send message
 				Message relayMsg = new Message(getName(), client);
 				relayMsg.appendParam(client.id.nick);
