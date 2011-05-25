@@ -37,7 +37,7 @@ public class Links implements Command
 	@Override
 	public String getName()
 	{
-		return "LIST";
+		return "LINKS";
 	}
 
 	@Override

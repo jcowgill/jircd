@@ -19,6 +19,8 @@ public final class ModuleManager
 {
 	private static final Logger logger = Logger.getLogger(ModuleManager.class);
 	
+	private boolean started = false;
+	
 	/**
 	 * Map of all loaded modules
 	 */
@@ -46,6 +48,7 @@ public final class ModuleManager
 			return false;
 		}
 		
+		started = true;
 		return true;
 	}
 	
@@ -57,6 +60,11 @@ public final class ModuleManager
 	void serverRehashEvent()
 	{
 		HashSet<Class<?>> rehashed = new HashSet<Class<?>>();
+		
+		if(!started)
+		{
+			return;
+		}
 		
 		//Rehash all modules
 		for(ConfigBlock block : Server.getServer().getConfig().modules)
@@ -119,6 +127,7 @@ public final class ModuleManager
 		}
 		
 		loadedModules.clear();
+		started = false;
 	}
 	
 	/**

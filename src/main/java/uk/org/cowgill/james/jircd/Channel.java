@@ -388,6 +388,7 @@ public final class Channel
 			//Add name
 			builder.append(entry.getValue().toPrefixString(true));
 			builder.append(entry.getKey().id.nick);
+			msg.appendParam(builder.toString());
 			namesThisLine++;
 			
 			//If 8 names, send message

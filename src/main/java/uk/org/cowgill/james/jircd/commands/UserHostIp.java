@@ -88,7 +88,7 @@ public abstract class UserHostIp implements Command
 	 * 
 	 * @author James
 	 */
-	public class UserHost extends UserHostIp
+	public static class UserHost extends UserHostIp
 	{
 		@Override
 		public String getName()
@@ -114,7 +114,7 @@ public abstract class UserHostIp implements Command
 	 * 
 	 * @author James
 	 */
-	public class UserIp extends UserHostIp
+	public static class UserIp extends UserHostIp
 	{
 		@Override
 		public String getName()

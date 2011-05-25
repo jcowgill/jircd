@@ -33,6 +33,30 @@ public class Module implements uk.org.cowgill.james.jircd.Module
 		
 		modMan.registerCommand(new List());
 		
+		modMan.registerCommand(new Admin());
+		modMan.registerCommand(new Info());
+		modMan.registerCommand(new Links());
+		modMan.registerCommand(new LUsers());
+		modMan.registerCommand(new MotD());
+		modMan.registerCommand(new Time());
+		modMan.registerCommand(new Version());
+		
+		modMan.registerCommand(new Who());
+		modMan.registerCommand(new Whois());
+		modMan.registerCommand(new Ison());
+		
+		modMan.registerCommand(new Kill());
+		modMan.registerCommand(new Rehash());
+		modMan.registerCommand(new RestartDie.Die());
+		modMan.registerCommand(new RestartDie.Restart());
+		modMan.registerCommand(new Wall());
+		modMan.registerCommand(new WallOps());
+		
+		modMan.registerCommand(new Stats());
+		modMan.registerCommand(new Away());
+		modMan.registerCommand(new UserHostIp.UserHost());
+		modMan.registerCommand(new UserHostIp.UserIp());
+		
 		return true;
 	}
 

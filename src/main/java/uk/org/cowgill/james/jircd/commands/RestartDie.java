@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
  */
 public abstract class RestartDie implements Command
 {
-	private static final Logger logger = Logger.getLogger(Kill.class);
+	private static final Logger logger = Logger.getLogger(RestartDie.class);
 	
 	@Override
 	public void run(Client client, Message msg)

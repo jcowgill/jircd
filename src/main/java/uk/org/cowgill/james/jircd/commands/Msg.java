@@ -57,7 +57,7 @@ public abstract class Msg implements Command
 				relayMsg.appendParam(client.id.nick);
 				relayMsg.appendParam(msg.getParam(1));
 				
-				other.send(msg);
+				other.send(relayMsg);
 				return;
 			}
 		}

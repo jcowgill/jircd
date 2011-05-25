@@ -47,7 +47,7 @@ public final class ModeUtils
 		{
 			return modeSet | 1 << ('Z' - mode);
 		}
-		else if(mode >= 'a' && mode <= 'a')
+		else if(mode >= 'a' && mode <= 'z')
 		{
 			return modeSet | (1 << 32) << ('z' - mode);
 		}
@@ -71,7 +71,7 @@ public final class ModeUtils
 		{
 			return modeSet & ~(1 << ('Z' - mode));
 		}
-		else if(mode >= 'a' && mode <= 'a')
+		else if(mode >= 'a' && mode <= 'z')
 		{
 			return modeSet & ~((1 << 32) << ('z' - mode));
 		}

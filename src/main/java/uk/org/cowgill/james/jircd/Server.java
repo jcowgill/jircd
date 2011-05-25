@@ -149,7 +149,7 @@ public abstract class Server
 	/**
 	 * Rehashes the server configuration
 	 * 
-	 * Returns false if the reload fails. In this case the server configuration is unmodified
+	 * <p>Returns false if the reload fails. In this case the server configuration is unmodified
 	 * 
 	 * @return True if the rehash suceeded with no errors
 	 */
@@ -252,7 +252,12 @@ public abstract class Server
 		}
 		
 		//Startup modules
-		moduleMan.serverStartupEvent();
+		if(!moduleMan.serverStartupEvent())
+		{
+			//Module error
+			logger.fatal("Module load failiure - exiting");
+			return false;
+		}
 		
 		//Add operators to root logger
 		OperLogger opLogger = new OperLogger();

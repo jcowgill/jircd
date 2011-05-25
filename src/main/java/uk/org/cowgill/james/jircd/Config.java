@@ -136,13 +136,15 @@ public final class Config implements Serializable
 		 * IP mask for accept line
 		 * 
 		 * Accept line will be used if either ipmask or hostmask matches
+		 * <p>If unused, this field is an empty string
 		 */
 		public String ipMask;
 		
 		/**
 		 * Host mask for accept line
 		 * 
-		 * Accept line will be used if either ipmask or hostmask matches
+		 * <p>Accept line will be used if either ipmask or hostmask matches
+		 * <p>If unused, this field is an empty string
 		 */
 		public String hostMask;
 		
@@ -453,8 +455,8 @@ public final class Config implements Serializable
 			clazz.pingFreq = Integer.parseInt(block.getSubBlockParam("pingfreq"));
 			
 			//Read class name
-			String name = block.param;
-			if(name.trim().length() == 0)
+			String name = block.param.trim();
+			if(name.length() == 0)
 			{
 				throw new ConfigException("All classes must have names");
 			}
@@ -476,6 +478,16 @@ public final class Config implements Serializable
 			if(acceptLine.hostMask == null && acceptLine.ipMask == null)
 			{
 				throw new ConfigException("Accept line " + block.param + " must have a host or ip mask");
+			}
+			
+			if(acceptLine.hostMask == null)
+			{
+				acceptLine.hostMask = "";
+			}
+			
+			if(acceptLine.ipMask == null)
+			{
+				acceptLine.ipMask = "";
 			}
 			
 			//Get clones
@@ -582,21 +594,24 @@ public final class Config implements Serializable
 		}
 		
 		//Merge classes with previous config
-		for(Entry<String, ConnectionClass> classEntry : config.classes.entrySet())
+		if(mergeWith != null)
 		{
-			//If class is in previous config, merge users
-			ConnectionClass otherClass = mergeWith.classes.get(classEntry.getKey());
-			
-			if(otherClass != null)
+			for(Entry<String, ConnectionClass> classEntry : config.classes.entrySet())
 			{
-				//Copy class options
-				otherClass.readQueue = classEntry.getValue().readQueue;
-				otherClass.sendQueue = classEntry.getValue().sendQueue;
-				otherClass.maxLinks = classEntry.getValue().maxLinks;
-				otherClass.pingFreq = classEntry.getValue().pingFreq;
+				//If class is in previous config, merge users
+				ConnectionClass otherClass = mergeWith.classes.get(classEntry.getKey());
 				
-				//Use other class
-				classEntry.setValue(otherClass);
+				if(otherClass != null)
+				{
+					//Copy class options
+					otherClass.readQueue = classEntry.getValue().readQueue;
+					otherClass.sendQueue = classEntry.getValue().sendQueue;
+					otherClass.maxLinks = classEntry.getValue().maxLinks;
+					otherClass.pingFreq = classEntry.getValue().pingFreq;
+					
+					//Use other class
+					classEntry.setValue(otherClass);
+				}
 			}
 		}
 		

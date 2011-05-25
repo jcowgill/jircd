@@ -149,6 +149,15 @@ public abstract class Client
 	}
 	
 	/**
+	 * Returns this client's registration flags
+	 * @return registration flags
+	 */
+	public int getRegistrationFlags()
+	{
+		return registrationFlags;
+	}
+	
+	/**
 	 * Event which should be fired after all registration information has been set
 	 */
 	protected void registeredEvent()
@@ -254,6 +263,9 @@ public abstract class Client
 			close("The server is full");
 			return;
 		}
+		
+		// * Mark registered
+		setRegistrationFlag(RegistrationFlags.RegComplete);
 		
 		// * Add to global nick arrays
 		server.clientsByNick.put(id.nick, this);

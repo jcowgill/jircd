@@ -47,6 +47,11 @@ public class ConfigBlock
 		{
 			this.param = param;
 		}
+
+		if(subBlocks == null)
+		{
+			subBlocks = new MultiHashMap<String, ConfigBlock>();
+		}
 		
 		this.subBlocks = subBlocks;
 	}
@@ -242,15 +247,18 @@ public class ConfigBlock
 		StringBuilder outString = new StringBuilder();
 		int c;
 		boolean runLoop;
+		boolean lastWhite;
 
 		for(;;)
 		{
+			lastWhite = false;
 			c = data.read();
 
 			//Check whitespace
 			if(Character.isWhitespace(c))
 			{
 				//Insert space and skip other spaces
+				lastWhite = true;
 				outString.append(' ');
 				skipWhitespace(data);
 				c = data.read();
@@ -265,6 +273,13 @@ public class ConfigBlock
 				case '{':
 					//Termination characters
 					data.unread(c);
+					
+					//Remove single whitespace at end
+					if(lastWhite)
+					{
+						outString.setLength(outString.length() - 1);
+					}
+					
 					return outString.toString();
 
 				case '"':

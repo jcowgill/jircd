@@ -129,10 +129,27 @@ final class NetworkClient extends Client
 	/**
 	 * Called when a read event occurs
 	 */
-	void processReadEvent() throws IOException
+	void processReadEvent()
 	{
+		//Test for closures
+		try
+		{
+			if(channel.read(localBuffer) == -1)
+			{
+				//Close client
+				close("Connection reset by peer");
+				return;
+			}
+		}
+		catch(IOException e)
+		{
+			logger.warn("Read error from socket", e);
+			close("Read error");
+			return;
+		}
+		
 		//Read message into buffer
-		int endByte = channel.read(localBuffer) + localBuffer.position();
+		int endByte = localBuffer.position();
 		localBuffer.position(0);
 		
 		//Update message time
@@ -152,6 +169,7 @@ final class NetworkClient extends Client
 					//Skip this blank message
 					if(i != 511)
 					{
+						localBuffer.limit(512);
 						localBuffer.position(i + 1);
 					}
 					
@@ -159,19 +177,39 @@ final class NetworkClient extends Client
 				}
 				
 				//Decode message
-				Message msg = Message.parse(cDecoder.decode(localBuffer).toString());
+				Message msg;
+				
+				try
+				{
+					msg = Message.parse(cDecoder.decode(localBuffer).toString());
+				}
+				catch(CharacterCodingException e)
+				{
+					//Drop message
+					localBuffer.limit(512);
+					localBuffer.position(i + 1);
+					continue;
+				}
 				
 				//Dispatch message
 				Server.getServer().getModuleManager().executeCommand(this, msg);
 				
 				//Reset position and limit
-				localBuffer.position(i + 1);
 				localBuffer.limit(512);
+				localBuffer.position(i + 1);
 			}
 		}
 		
 		//Copy data after position back to start
 		int bytesLeft = endByte - localBuffer.position();
+		
+		if(bytesLeft >= 512)
+		{
+			//Oversized message
+			close("Read error: Message size exceeded");
+			return;
+		}
+		
 		System.arraycopy(localBufferData, localBuffer.position(),
 						 localBufferData, 0, bytesLeft);
 		

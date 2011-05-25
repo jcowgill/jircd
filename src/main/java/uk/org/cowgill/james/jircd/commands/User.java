@@ -16,6 +16,15 @@ public class User implements Command
 	@Override
 	public void run(Client client, Message msg)
 	{
+		//Musn't have USER set already
+		if((client.getRegistrationFlags() & RegistrationFlags.UserSet) != 0)
+		{
+			//No reregistering
+			client.send(Message.newMessageFromServer("462")
+					.appendParam("USER").appendParam("You cannot reregister"));
+			return;
+		}
+		
 		//Get relevant parameters
 		String user = msg.getParam(0);
 		String realName = msg.getParam(3);
