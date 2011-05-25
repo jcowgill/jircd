@@ -14,6 +14,9 @@ class NetworkStarter
 	public static void main(String[] args)
 	{
 		//Server entry point
+		// Setup logger
+		Server.ensureLoggerSetup();
+		
 		// Get config file
 		File configFile = Server.getFileFromArgs(args);
 		

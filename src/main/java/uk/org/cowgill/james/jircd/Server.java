@@ -16,10 +16,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 import org.apache.log4j.spi.LoggingEvent;
 
 import uk.org.cowgill.james.jircd.util.CaseInsensitiveHashMap;
+import uk.org.cowgill.james.jircd.util.ColourConsoleAppender;
 import uk.org.cowgill.james.jircd.util.MutableInteger;
 
 /**
@@ -139,12 +142,6 @@ public abstract class Server
 	 */
 	public Server(File configFile)
 	{
-		//Set global server
-		if(globalServer == null)
-		{
-			globalServer = this;
-		}
-		
 		//Set config file
 		this.configFile = configFile;
 	}
@@ -250,6 +247,7 @@ public abstract class Server
 		if(config == null && !rehash())
 		{
 			//Config error
+			logger.fatal("Config error - exiting");
 			return false;
 		}
 		
@@ -468,6 +466,34 @@ public abstract class Server
 	}
 	
 	/**
+	 * Ensures that the log4j system is setup even if no log4j.xml / properties file is found
+	 */
+	public static void ensureLoggerSetup()
+	{
+		//Get root
+		Logger root = Logger.getRootLogger();
+		
+		//Find appenders
+		if(!root.getAllAppenders().hasMoreElements())
+		{
+			//Setup defaults
+			PatternLayout layout = new PatternLayout("%-5p - %m%n");
+			
+			if(System.getProperty("os.name").toLowerCase().indexOf("win") >= 0)
+			{
+				root.addAppender(new ConsoleAppender(layout));
+			}
+			else
+			{
+				root.addAppender(new ColourConsoleAppender(layout));
+			}
+			
+			//Display warning
+			logger.warn("Using basic console logging since log4j config file cannot be found");
+		}
+	}
+	
+	/**
 	 * Utility to get the server config filename from the given command-line options
 	 * 
 	 * @param args Arguments to check
@@ -501,6 +527,7 @@ public abstract class Server
 				if(!configFile.canRead())
 				{
 					//Cannot find config file
+					ensureLoggerSetup();
 					logger.error("Cannot open configuration file \"" + configFileName + "\"");
 					return null;
 				}

@@ -4,6 +4,7 @@
   <artifactId>jircd</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>JIRC Server</name>
+  
   <dependencies>
   	<dependency>
   		<groupId>log4j</groupId>
@@ -12,4 +13,56 @@
   		<scope>compile</scope>
   	</dependency>
   </dependencies>
+  
+  <properties>
+	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  
+  <build>
+  	<!-- Do not include .do.not.delete -->
+  	<resources>
+  		<resource>
+  			<directory>src/main/resources</directory>
+  			<excludes>
+  				<exclude>.do.not.delete</exclude>
+  			</excludes>
+  		</resource>
+  	</resources>
+  
+  	<plugins>
+  		<!-- Include dependancies in jar -->
+		<plugin>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<executions>
+				<execution>
+					<id>make-my-jar-with-dependencies</id>
+					<phase>package</phase>
+					<goals>
+						<goal>single</goal>
+					</goals>
+				</execution>
+			</executions>
+			<configuration>
+				<descriptorRefs>
+					<descriptorRef>jar-with-dependencies</descriptorRef>
+				</descriptorRefs>
+				<archive>
+					<manifest>
+						<mainClass>uk.org.cowgill.james.jircd.network.NetworkStarter</mainClass>
+					</manifest>
+				</archive>
+			</configuration>
+		</plugin>
+		
+		<!-- Use Java 6 -->
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-compiler-plugin</artifactId>
+			<configuration>
+				<source>1.6</source>
+				<target>1.6</target>
+			</configuration>
+		</plugin>
+  	</plugins>
+  </build>
 </project>
