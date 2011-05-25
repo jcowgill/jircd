@@ -3,8 +3,11 @@ package uk.org.cowgill.james.jircd;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -24,7 +27,7 @@ public final class ModuleManager
 	/**
 	 * Map of all commands on the system
 	 */
-	private HashMap<String, Command> commands = new HashMap<String, Command>();
+	private HashMap<String, CommandInfo> commands = new HashMap<String, Command>();
 	
 	/**
 	 * Event which starts up the modules in the configuration file
@@ -301,7 +304,7 @@ public final class ModuleManager
 		//Add command if it has any valid flags
 		if((command.getFlags() & (Command.FLAG_NORMAL | Command.FLAG_REGISTRATION)) != 0)
 		{
-			commands.put(modName, command);
+			commands.put(modName, new CommandInfo(command));
 		}
 	}
 	
@@ -316,10 +319,10 @@ public final class ModuleManager
 	{
 		//Find module
 		String modName = command.getName();
-		Command foundModule = commands.get(modName);
+		CommandInfo foundModule = commands.get(modName);
 		
 		//Delete of the command is the same
-		if(foundModule == command)
+		if(foundModule.getCommand() == command)
 		{
 			commands.remove(modName);
 		}
@@ -335,9 +338,9 @@ public final class ModuleManager
 	{
 		//Find command
 		boolean registeredCheck = false;
-		Command command = commands.get(msg.getCommand());
+		CommandInfo commandInfo = commands.get(msg.getCommand());
 		
-		if(command == null)
+		if(commandInfo == null)
 		{
 			//Only notify if command != nothing
 			if(msg.getCommand().trim().length() != 0)
@@ -350,6 +353,9 @@ public final class ModuleManager
 
 			return;
 		}
+		
+		//Extract command
+		Command command = commandInfo.getCommand();
 		
 		//Check max params
 		if(msg.paramCount() < command.getMinParameters())
@@ -387,6 +393,9 @@ public final class ModuleManager
 			registeredCheck = true;
 		}
 		
+		//Increment execute counter
+		commandInfo.incrementCounter();
+		
 		try
 		{
 			//Dispatch message
@@ -401,6 +410,60 @@ public final class ModuleManager
 		if(registeredCheck)
 		{
 			client.registeredEvent();
+		}
+	}
+	
+	/**
+	 * Returns an unmodifiable map of all registered commands
+	 * @return an unmodifiable map of all registered commands
+	 */
+	public Map<String, CommandInfo> getCommands()
+	{
+		return Collections.unmodifiableMap(commands);
+	}
+	
+	/**
+	 * Information about a command
+	 * 
+	 * @author James
+	 */
+	public static class CommandInfo
+	{
+		private final Command command;
+		private int timesRun;
+		
+		/**
+		 * Creates a new command information class from a command
+		 * 
+		 * @param command command to use
+		 */
+		CommandInfo(Command command)
+		{
+			this.command = command;
+		}
+		
+		/**
+		 * Increment numer of times this command has been run
+		 */
+		void incrementCounter()
+		{
+			++timesRun;
+		}
+		
+		/**
+		 * Gets the number of times this command has been run
+		 */
+		public int getTimesRun()
+		{
+			return timesRun;
+		}
+		
+		/**
+		 * Gets the raw command interface
+		 */
+		public Command getCommand()
+		{
+			return command;
 		}
 	}
 }

@@ -50,7 +50,7 @@ public abstract class UserHostIp implements Command
 			}
 			
 			output.append('=');
-			output.append('+');			//TODO this is - if user is away
+			output.append(other.isAway() ? '-' : '+');
 			output.append(host);
 		}
 	}
