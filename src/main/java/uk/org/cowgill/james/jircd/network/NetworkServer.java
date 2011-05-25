@@ -152,11 +152,8 @@ final class NetworkServer extends Server
 						//Set host bit
 						client.setRegistrationFlag(RegistrationFlags.HostSet);
 						
-						//If registered now, signal event
-						if(client.isRegistered())
-						{
-							client.registeredEvent();
-						}
+						//Check registered event
+						client.registeredEvent();
 					}
 					
 					//Next client

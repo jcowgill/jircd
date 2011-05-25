@@ -110,32 +110,34 @@ public final class ModeUtils
 	 * @param mode the mode bitmask
 	 * @return the string containing the mode
 	 */
-	public static String toString(long modeSet)
+	public static String toString(final long modeSet)
 	{
 		StringBuilder modeStr = new StringBuilder("+");
-		
+
 		//Lowercase first
-		for(char c = 'a'; c <= 'z'; c++)
+		int lowerSet = (int) (modeSet & 0xFFFFFFFF);
+		for(char c = 'z'; c >= 'a'; c--)
 		{
 			//Test most significant bit
-			if((modeSet & (1 << 63)) != 0)
+			if((lowerSet & 1) != 0)
 			{
 				modeStr.append(c);
 			}
 			
-			modeSet <<= 1;
+			lowerSet >>= 1;
 		}
 		
 		//Uppercase
-		for(char c = 'A'; c <= 'Z'; c++)
+		int upperSet = (int) (modeSet >> 32);
+		for(char c = 'Z'; c >= 'A'; c--)
 		{
-			//Test most significant bit
-			if((modeSet & (1 << 63)) != 0)
+			//Test least significant bit
+			if((upperSet & 1) != 0)
 			{
 				modeStr.append(c);
 			}
 			
-			modeSet <<= 1;
+			upperSet >>= 1;
 		}
 		
 		if(modeStr.length() == 1)

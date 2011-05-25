@@ -523,7 +523,7 @@ public abstract class Client
 		if(isModeSet(mode) != adding)
 		{
 			//Change mode
-			String str = "+" + mode;
+			String str = (adding ? "+" : "-") + mode;
 			
 			//Check for special modes
 			if(mode == 'o' || mode == 'O')

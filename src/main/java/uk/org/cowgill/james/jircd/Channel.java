@@ -590,7 +590,7 @@ public final class Channel
 		//Construct message
 		Message msg = new Message("KICK", kicker);
 		msg.appendParam(name);
-		msg.appendParam(kicked.id.toString());
+		msg.appendParam(kicked.id.nick);
 		msg.appendParam(kickMsg);
 		
 		//Forward
