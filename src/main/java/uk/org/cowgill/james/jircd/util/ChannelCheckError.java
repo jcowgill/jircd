@@ -76,6 +76,7 @@ public enum ChannelCheckError
 	/**
 	 * Sends this error to a client
 	 * 
+	 * @param channel channel the error occured on
 	 * @param client client to send the error to
 	 */
 	public void sendToClient(Channel channel, Client client)
@@ -83,6 +84,20 @@ public enum ChannelCheckError
 		if(numeric != null)
 		{
 			client.send(client.newNickMessage(numeric).appendParam(channel.getName()).appendParam(text));
+		}
+	}
+	
+	/**
+	 * Sends this error to a client using a string channel
+	 * 
+	 * @param channel channel the error occured on
+	 * @param client client to send the error to
+	 */
+	public void sendToClient(String channel, Client client)
+	{
+		if(numeric != null)
+		{
+			client.send(client.newNickMessage(numeric).appendParam(channel).appendParam(text));
 		}
 	}
 }

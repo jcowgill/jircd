@@ -105,6 +105,8 @@ public final class ModeUtils
 	/**
 	 * Converts a mode bitmask to a string
 	 * 
+	 * <p>The mode always has a leading +
+	 * 
 	 * @param mode the mode bitmask
 	 * @return the string containing the mode
 	 */

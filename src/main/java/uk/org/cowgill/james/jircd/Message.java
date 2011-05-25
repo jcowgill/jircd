@@ -3,6 +3,7 @@ package uk.org.cowgill.james.jircd;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * A parsed irc message
@@ -158,7 +159,12 @@ public class Message implements Serializable
 	 */
 	public Message appendParam(String str)
 	{
-		parameters.add(str);
+		//Ignore if empty
+		if(!str.isEmpty())
+		{
+			parameters.add(str);
+		}
+		
 		return this;
 	}
 
@@ -227,6 +233,14 @@ public class Message implements Serializable
 	public int paramCount()
 	{
 		return parameters.size();
+	}
+	
+	/**
+	 * Returns the raw parameter list of this message
+	 */
+	public List<String> getParamList()
+	{
+		return parameters;
 	}
 	
 	@Override
@@ -345,7 +359,11 @@ public class Message implements Serializable
 			if(data.charAt(pos) == ':')
 			{
 				//Use all other characters as last parameter
-				if(pos != (data.length() - 1))
+				if(pos == (data.length() - 1))
+				{
+					baseMsg.appendParam("");
+				}
+				else
 				{
 					baseMsg.appendParam(data.substring(pos + 1));
 				}

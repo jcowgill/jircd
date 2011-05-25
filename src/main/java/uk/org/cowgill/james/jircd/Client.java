@@ -36,6 +36,16 @@ public abstract class Client
 	 * The client's id
 	 */
 	public IRCMask id;
+
+	/**
+	 * The client's real name
+	 */
+	public String realName = "";
+	
+	/**
+	 * The client's away message or null if the client is not away
+	 */
+	public String awayMsg;
 	
 	/**
 	 * Set of joined channels
@@ -63,6 +73,11 @@ public abstract class Client
 	 * True if client is closed
 	 */
 	private boolean closed = false;
+	
+	/**
+	 * Time of login
+	 */
+	private long signonTime;
 
 	//------------------------------------------------
 
@@ -88,6 +103,29 @@ public abstract class Client
 		Server.getServer().clients.add(this);
 	}
 	
+	/**
+	 * Returns true if this client is away
+	 * @return true if this client is away
+	 */
+	public boolean isAway()
+	{
+		return awayMsg != null;
+	}
+
+	/**
+	 * Sends this client's away message to the specified client if there is one
+	 * 
+	 * <p>If this client does not have an away message, nothing is sent
+	 * 
+	 * @param client client to send away message to
+	 */
+	public void sendAwayMsgTo(Client client)
+	{
+		if(isAway())
+		{
+			client.send(client.newNickMessage("301").appendParam(id.nick).appendParam(awayMsg));
+		}
+	}
 	
 	/**
 	 * Gets weather this client has been fully registered
@@ -231,7 +269,7 @@ public abstract class Client
 		send(this.newNickMessage("001").appendParam("Welcome to the Internet Relay Network " + id.toString()));
 		send(this.newNickMessage("002").appendParam("Your host is " + config.serverName +
 				" running version " + Server.VERSION_STR));
-		send(this.newNickMessage("003").appendParam("This server was created " + server.creationTime));
+		send(this.newNickMessage("003").appendParam("This server was created " + server.creationTimeStr));
 		server.getISupport().sendISupportMsgs(this);		//Sends 004 and 005
 		
 		// * Display LUSERS, MOTD and MODE
@@ -243,6 +281,18 @@ public abstract class Client
 		{
 			send(new Message("MODE", this).appendParam(id.nick).appendParam(ModeUtils.toString(mode)));
 		}
+		
+		signonTime = System.currentTimeMillis();
+	}
+	
+	/**
+	 * Returns the time the client signed on in mulliseconds since the UNIX Epoch
+	 * 
+	 * @return the time the client signed on
+	 */
+	public long getSignonTime()
+	{
+		return signonTime;
 	}
 	
 	/**
@@ -445,6 +495,18 @@ public abstract class Client
 	 */
 	public void setMode(char mode, boolean adding)
 	{
+		setMode(mode, adding, null);
+	}
+	
+	/**
+	 * Sets a usermode and tells the client and another person
+	 * 
+	 * @param mode mode to set
+	 * @param adding whether to add the mode (false to delete it)
+	 * @param other additional client to notify
+	 */
+	public void setMode(char mode, boolean adding, Client other)
+	{
 		//Check mode setting
 		if(isModeSet(mode) != adding)
 		{
@@ -491,7 +553,14 @@ public abstract class Client
 			
 			//Change mode
 			this.mode = ModeUtils.changeMode(this.mode, mode, adding);
-			send(new Message("MODE", this).appendParam(id.nick).appendParam(str));
+			
+			Message msg = new Message("MODE", this).appendParam(id.nick).appendParam(str);
+			send(msg);
+			
+			if(other != null && this != other)
+			{
+				other.send(msg);
+			}
 		}
 	}
 	
@@ -643,4 +712,11 @@ public abstract class Client
 	 * @return Returns true if the close was a sucess. Returns false to abort the close.
 	 */
 	protected abstract boolean rawClose();
+	
+	/**
+	 * Returns the the in milliseconds this cient has been idle for
+	 * 
+	 * @return idle time of this client in milliseconds
+	 */
+	public abstract long getIdleTime();
 }

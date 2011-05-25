@@ -295,7 +295,7 @@ public final class ChannelChecks
 	 * 
 	 * @param channel channel they are attempting to get the topic of
 	 * @param client client who's getting the topic
-	 * @return the error or ChannelCheckError.OK if they can get the topic
+	 * @return true if the topic can be read
 	 */
 	public static boolean canGetTopic(Channel channel, Client client)
 	{
@@ -308,7 +308,7 @@ public final class ChannelChecks
 	 * 
 	 * @param channel channel they are attempting to see the member list of
 	 * @param client client who's getting the member list
-	 * @return the error or ChannelCheckError.OK if they can get the member list
+	 * @return true if the names list can be read
 	 */
 	public static boolean canGetNames(Channel channel, Client client)
 	{

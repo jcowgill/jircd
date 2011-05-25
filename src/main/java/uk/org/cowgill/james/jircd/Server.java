@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -122,7 +123,12 @@ public abstract class Server
 	/**
 	 * The time the server was created in string format
 	 */
-	public final String creationTimeStr = new SimpleDateFormat("EEE dd MMM yyyy HH:mm:ss zzz").format(creationTime);
+	public final String creationTimeStr = DATE_FORMAT.format(creationTime);
+	
+	/**
+	 * The format dates are formatted in
+	 */
+	public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("EEE dd MMM yyyy HH:mm:ss zzz"); 
 	
 	//--------------------------------------------
 	
@@ -339,6 +345,16 @@ public abstract class Server
 	}
 	
 	/**
+	 * Returns the number of unregisterd clients connected to the server
+	 * 
+	 * @return the number of unregisterd clients connected to the server
+	 */
+	public int getUnregisteredClients()
+	{
+		return clientsByNick.size() - clients.size();
+	}
+	
+	/**
 	 * Returns the number of registered clients connected to the server
 	 * 
 	 * @return the number of registered clients connected to the server
@@ -358,6 +374,16 @@ public abstract class Server
 	{
 		return clientsByNick.get(nick);
 	}
+
+	/**
+	 * Gets an unmodifiable collection of the clients registered on this server
+	 * 
+	 * @return an unmodifiable collection of the clients registered on this server
+	 */
+	public Collection<Client> getRegisteredClients()
+	{
+		return Collections.unmodifiableCollection(clientsByNick.values());
+	}
 	
 	/**
 	 * Gets a channel with the specified name
@@ -368,6 +394,18 @@ public abstract class Server
 	public Channel getChannel(String name)
 	{
 		return channels.get(name);
+	}
+	
+	/**
+	 * Gets an unmodifiable collection of all the channels on the server
+	 * 
+	 * <p>The collection updates itself as channels are created and destroyed
+	 * 
+	 * @return unmodifiable collection of all the channels
+	 */
+	public Collection<Channel> getChannels()
+	{
+		return Collections.unmodifiableCollection(channels.values());
 	}
 	
 	/**

@@ -235,6 +235,19 @@ public final class Channel
 		}
 	}
 	
+	/**
+	 * Returns the single mode long
+	 * 
+	 * <p>Use ModeUtils to read
+	 * <p>Does not contain lists or l and k
+	 * 
+	 * @return long containing the single modes
+	 */
+	public long getSingleMode()
+	{
+		return mode;
+	}
+	
 	//Channel creation
 	private Channel(String name)
 	{
@@ -401,6 +414,20 @@ public final class Channel
 	}
 
 	//Channel Actions
+
+	/**
+	 * Causes a client to join this channel
+	 * 
+	 * <p>No checks are performed by this method. Do NOT just let anyone use this without checks.
+	 * <p>If no-one is on the channel, the client joins with OPS. Otherwise, the user has no extra modes.
+	 * 
+	 * @param client Client to add
+	 * @return true on sucess, false if the client is already on the channel
+	 */
+	public boolean join(Client client)
+	{
+		return join(client, false);
+	}
 	
 	/**
 	 * Causes a client to join this channel
@@ -570,6 +597,32 @@ public final class Channel
 	}
 	
 	/**
+	 * Invites a client to a fake channel (non-existant one)
+	 * 
+	 * @param channel channel name to invite to
+	 * @param inviter client giving the invitation
+	 * @param invitedClient client to be invited
+	 */
+	public static void inviteFake(String channel, Client inviter, Client invitedClient)
+	{
+		Message msg;
+		
+		//Notify relevant people
+		if(inviter != null)
+		{
+			msg = inviter.newNickMessage("341");
+			msg.appendParam(invitedClient.id.nick);
+			msg.appendParam(channel);
+			inviter.send(msg);
+		}
+		
+		msg = new Message("INVITE", inviter);
+		msg.appendParam(invitedClient.id.nick);
+		msg.appendParam(channel);
+		invitedClient.send(msg);
+	}
+	
+	/**
 	 * Invites a client into a channel
 	 * 
 	 * @param inviter client giving the invitation
@@ -579,7 +632,6 @@ public final class Channel
 	{
 		//Add to invited list if inviter is an op
 		ChannelMemberMode inviterMode = members.get(inviter);
-		Message msg;
 		
 		if(inviterMode != null && inviterMode.getMode() >= ChannelMemberMode.OP)
 		{
@@ -590,7 +642,7 @@ public final class Channel
 			}
 			
 			//Notify other opers
-			msg = Message.newMessageFromServer("NOTICE");
+			Message msg = Message.newMessageFromServer("NOTICE");
 			msg.appendParam("@" + name);
 			msg.appendParam(inviter.id.nick + " invited " + invitedClient.id.nick + " into the channel");
 			
@@ -604,19 +656,8 @@ public final class Channel
 			}
 		}
 		
-		//Notify relevant people		
-		if(inviter != null)
-		{
-			msg = inviter.newNickMessage("341");
-			msg.appendParam(invitedClient.id.nick);
-			msg.appendParam(name);
-			inviter.send(msg);
-		}
-		
-		msg = new Message("INVITE", inviter);
-		msg.appendParam(invitedClient.id.nick);
-		msg.appendParam(name);
-		invitedClient.send(msg);
+		//Notify relevant people
+		inviteFake(name, inviter, invitedClient);
 	}
 	
 	/**

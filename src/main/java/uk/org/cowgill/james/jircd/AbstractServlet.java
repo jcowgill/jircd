@@ -82,4 +82,10 @@ public abstract class AbstractServlet extends Client
 	{
 		return false;
 	}
+	
+	@Override
+	public long getIdleTime()
+	{
+		return 0;
+	}
 }
