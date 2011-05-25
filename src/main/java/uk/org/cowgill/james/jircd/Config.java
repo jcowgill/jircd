@@ -7,9 +7,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -237,8 +239,10 @@ public final class Config implements Serializable
 	 * 
 	 * @param password password to hash
 	 * @return a byte array containing the hash
+	 * @throws NoSuchAlgorithmException 
+	 * @throws CharacterCodingException 
 	 */
-	public static byte[] passwordHash(String password) throws Exception
+	public static byte[] passwordHash(String password) throws NoSuchAlgorithmException, CharacterCodingException
 	{
 		MessageDigest md = MessageDigest.getInstance("sha-1");
 		

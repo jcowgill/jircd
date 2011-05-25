@@ -1,14 +1,10 @@
 package uk.org.cowgill.james.jircd.commands;
 
-import uk.org.cowgill.james.jircd.Channel;
 import uk.org.cowgill.james.jircd.Client;
 import uk.org.cowgill.james.jircd.Command;
 import uk.org.cowgill.james.jircd.Message;
 import uk.org.cowgill.james.jircd.Permissions;
 import uk.org.cowgill.james.jircd.Server;
-import uk.org.cowgill.james.jircd.util.ChannelCheckError;
-import uk.org.cowgill.james.jircd.util.ChannelChecks;
-
 import org.apache.log4j.Logger;
 
 //TODO add special passwords to prevent OPER abuse maybe

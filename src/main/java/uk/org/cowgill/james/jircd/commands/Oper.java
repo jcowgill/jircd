@@ -1,5 +1,7 @@
 package uk.org.cowgill.james.jircd.commands;
 
+import java.nio.charset.CharacterCodingException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 import uk.org.cowgill.james.jircd.Client;
@@ -17,7 +19,7 @@ import org.apache.log4j.Logger;
  */
 public class Oper implements Command
 {
-	private static final java.util.logging.Logger logger = Logger.getLogger(Oper.class);
+	private static final Logger logger = Logger.getLogger(Oper.class);
 	
 	@Override
 	public void run(Client client, Message msg)
@@ -37,9 +39,23 @@ public class Oper implements Command
 			return;
 		}
 		
-		//Check password
-		byte[] passwordHash = Config.passwordHash(password);
+		//Hash password
+		byte[] passwordHash = null;
 		
+		try
+		{
+			passwordHash = Config.passwordHash(password);
+		}
+		catch(NoSuchAlgorithmException e)
+		{
+			logger.warn("Exception while hashing OPER request ", e);
+		}
+		catch(CharacterCodingException e)
+		{
+			logger.warn("Exception while hashing OPER request ", e);
+		}
+		
+		//Check password
 		if(!Arrays.equals(passwordHash, operator.password))
 		{
 			//Invalid Password

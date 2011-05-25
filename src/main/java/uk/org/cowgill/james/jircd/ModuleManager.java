@@ -27,7 +27,7 @@ public final class ModuleManager
 	/**
 	 * Map of all commands on the system
 	 */
-	private HashMap<String, CommandInfo> commands = new HashMap<String, Command>();
+	private HashMap<String, CommandInfo> commands = new HashMap<String, CommandInfo>();
 	
 	/**
 	 * Event which starts up the modules in the configuration file

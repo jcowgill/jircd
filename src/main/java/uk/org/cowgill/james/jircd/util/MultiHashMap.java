@@ -8,8 +8,6 @@ import java.util.Set;
 
 public class MultiHashMap<K, V> implements MultiMap<K, V>
 {
-	private static final long serialVersionUID = 1L;
-
 	private HashMap<K, Collection<V>> data = new HashMap<K, Collection<V>>();
 
 	@Override

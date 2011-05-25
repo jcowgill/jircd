@@ -239,8 +239,11 @@ final class NetworkServer extends Server
 				
 				//Check for 5 errors in a row
 				retryError++;
-				logger.fatal("5 loop errors in a row - exiting");
-				break;
+				if(retryError >= 5)
+				{
+					logger.fatal("5 loop errors in a row - exiting");
+					break;
+				}
 			}
 		}
 		
