@@ -84,7 +84,7 @@ public final class Permissions
     public final static int userIP = 0x4000;
 
     /**
-     * Can see invisible (+i) users
+     * Can see invisible (+i) users and all members in all channels
      */
     public final static int seeInvisible = 0x8000;
 
