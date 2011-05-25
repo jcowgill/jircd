@@ -69,6 +69,6 @@ public class ConfigException extends Exception
 	@Override
 	public String toString()
 	{
-		return super.toString() + " at line " + lineNo + " col " + charNo;
+		return super.toString() + ", at line " + lineNo + " col " + charNo;
 	}
 }

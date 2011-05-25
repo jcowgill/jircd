@@ -611,6 +611,11 @@ public abstract class Server
 	 */
 	private class OperLogger extends AppenderSkeleton
 	{
+		public OperLogger()
+		{
+			setLayout(new PatternLayout("%-5p - %m%n"));
+		}
+		
 		@Override
 		protected void append(LoggingEvent event)
 		{

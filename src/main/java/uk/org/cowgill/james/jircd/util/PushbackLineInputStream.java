@@ -54,6 +54,10 @@ public class PushbackLineInputStream extends PushbackInputStream
 				lineNo++;
 				charNo = 1;
 				return c;
+				
+			case -1:
+				//EOF
+				return c;
 		}
 
 		//Normal character
@@ -82,17 +86,21 @@ public class PushbackLineInputStream extends PushbackInputStream
 	@Override
 	public void unread(int b) throws IOException
 	{
-		super.unread(b);
-
-		if(charNo == 1)
+		//Only pushback if not EOF
+		if(b != -1)
 		{
-			//Go up 1 row. Using 0 as character since we don't know!
-			lineNo--;
-			charNo = 0;
-		}
-		else
-		{
-			charNo--;
+			super.unread(b);
+	
+			if(charNo == 1)
+			{
+				//Go up 1 row. Using 0 as character since we don't know!
+				lineNo--;
+				charNo = 0;
+			}
+			else
+			{
+				charNo--;
+			}
 		}
 	}
 

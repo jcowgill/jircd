@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -435,13 +436,13 @@ public final class Config implements Serializable
 		}
 		
 		//Ports
-		for(ConfigBlock block : root.subBlocks.get("listen"))
+		for(ConfigBlock block : root.getSubBlockNonNull("listen"))
 		{
 			config.ports.add(block.getParamAsInt());
 		}
 		
 		//Classes
-		for(ConfigBlock block : root.subBlocks.get("class"))
+		for(ConfigBlock block : root.getSubBlockNonNull("class"))
 		{
 			//Read sub information
 			ConnectionClass clazz = new ConnectionClass();
@@ -463,7 +464,7 @@ public final class Config implements Serializable
 		}
 		
 		//Accept lines
-		for(ConfigBlock block : root.subBlocks.get("accept"))
+		for(ConfigBlock block : root.getSubBlockNonNull("accept"))
 		{
 			//Create new accept line
 			Accept acceptLine = new Accept();
@@ -496,7 +497,7 @@ public final class Config implements Serializable
 		}
 		
 		//Operators
-		for(ConfigBlock block : root.subBlocks.get("operator"))
+		for(ConfigBlock block : root.getSubBlockNonNull("operator"))
 		{
 			//Create new operator line
 			Operator operator = new Operator();
@@ -538,7 +539,7 @@ public final class Config implements Serializable
 		}
 		
 		//Bans
-		for(ConfigBlock block : root.subBlocks.get("ban"))
+		for(ConfigBlock block : root.getSubBlockNonNull("ban"))
 		{
 			//Create new ban line
 			Ban ban = new Ban();
@@ -569,12 +570,13 @@ public final class Config implements Serializable
 		}
 
 		//Modules
-		config.modules = root.subBlocks.get("module");
+		config.modules = root.getSubBlockNonNull("module");
 		
 		//Permissions
-		final ConfigBlock permBlock = root.subBlocks.get("permissions").iterator().next();
-		if(permBlock != null)
+		final Iterator<ConfigBlock> permBlockIter = root.getSubBlockNonNull("permissions").iterator();
+		if(permBlockIter.hasNext())
 		{
+			final ConfigBlock permBlock = permBlockIter.next();
 			config.permissionsSuperOp = calculatePermissions(permBlock.subBlocks.get("superop"));
 			config.permissionsOp = calculatePermissions(permBlock.subBlocks.get("op"));
 		}

@@ -50,7 +50,7 @@ final class NetworkClient extends Client
 	/**
 	 * ByteBuffer containing a carriage return then a line feed
 	 */
-	private static final ByteBuffer CRLF = ByteBuffer.wrap(new byte[] { '\r', '\n' });
+	private static final byte[] CRLF = new byte[] { '\r', '\n' };
 
 	//-----------------------------------
 	
@@ -118,7 +118,7 @@ final class NetworkClient extends Client
 		final StringBuffer buffer = new StringBuffer(10);
 		for(int i = 0; i < 10; ++i)
 		{
-			buffer.append((char) randomGen.nextInt('z' - 'A'));
+			buffer.append((char) (randomGen.nextInt('z' - 'A') + 'A'));
 		}
 		
 		spoofCheckChars = buffer.toString();
@@ -220,16 +220,9 @@ final class NetworkClient extends Client
 		
 		try
 		{
-			//Encode object as string
-			ByteBuffer buffer = cEncoder.encode(CharBuffer.wrap(strData));
-			buffer.flip();
-			
-			//Write to buffer
-			if(channel.write(new ByteBuffer[] { buffer, CRLF }) != (buffer.limit() + 2))
-			{
-				//SendQ limit exceeded
-				queueClose("SendQ Limit Exceeded");
-			}
+			//Encode object and write to socket with CRLF
+			rawSend(cEncoder.encode(CharBuffer.wrap(strData)));
+			rawSend(ByteBuffer.wrap(CRLF));
 		}
 		catch(CharacterCodingException e)
 		{
@@ -239,6 +232,16 @@ final class NetworkClient extends Client
 		{
 			//Error writing to message
 			queueClose("IO Error");
+		}
+	}
+	
+	private void rawSend(ByteBuffer buffer) throws IOException
+	{
+		//Write to buffer
+		if(channel.write(buffer) != buffer.limit())
+		{
+			//SendQ limit exceeded
+			queueClose("SendQ Limit Exceeded");
 		}
 	}
 

@@ -57,6 +57,7 @@ public final class ModuleManager
 	void serverRehashEvent()
 	{
 		HashSet<Class<?>> rehashed = new HashSet<Class<?>>();
+		
 		//Rehash all modules
 		for(ConfigBlock block : Server.getServer().getConfig().modules)
 		{

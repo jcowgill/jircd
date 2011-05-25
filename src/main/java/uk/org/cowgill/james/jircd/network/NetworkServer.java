@@ -222,7 +222,7 @@ final class NetworkServer extends Server
 					{
 						if(locClient instanceof NetworkClient)
 						{
-							((NetworkClient) locClient).pingCheckEvent();
+							//((NetworkClient) locClient).pingCheckEvent();
 						}
 					}
 					
@@ -349,7 +349,12 @@ final class NetworkServer extends Server
 		//No ports left?
 		if(listeners.isEmpty())
 		{
-			logger.error("Failed to bind to any ports - no new connections will be accepted (try restarting)");
+			if(ports.isEmpty())
+			{
+				logger.warn("No listening ports in configuration file");
+			}
+			
+			logger.fatal("Failed to bind to any ports");
 			return false;
 		}
 		else

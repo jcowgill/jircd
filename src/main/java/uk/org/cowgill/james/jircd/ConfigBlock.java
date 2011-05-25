@@ -3,6 +3,7 @@ package uk.org.cowgill.james.jircd;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Collections;
 
 import uk.org.cowgill.james.jircd.util.MultiHashMap;
 import uk.org.cowgill.james.jircd.util.MultiMap;
@@ -72,7 +73,7 @@ public class ConfigBlock
 		//Get collection
 		Collection<ConfigBlock> blocks = subBlocks.get(key);
 		
-		if(blocks.size() == 1)
+		if(blocks != null && blocks.size() == 1)
 		{
 			//Get block
 			ConfigBlock block = blocks.iterator().next();
@@ -106,6 +107,27 @@ public class ConfigBlock
 		else
 		{
 			return retVal;
+		}
+	}
+	
+	/**
+	 * Gets the given sub-block but forces it to an empty block instead of null
+	 * 
+	 * @param key key to lookup
+	 * @return the non-null collection
+	 */
+	public Collection<ConfigBlock> getSubBlockNonNull(String key)
+	{
+		//Get sub block
+		Collection<ConfigBlock> block = subBlocks.get(key);
+		
+		if(block == null)
+		{
+			return Collections.emptyList();
+		}
+		else
+		{
+			return block;
 		}
 	}
 	
@@ -263,7 +285,7 @@ public class ConfigBlock
 								break;
 
 							default:
-								outString.append(c);
+								outString.append((char) c);
 								break;
 						}
 					}
@@ -285,7 +307,7 @@ public class ConfigBlock
 
 				default:
 					//Copy verbatim to output
-					outString.append(c);
+					outString.append((char) c);
 					break;
 			}
 		}
@@ -460,7 +482,7 @@ public class ConfigBlock
 					
 				default:
 					//Add to name
-					dName.append(c);
+					dName.append((char) c);
 					break;
 			}
 		}
@@ -476,20 +498,6 @@ public class ConfigBlock
 	 */
 	public static ConfigBlock parse(InputStream data) throws IOException, ConfigException
 	{
-		/*
-		 
-		 hello "blah";
-		 op 7;
-		 op yuo;
-		 
-		 ui 76
-		 {
-		 	ty;
-		 	uy "to";
-		 	oiu {};;;;
-		 }
-		 */
-		
 		return new ConfigBlock(null, parseDirectives(new PushbackLineInputStream(data), true));
 	}
 }
