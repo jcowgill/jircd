@@ -21,11 +21,11 @@ public final class ModeUtils
 		//Check modes bitset
 		if(mode >= 'A' && mode <= 'Z')
 		{
-			return (modeSet & (1 << ('Z' - mode))) != 0;
+			return (modeSet & (1 << (mode - 'A'))) != 0;
 		}
 		else if(mode >= 'a' && mode <= 'z')
 		{
-			return (modeSet & ((1 << 32) << ('z' - mode))) != 0;
+			return (modeSet & ((1 << 32) << (mode - 'a'))) != 0;
 		}
 		else
 		{
@@ -45,11 +45,11 @@ public final class ModeUtils
 	{
 		if(mode >= 'A' && mode <= 'Z')
 		{
-			return modeSet | 1 << ('Z' - mode);
+			return modeSet | 1 << (mode - 'A');
 		}
 		else if(mode >= 'a' && mode <= 'z')
 		{
-			return modeSet | (1 << 32) << ('z' - mode);
+			return modeSet | (1 << 32) << (mode - 'a');
 		}
 		else
 		{
@@ -69,11 +69,11 @@ public final class ModeUtils
 	{
 		if(mode >= 'A' && mode <= 'Z')
 		{
-			return modeSet & ~(1 << ('Z' - mode));
+			return modeSet & ~(1 << (mode - 'A'));
 		}
 		else if(mode >= 'a' && mode <= 'z')
 		{
-			return modeSet & ~((1 << 32) << ('z' - mode));
+			return modeSet & ~((1 << 32) << (mode - 'a'));
 		}
 		else
 		{
@@ -116,7 +116,7 @@ public final class ModeUtils
 
 		//Lowercase first
 		int lowerSet = (int) (modeSet & 0xFFFFFFFF);
-		for(char c = 'z'; c >= 'a'; c--)
+		for(char c = 'a'; c <= 'z'; c++)
 		{
 			//Test most significant bit
 			if((lowerSet & 1) != 0)
@@ -129,7 +129,7 @@ public final class ModeUtils
 		
 		//Uppercase
 		int upperSet = (int) (modeSet >> 32);
-		for(char c = 'Z'; c >= 'A'; c--)
+		for(char c = 'A'; c <= 'Z'; c++)
 		{
 			//Test least significant bit
 			if((upperSet & 1) != 0)

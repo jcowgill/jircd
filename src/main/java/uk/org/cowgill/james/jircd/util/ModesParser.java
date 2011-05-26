@@ -177,7 +177,7 @@ public class ModesParser
 							
 						case Param:
 							//Add to list if adding
-							if(isAdding)
+							if(isAdding || c == 'k')		//This k is a hack
 							{
 								paramQueue.offer(info);
 							}
@@ -201,6 +201,16 @@ public class ModesParser
 				//Use this as a param
 				ChangeInfo info = paramQueue.poll();
 				info.param = item;
+				toChange.add(info);
+			}
+		}
+		
+		//Hack to allow -k with params
+		if(!paramQueue.isEmpty())
+		{
+			ChangeInfo info = paramQueue.poll();
+			if(info.flag == 'k' && !info.add)
+			{
 				toChange.add(info);
 			}
 		}

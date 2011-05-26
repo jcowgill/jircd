@@ -388,7 +388,6 @@ public final class Channel
 			//Add name
 			builder.append(entry.getValue().toPrefixString(true));
 			builder.append(entry.getKey().id.nick);
-			msg.appendParam(builder.toString());
 			namesThisLine++;
 			
 			//If 8 names, send message
@@ -399,12 +398,14 @@ public final class Channel
 				
 				msg = null;
 				namesThisLine = 0;
+				builder.setLength(0);
 			}
 		}
 		
 		//Send ending
 		if(msg != null)
 		{
+			msg.appendParam(builder.toString());
 			client.send(msg);
 		}
 		
@@ -412,6 +413,59 @@ public final class Channel
 		msg.appendParam(name);
 		msg.appendParam("End of /NAMES list");
 		client.send(msg);
+	}
+	
+	/**
+	 * Sends this channel's mode to the given client
+	 * 
+	 * @param client client to send mode to
+	 */
+	public void sendMode(Client client, boolean useMODE)
+	{
+		//Is client on the channel?
+		boolean onChannel = lookupMember(client) != null;
+		
+		//Display mode
+		String modeString = ModeUtils.toString(mode);
+		String extra = "";
+		
+		if(limit > 0)
+		{
+			modeString += 'l';
+			
+			//Add actual limit if on channel
+			if(onChannel)
+			{
+				extra = Integer.toString(limit) + ' ';
+			}
+		}
+		
+		if(key != null)
+		{
+			modeString += 'k';
+			
+			//Add actual key if on channel
+			if(onChannel)
+			{
+				extra += key;
+			}
+		}
+		
+		//Send mode
+		if(useMODE)
+		{
+			client.send(Message.newMessageFromServer("MODE").
+					appendParam(name).
+					appendParam(modeString).
+					appendParam(extra.trim()));
+		}
+		else
+		{
+			client.send(client.newNickMessage("324").
+					appendParam(name).
+					appendParam(modeString).
+					appendParam(extra.trim()));
+		}
 	}
 
 	//Channel Actions
@@ -462,6 +516,8 @@ public final class Channel
 		
 		//Add member
 		members.put(client, chanMode);
+		client.channels.add(this);
+		
 		if(invited.remove(client))
 		{
 			client.invited.remove(this);
@@ -478,8 +534,9 @@ public final class Channel
 			sendTopic(client);
 		}
 		
-		//Send channel names
+		//Send channel names and mode
 		sendNames(client);
+		sendMode(client, true);
 		
 		return true;
 	}
@@ -987,7 +1044,7 @@ public final class Channel
 			
 		default:
 			//Standard mode
-			this.mode = ModeUtils.changeMode(this.mode, 's', add);
+			this.mode = ModeUtils.changeMode(this.mode, mode, add);
 			break;
 		}
 		

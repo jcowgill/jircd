@@ -45,8 +45,16 @@ public class Nick implements Command
 		}
 		
 		//Set nick
-		client.setNick(nick);
-		client.setRegistrationFlag(RegistrationFlags.NickSet);
+		if(client.setNick(nick))
+		{
+			client.setRegistrationFlag(RegistrationFlags.NickSet);
+		}
+		else
+		{
+			client.send(client.newNickMessage("433")
+					.appendParam(nick)
+					.appendParam("Nickname already in use"));
+		}
 	}
 
 	@Override

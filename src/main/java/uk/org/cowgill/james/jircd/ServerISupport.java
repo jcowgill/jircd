@@ -293,7 +293,7 @@ public class ServerISupport
 	// Validation Checks
 	//############################
 	
-	private final static Pattern nameValidate = Pattern.compile("[a-zA-z]([a-zA-Z0-9\\[\\]\\\\`^{}-])*");
+	private final static Pattern nameValidate = Pattern.compile("[a-zA-z]([a-zA-Z0-9\\[\\]\\\\\\Q`^{}-\\|\\E])*");
 	
 	/**
 	 * Checks whether a nickname is allowed

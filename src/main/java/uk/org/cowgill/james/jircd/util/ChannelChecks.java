@@ -49,7 +49,7 @@ public final class ChannelChecks
 		}
 		
 		//Check channel full
-		if(channel.getMembers().size() >= channel.getLimit())
+		if(channel.getLimit() > 0 && channel.getMembers().size() >= channel.getLimit())
 		{
 			return JoinChannelFull;
 		}

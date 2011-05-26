@@ -84,13 +84,13 @@ public class Join implements Command
 			ChannelCheckError error;
 			
 			//Check join
-			if(keyStrings.length >= i)
+			if(keyStrings.length > i)
 			{
 				error = ChannelChecks.canJoin(channel, client, keyStrings[i]);
 			}
 			else
 			{
-				error = ChannelChecks.canJoin(channel, client, keyStrings[i]);	
+				error = ChannelChecks.canJoin(channel, client, null);	
 			}
 			
 			//Display error

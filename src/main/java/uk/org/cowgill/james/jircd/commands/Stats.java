@@ -20,11 +20,15 @@ public class Stats implements Command
 	@Override
 	public void run(Client client, Message msg)
 	{
+		char statsCmd;
+		
 		//Perform requested operation
 		if(msg.paramCount() > 0 && msg.getParam(0).length() == 1)
 		{
+			statsCmd = Character.toLowerCase(msg.getParam(0).charAt(0));
+			
 			//Only very basic stuff here i'm afraid
-			switch(Character.toLowerCase(msg.getParam(0).charAt(0)))
+			switch(statsCmd)
 			{
 			case 'm':
 				//Get command statistics
@@ -55,8 +59,9 @@ public class Stats implements Command
 				
 			case 'u':
 				//Get uptime
-				int upTime = (int) ((Server.getServer().creationTime.getTime() -
-												System.currentTimeMillis()) / 1000);
+				int upTime = (int) ((System.currentTimeMillis() - 
+										Server.getServer().creationTime.getTime()) / 1000);
+				
 				int secs = upTime % 60;
 				int mins = (upTime / 60) % 60;
 				int hours = (upTime / 3600) % 24;
@@ -73,10 +78,14 @@ public class Stats implements Command
 				break;
 			}
 		}
+		else
+		{
+			statsCmd = '*';
+		}
 		
 		//End of /STATS
 		client.send(client.newNickMessage("219").
-				appendParam(msg.getParam(0)).appendParam("End of /STATS report"));
+				appendParam(Character.toString(statsCmd)).appendParam("End of /STATS report"));
 	}
 	
 	@Override

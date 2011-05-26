@@ -58,38 +58,7 @@ public class Mode implements Command
 		//Commit stuff
 		if(parser.printMode)
 		{
-			//Is client on the channel?
-			boolean onChannel = channel.lookupMember(client) != null;
-			
-			//Display mode
-			String modeString = ModeUtils.toString(channel.getSingleMode());
-			String extra = "";
-			
-			if(channel.getLimit() > 0)
-			{
-				modeString += 'l';
-				
-				//Add actual limit if on channel
-				if(onChannel)
-				{
-					extra = Integer.toString(channel.getLimit()) + ' ';
-				}
-			}
-			
-			if(channel.getKey() != null)
-			{
-				modeString += 'k';
-				
-				//Add actual key if on channel
-				if(onChannel)
-				{
-					extra += channel.getKey();
-				}
-			}
-			
-			//Send mode
-			client.send(client.newNickMessage("324").appendParam(channel.getName()).
-					appendParam(modeString).appendParam(extra.trim()));
+			channel.sendMode(client, false);
 		}
 		else if(parser.toList != null)
 		{
@@ -152,7 +121,8 @@ public class Mode implements Command
 			for(ModesParser.ChangeInfo change : parser.toChange)
 			{					
 				//Allow unsetting of own modes
-				if(!change.add && change.param.equalsIgnoreCase(client.id.nick) &&
+				if(!change.add && change.param != null && 
+						change.param.equalsIgnoreCase(client.id.nick) &&
 						(change.flag == 'v' || change.flag == 'h' || change.flag == 'o' ||
 						change.flag == 'a' || change.flag == 'q'))
 				{

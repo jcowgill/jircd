@@ -66,7 +66,11 @@ public class Oper implements Command
 		
 		//Make operator
 		logOperMsg(true, client, name, false);
-		client.changeClass(operator.newClass);
+		if(operator.newClass != null)
+		{
+			client.changeClass(operator.newClass);
+		}
+		
 		client.setMode(operator.isSuperOp ? 'O' : 'o', true);
 	}
 	
@@ -79,7 +83,7 @@ public class Oper implements Command
 		
 		if(valid)
 		{
-			msg.append("Valid OPER attempt from ");
+			msg.append("Successful OPER attempt from ");
 		}
 		else
 		{
@@ -87,7 +91,7 @@ public class Oper implements Command
 		}
 		
 		msg.append(client.id.toString());
-		msg.append("( ");
+		msg.append("(");
 		msg.append(client.getIpAddress());
 		msg.append("), using oper name ");
 		msg.append(operName);

@@ -421,21 +421,35 @@ public abstract class Client
 			return false;
 		}
 		
-		//Generate nick change message
-		Message msg = new Message("NICK", this);
-		msg.appendParam(nick);
-		
-		//Find all members of all joined channels to send to
-		Set<Client> toSendTo = new HashSet<Client>();
-		for(Channel channel : channels)
+		//Do extra stuff if registered
+		if(isRegistered())
 		{
-			toSendTo.addAll(channel.getMembers().keySet());
+			//Generate nick change message
+			Message msg = new Message("NICK", this);
+			msg.appendParam(nick);
+			
+			//Find all members of all joined channels to send to
+			Set<Client> toSendTo = new HashSet<Client>();
+			for(Channel channel : channels)
+			{
+				toSendTo.addAll(channel.getMembers().keySet());
+			}
+			
+			//Send to self also
+			toSendTo.add(this);
+			sendTo(toSendTo, msg);
+			
+			//Change nick
+			server.clientsByNick.remove(id.nick);
+			id.nick = nick;
+			server.clientsByNick.put(nick, this);
+		}
+		else
+		{
+			//Set provisional nick
+			id.nick = nick;
 		}
 		
-		sendTo(toSendTo, msg);
-		
-		//Change nick
-		id.nick = nick;
 		return true;
 	}
 	
@@ -708,7 +722,9 @@ public abstract class Client
 	 */
 	public Message newNickMessage(String command)
 	{
-		return Message.newMessageFromServer(command).appendParam(id.nick);
+		//If nick is null, use * nickname
+		String nick = (id.nick == null) ? "*" : id.nick;
+		return Message.newMessageFromServer(command).appendParam(nick);
 	}
 	
 	/**

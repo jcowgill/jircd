@@ -311,10 +311,9 @@ public abstract class Server
 			else
 			{
 				clones.increment();
+				return true;
 			}
 		}
-		
-		return false;
 	}
 	
 	/**
