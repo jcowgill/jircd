@@ -483,7 +483,7 @@ public abstract class Server
 			//Setup defaults
 			PatternLayout layout = new PatternLayout("%-5p - %m%n");
 			
-			if(System.getProperty("os.name").toLowerCase().indexOf("win") >= 0)
+			if(System.getProperty("os.name").toLowerCase().indexOf("win") >= 0 || System.console() == null)
 			{
 				root.addAppender(new ConsoleAppender(layout));
 			}
