@@ -35,7 +35,7 @@ public class Mode implements Command
 		}
 	}
 	
-	private void processChannelModes(Client client, Message msg)
+	private static void processChannelModes(Client client, Message msg)
 	{
 		String item = msg.getParam(0);
 		
@@ -149,7 +149,7 @@ public class Mode implements Command
 		}
 	}
 	
-	private void processUserModes(Client client, Message msg)
+	private static void processUserModes(Client client, Message msg)
 	{
 		String item = msg.getParam(0);
 		

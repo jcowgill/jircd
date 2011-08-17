@@ -782,7 +782,7 @@ public final class Channel
 	 * @param msg output message
 	 * @return the fail reason
 	 */
-	private SetModeFailReason processList(Client setter, boolean add, Map<String, SetInfo> list,
+	private static SetModeFailReason processList(Client setter, boolean add, Map<String, SetInfo> list,
 			Object param, Message msg)
 	{
 		//Sanitize param
@@ -1086,7 +1086,7 @@ public final class Channel
 	 * @param mask mask to compare with
 	 * @return true if the mask matches any 1 of the entries in the list
 	 */
-	private boolean tranverseList(Map<String, SetInfo> list, String mask)
+	private static boolean tranverseList(Map<String, SetInfo> list, String mask)
 	{
 		//Check each entry in the list
 		for(String entry : list.keySet())

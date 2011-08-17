@@ -58,7 +58,8 @@ public class ColourConsoleAppender extends ConsoleAppender
      * Wraps the ANSI control characters around the
      * output from the super-class Appender.
      */
-    protected void subAppend(LoggingEvent event)
+    @Override
+	protected void subAppend(LoggingEvent event)
     {
         this.qw.write(getColour(event.getLevel()));
         super.subAppend(event);
@@ -74,7 +75,7 @@ public class ColourConsoleAppender extends ConsoleAppender
      * Get the appropriate control characters to change
      * the colour for the specified logging level.
      */
-    private String getColour(Level level)
+    private static String getColour(Level level)
     {
         switch (level.toInt())
         {

@@ -101,7 +101,7 @@ public class Who implements Command
 	/**
 	 * Responds to a WHO request from a channel
 	 */
-	private void sendChannelWho(Client client, Channel channel)
+	private static void sendChannelWho(Client client, Channel channel)
 	{
 		//Can see channel?
 		boolean allSeeing = (channel.lookupMember(client) != null) ||
@@ -130,7 +130,7 @@ public class Who implements Command
 	 * @param chanName common channel (or null if no common channel)
 	 * @param chanMode other's channel mode (or null to find mode)
 	 */
-	private void sendWhoMsg(Client client, Client other, Channel channel, ChannelMemberMode chanMode)
+	private static void sendWhoMsg(Client client, Client other, Channel channel, ChannelMemberMode chanMode)
 	{
 		//Calculate channel name and mode
 		String chanName = "*";

@@ -16,6 +16,7 @@ public class CaseInsensitiveHashMap<V> extends HashMap<String, V>
 {
 	private static final long serialVersionUID = 1L;
 
+	@Override
 	public boolean containsKey(Object key)
 	{
 		if(key == null)
@@ -28,6 +29,7 @@ public class CaseInsensitiveHashMap<V> extends HashMap<String, V>
 		}
 	}
 	
+	@Override
 	public V get(Object key)
 	{
 		if(key == null)
@@ -40,6 +42,7 @@ public class CaseInsensitiveHashMap<V> extends HashMap<String, V>
 		}
 	}
 	
+	@Override
 	public V put(String key, V value)
 	{
 		if(key == null)
@@ -52,6 +55,7 @@ public class CaseInsensitiveHashMap<V> extends HashMap<String, V>
 		}
 	}
 	
+	@Override
 	public void putAll(Map<? extends String, ? extends V> paramMap)
 	{
 		//Put each entry
@@ -61,6 +65,7 @@ public class CaseInsensitiveHashMap<V> extends HashMap<String, V>
 		}
 	}
 	
+	@Override
 	public V remove(Object key)
 	{
 		if(key == null)

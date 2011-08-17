@@ -63,7 +63,7 @@ public class Join implements Command
 	 * @param keyStrings all the keystrings that are searched
 	 * @param i join index into keystrings array
 	 */
-	private void processJoin(Client client, String chanString, String[] keyStrings, int i)
+	private static void processJoin(Client client, String chanString, String[] keyStrings, int i)
 	{
 		//Ensure leading #
 		if(chanString.charAt(0) != '#')
