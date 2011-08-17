@@ -149,6 +149,8 @@ public class ServerISupport
 		iSupportMsgs.put("FNC", "");
 		iSupportMsgs.put("EXCEPTS", "");
 		iSupportMsgs.put("INVEX", "");
+		iSupportMsgs.put("NAMESX", "");
+		iSupportMsgs.put("UHNAMES", "");
 	}
 	
 	/**

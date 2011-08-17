@@ -70,6 +70,13 @@ public abstract class Client
 	private long mode;
 	
 	/**
+	 * Flags containing protocol enhancements
+	 * 
+	 * @see ProtocolEnhancments
+	 */
+	private int protocolEnhancements;
+	
+	/**
 	 * True if client is closed
 	 */
 	private boolean closed = false;
@@ -155,6 +162,27 @@ public abstract class Client
 	public int getRegistrationFlags()
 	{
 		return registrationFlags;
+	}
+	
+	/**
+	 * Sets a protocol enhancement
+	 * 
+	 * @param enhancement protocol enhancement this client now has
+	 */
+	public void setProtocolEnhancement(int enhancement)
+	{
+		protocolEnhancements |= enhancement;
+	}
+	
+	/**
+	 * Returns true if this client has a protocol enhancement
+	 * 
+	 * @param enhancement protocol enhancement to check
+	 * @return true if this client has it
+	 */
+	public boolean hasProtocolEnhancement(int enhancement)
+	{
+		return (protocolEnhancements & enhancement) != 0;
 	}
 	
 	/**

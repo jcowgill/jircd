@@ -27,6 +27,7 @@ public class Module implements uk.org.cowgill.james.jircd.Module
 		modMan.registerCommand(new Kick());
 		modMan.registerCommand(new Invite());
 		modMan.registerCommand(new Names());
+		modMan.registerCommand(new Protoctl());
 		
 		modMan.registerCommand(new Msg.PrivMsg());
 		modMan.registerCommand(new Msg.Notice());

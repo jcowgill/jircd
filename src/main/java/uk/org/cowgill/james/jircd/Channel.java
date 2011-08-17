@@ -348,7 +348,9 @@ public final class Channel
 	 */
 	public void sendNames(Client client)
 	{
-		//TODO NAMESX and UHNAMES support
+		//Detect enhancements
+		boolean hasNamesX = client.hasProtocolEnhancement(ProtocolEnhancements.NamesX);
+		boolean hasUhNames = client.hasProtocolEnhancement(ProtocolEnhancements.UhNames);
 		
 		//Construct prefix
 		Message namesPrefix = client.newNickMessage("353");
@@ -385,9 +387,17 @@ public final class Channel
 				builder.append(' ');
 			}
 			
-			//Add name
-			builder.append(entry.getValue().toPrefixString(true));
-			builder.append(entry.getKey().id.nick);
+			//Add prefix and name
+			builder.append(entry.getValue().toPrefixString(!hasNamesX));
+			if(hasUhNames)
+			{
+				builder.append(entry.getKey().id.toString());
+			}
+			else
+			{
+				builder.append(entry.getKey().id.nick);
+			}
+			
 			namesThisLine++;
 			
 			//If 8 names, send message
