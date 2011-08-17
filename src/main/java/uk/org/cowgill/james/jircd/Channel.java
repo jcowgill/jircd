@@ -1044,7 +1044,14 @@ public final class Channel
 			
 		default:
 			//Standard mode
+			long oldMode = this.mode; 
 			this.mode = ModeUtils.changeMode(this.mode, mode, add);
+			
+			if(oldMode == this.mode)
+			{
+				return SetModeFailReason.AlreadySet;
+			}
+			
 			break;
 		}
 		
