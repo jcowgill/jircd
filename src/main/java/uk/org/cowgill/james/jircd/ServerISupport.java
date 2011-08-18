@@ -246,8 +246,11 @@ public class ServerISupport
 				lenBefore = iBuilder.length();
 				
 				iBuilder.append(entry.getKey());
-				iBuilder.append('=');
-				iBuilder.append(entry.getValue());
+				if(!entry.getValue().isEmpty())
+				{
+					iBuilder.append('=');
+					iBuilder.append(entry.getValue());
+				}
 				
 				//Check max characters
 				if(iBuilder.length() > ISUPPORTLEN)

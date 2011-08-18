@@ -34,7 +34,7 @@ public class Names implements Command
 			}
 			else
 			{
-				ChannelCheckError.GeneralNotInChannel.sendToClient(channel, client);
+				ChannelCheckError.GeneralNotInChannel.sendToClient(msg.getParam(0), client);
 			}
 		}
 	}

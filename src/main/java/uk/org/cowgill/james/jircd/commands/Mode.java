@@ -48,7 +48,7 @@ public class Mode implements Command
 		//Exists?
 		if(channel == null)
 		{
-			client.send(client.newNickMessage("401").appendParam(item).appendParam("No such nick / channel"));
+			client.send(client.newNickMessage("403").appendParam(item).appendParam("No such channel"));
 			return;
 		}
 		

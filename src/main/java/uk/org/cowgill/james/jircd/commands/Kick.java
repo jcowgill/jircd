@@ -43,7 +43,6 @@ public class Kick implements Command
 			if(singleChannel == null)
 			{
 				//No such channel
-				//TODO ensure channels use 403 not 401
 				client.send(client.newNickMessage("403").appendParam(channels[0]).
 						appendParam("No such channel"));
 				return;

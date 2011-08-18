@@ -157,7 +157,6 @@ public abstract class Server
 	{
 		try
 		{
-			//TODO Should rehashing be done in a separate thread?
 			//Open config file
 			InputStream stream = new BufferedInputStream(new FileInputStream(configFile));
 			
