@@ -132,7 +132,7 @@ public class Mode implements Command
 				else
 				{
 					//Can set?
-					ChannelCheckError error = ChannelChecks.canSetMode(channel, client, change.flag);
+					ChannelCheckError error = ChannelChecks.canSetMode(channel, client, change.add, change.flag);
 					
 					if(error == ChannelCheckError.OK)
 					{

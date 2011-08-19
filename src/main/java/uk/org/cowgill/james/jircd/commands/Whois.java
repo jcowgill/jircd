@@ -101,8 +101,6 @@ public class Whois implements Command
 				client.send(chanMsg);
 			}
 			
-			//TODO enforce isupport limits (why is this todo here?)
-			
 			//Away message
 			other.sendAwayMsgTo(client);
 

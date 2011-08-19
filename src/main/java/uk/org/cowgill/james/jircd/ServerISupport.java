@@ -144,7 +144,6 @@ public class ServerISupport
 		
 		iSupportMsgs.put("PREFIX", "(qaohv)~&@%+");
 		iSupportMsgs.put("CHANTYPES", "#");
-		iSupportMsgs.put("NETWORK", "");		//TODO Network Name
 		iSupportMsgs.put("CASEMAPPING", "ascii");
 		iSupportMsgs.put("FNC", "");
 		iSupportMsgs.put("EXCEPTS", "");
@@ -325,11 +324,11 @@ public class ServerISupport
 	/**
 	 * Checks whether a channel is allowed
 	 * 
-	 * @param user username to check
+	 * @param user channel to check
 	 * @return whether it is allowed
 	 */
-	public static boolean validateChannel(String user)
+	public static boolean validateChannel(String channel)
 	{
-		return user.length() <= USERLEN && nameValidate.matcher(user).matches();			
+		return channel.length() <= CHANNELLEN && nameValidate.matcher(channel).matches();			
 	}
 }

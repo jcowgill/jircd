@@ -38,7 +38,8 @@ public enum ChannelCheckError
 	//SetMode can produce GeneralNotAnOp
 	SetModeHalfOpDeny("460", "Half-ops cannot set that mode"),
 	SetModeOwnerOnly("499", "You're not channel owner"),
-	SetModeNotAnIrcOp("481", "Only IRC Operators can set mode O");
+	SetModeNotAnIrcOp("481", "Only IRC Operators can set mode O"),
+	SetModeListFull("478", "Channel list is full");
 	
 	private final String numeric;
 	private final String text;

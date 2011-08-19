@@ -45,7 +45,6 @@ public class Part implements Command
 			//Part
 			if(!channel.part(client, partMsg))
 			{
-				//TODO this and other commands could be too revealing for secret channels
 				client.send(client.newNickMessage("442").appendParam(channelStrings[i]).
 						appendParam("You're not on that channel"));
 				continue;

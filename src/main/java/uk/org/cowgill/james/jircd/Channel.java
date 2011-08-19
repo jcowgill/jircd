@@ -10,15 +10,6 @@ import java.util.Set;
 import uk.org.cowgill.james.jircd.util.MemberListDisplayer;
 import uk.org.cowgill.james.jircd.util.ModeUtils;
 
-/*
- * TODO
- * 
- * Note difference between +p and +s
- * ----
- * +p has secret MEMBERSHIP. Channel does not appear on /whois, /who, /names unless your in it
- * +s is a completely secret channel. Channel does not appear on /list or /topic.
- */
-
 /**
  * Represents an IRC channel
  * 

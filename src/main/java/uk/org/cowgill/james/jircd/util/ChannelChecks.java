@@ -1,5 +1,7 @@
 package uk.org.cowgill.james.jircd.util;
 
+import java.util.Map;
+
 import uk.org.cowgill.james.jircd.Channel;
 import uk.org.cowgill.james.jircd.ChannelMemberMode;
 import uk.org.cowgill.james.jircd.Client;
@@ -210,6 +212,25 @@ public final class ChannelChecks
 		
 		return OK;
 	}
+	
+	/**
+	 * Checks to see if a ban / invite list is full
+	 * 
+	 * @param add true if adding to list
+	 * @param list the list to check
+	 * @return the channel check error to generate
+	 */
+	private static ChannelCheckError handleListFull(boolean add, Map<String, Channel.SetInfo> list)
+	{
+		if(add && list.size() >= ServerISupport.MAXLIST)
+		{
+			return SetModeListFull;
+		}
+		else
+		{
+			return OK;
+		}
+	}
 
 	/**
 	 * Determines whether a client can set a mode in a channel
@@ -222,7 +243,7 @@ public final class ChannelChecks
 	 * @param mode the mode which is being modified
 	 * @return the error or ChannelCheckError.OK if they can set the mode
 	 */
-	public static ChannelCheckError canSetMode(Channel channel, Client client, char mode)
+	public static ChannelCheckError canSetMode(Channel channel, Client client, boolean add, char mode)
 	{
 		//Lookup member
 		ChannelMemberMode clientMode = channel.lookupMember(client);
@@ -265,6 +286,16 @@ public final class ChannelChecks
 			//Must be owner
 			canSet = clientMode.getHighestMode() >= ChannelMemberMode.OWNER;
 			break;
+			
+			//Handle lists (half-ops can do all this)
+		case 'b':
+			return handleListFull(add, channel.getBanList());
+			
+		case 'e':
+			return handleListFull(add, channel.getBanExceptList());
+			
+		case 'I':
+			return handleListFull(add, channel.getInviteExceptList());
 			
 		default:
 			//Must be half op = OK

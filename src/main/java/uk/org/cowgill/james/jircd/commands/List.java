@@ -9,9 +9,6 @@ import uk.org.cowgill.james.jircd.Message;
 import uk.org.cowgill.james.jircd.Permissions;
 import uk.org.cowgill.james.jircd.Server;
 
-//TODO LIST extensions for lots of channels
-// and list windcards
-
 /**
  * The LIST command - lists all the channels on the server
  * 
