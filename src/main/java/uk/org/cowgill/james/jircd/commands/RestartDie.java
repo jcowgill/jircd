@@ -7,8 +7,6 @@ import uk.org.cowgill.james.jircd.Permissions;
 import uk.org.cowgill.james.jircd.Server;
 import org.apache.log4j.Logger;
 
-//TODO add special passwords to prevent OPER abuse maybe
-
 /**
  * The RESTART and DIE commands - restarts or dies the server
  * 

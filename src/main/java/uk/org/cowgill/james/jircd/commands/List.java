@@ -6,6 +6,7 @@ import uk.org.cowgill.james.jircd.Channel;
 import uk.org.cowgill.james.jircd.Client;
 import uk.org.cowgill.james.jircd.Command;
 import uk.org.cowgill.james.jircd.Message;
+import uk.org.cowgill.james.jircd.Permissions;
 import uk.org.cowgill.james.jircd.Server;
 
 //TODO LIST extensions for lots of channels
@@ -24,6 +25,9 @@ public class List implements Command
 		int privateMembers = 0;
 		Set<Channel> clientChannels = client.getChannels();
 		
+		//All seeing?
+		boolean allSeeing = client.hasPermission(Permissions.seeAllChannels);
+		
 		//Prepare reply
 		String reply = Message.newStringFromServer("322") + " " + client.id.nick + " ";
 		
@@ -31,7 +35,8 @@ public class List implements Command
 		for(Channel channel : Server.getServer().getChannels())
 		{
 			//Can we see this channel?
-			if((channel.isModeSet('p') || channel.isModeSet('s')) && !clientChannels.contains(channel))
+			if(!allSeeing && (channel.isModeSet('p') || channel.isModeSet('s')) &&
+					!clientChannels.contains(channel))
 			{
 				//Do not show
 				if(channel.isModeSet('p'))

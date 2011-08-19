@@ -34,6 +34,7 @@ public final class Permissions
 
     /**
      * Automatically become admin in all channels
+     * TODO not implemented
      */
     public final static int autoAdmin = 0x20;
 
@@ -44,6 +45,7 @@ public final class Permissions
 
     /**
      * Ability to see actual hostnames (not masked versions)
+     * TODO not implemented
      */
     public final static int seeHost = 0x80;
 
@@ -70,11 +72,13 @@ public final class Permissions
 
     /**
      * Ability to change another user's nickname
+     * TODO not implemented
      */
     public final static int changeOtherNick = 0x1000;
 
     /**
      * Ignores the flood limiter
+     * TODO not implemented
      */
     public final static int noFloodLimit = 0x2000;
 
