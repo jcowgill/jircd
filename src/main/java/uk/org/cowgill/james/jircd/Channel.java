@@ -429,9 +429,11 @@ public final class Channel
 	/**
 	 * Sends this channel's mode to the given client
 	 * 
+	 * <p>This method uses IRC numeric 324
+	 * 
 	 * @param client client to send mode to
 	 */
-	public void sendMode(Client client, boolean useMODE)
+	public void sendMode(Client client)
 	{
 		//Is client on the channel?
 		boolean onChannel = lookupMember(client) != null;
@@ -463,20 +465,10 @@ public final class Channel
 		}
 		
 		//Send mode
-		if(useMODE)
-		{
-			client.send(Message.newMessageFromServer("MODE").
-					appendParam(name).
-					appendParam(modeString).
-					appendParam(extra.trim()));
-		}
-		else
-		{
-			client.send(client.newNickMessage("324").
-					appendParam(name).
-					appendParam(modeString).
-					appendParam(extra.trim()));
-		}
+		client.send(client.newNickMessage("324").
+				appendParam(name).
+				appendParam(modeString).
+				appendParam(extra.trim()));
 	}
 
 	//Channel Actions
@@ -545,10 +537,8 @@ public final class Channel
 			sendTopic(client);
 		}
 		
-		//Send channel names and mode
+		//Send channel names
 		sendNames(client);
-		sendMode(client, true);
-		
 		return true;
 	}
 	

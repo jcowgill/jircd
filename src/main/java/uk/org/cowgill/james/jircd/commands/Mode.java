@@ -58,7 +58,7 @@ public class Mode implements Command
 		//Commit stuff
 		if(parser.printMode)
 		{
-			channel.sendMode(client, false);
+			channel.sendMode(client);
 		}
 		else if(parser.toList != null)
 		{
