@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import uk.org.cowgill.james.jircd.util.MemberListDisplayer;
 import uk.org.cowgill.james.jircd.util.ModeUtils;
 
 /*
@@ -349,11 +350,11 @@ public final class Channel
 	public void sendNames(Client client)
 	{
 		//Detect enhancements
-		boolean hasNamesX = client.hasProtocolEnhancement(ProtocolEnhancements.NamesX);
-		boolean hasUhNames = client.hasProtocolEnhancement(ProtocolEnhancements.UhNames);
+		final boolean hasNamesX = client.hasProtocolEnhancement(ProtocolEnhancements.NamesX);
+		final boolean hasUhNames = client.hasProtocolEnhancement(ProtocolEnhancements.UhNames);
 		
 		//Construct prefix
-		Message namesPrefix = client.newNickMessage("353");
+		final Message namesPrefix = client.newNickMessage("353");
 		
 		if(isModeSet('s'))
 		{
@@ -370,56 +371,56 @@ public final class Channel
 		
 		namesPrefix.appendParam(name);
 		
-		//Send up to 8 names per line
-		StringBuilder builder = new StringBuilder();
-		int namesThisLine = 0;
-		Message msg = null;
+		//Start loop
+		final StringBuilder builder = new StringBuilder();
 		
-		for(Entry<Client, ChannelMemberMode> entry : members.entrySet())
+		MemberListDisplayer.Executer namesExecuter = new MemberListDisplayer.Executer()
 		{
-			//Setup new message
-			if(msg == null)
-			{
-				msg = new Message(namesPrefix);
-			}
-			else
-			{
-				builder.append(' ');
-			}
+			int namesThisLine;
 			
-			//Add prefix and name
-			builder.append(entry.getValue().toPrefixString(!hasNamesX));
-			if(hasUhNames)
+			@Override
+			public void displayMember(Client client, Channel channel, Client other, ChannelMemberMode mode)
 			{
-				builder.append(entry.getKey().id.toString());
-			}
-			else
-			{
-				builder.append(entry.getKey().id.nick);
-			}
-			
-			namesThisLine++;
-			
-			//If 8 names, send message
-			if(namesThisLine >= 8)
-			{
-				msg.appendParam(builder.toString());
-				client.send(msg);
+				//Add space before previous name
+				if(builder.length() != 0)
+				{
+					builder.append(' ');
+				}
 				
-				msg = null;
-				namesThisLine = 0;
-				builder.setLength(0);
+				//Add prefix and name
+				builder.append(mode.toPrefixString(!hasNamesX));
+				if(hasUhNames)
+				{
+					builder.append(other.id.toString());
+				}
+				else
+				{
+					builder.append(other.id.nick);
+				}
+				
+				namesThisLine++;
+				
+				//If 8 names, send message
+				if(namesThisLine >= 8)
+				{
+					client.send(new Message(namesPrefix).appendParam(builder.toString()));
+
+					namesThisLine = 0;
+					builder.setLength(0);
+				}
 			}
-		}
+		};
 		
-		//Send ending
-		if(msg != null)
+		MemberListDisplayer.listChannel(client, this, namesExecuter);
+		
+		//Send last part
+		if(builder.length() != 0)
 		{
-			msg.appendParam(builder.toString());
-			client.send(msg);
+			client.send(new Message(namesPrefix).appendParam(builder.toString()));
 		}
 		
-		msg = client.newNickMessage("366");
+		//Send end of names
+		Message msg = client.newNickMessage("366");
 		msg.appendParam(name);
 		msg.appendParam("End of /NAMES list");
 		client.send(msg);

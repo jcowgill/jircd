@@ -1,9 +1,6 @@
 package uk.org.cowgill.james.jircd.commands;
 
 import java.util.Collection;
-import java.util.Set;
-import java.util.Map.Entry;
-
 import uk.org.cowgill.james.jircd.Channel;
 import uk.org.cowgill.james.jircd.ChannelMemberMode;
 import uk.org.cowgill.james.jircd.Client;
@@ -12,6 +9,7 @@ import uk.org.cowgill.james.jircd.IRCMask;
 import uk.org.cowgill.james.jircd.Message;
 import uk.org.cowgill.james.jircd.Permissions;
 import uk.org.cowgill.james.jircd.Server;
+import uk.org.cowgill.james.jircd.util.MemberListDisplayer;
 
 /**
  * The WHO command - displays information about clients
@@ -55,7 +53,16 @@ public class Who implements Command
 			if(channel != null)
 			{
 				//Print channel members
-				sendChannelWho(client, channel);
+				MemberListDisplayer.listChannel(client, channel, new MemberListDisplayer.Executer()
+				{
+					@Override
+					public void displayMember(Client client, Channel channel, Client other,
+							ChannelMemberMode mode)
+					{
+						//Forward each member display to a new message
+						Who.sendWhoMsg(client, other, channel, mode);
+					}
+				});
 			}
 		}
 		else
@@ -76,7 +83,7 @@ public class Who implements Command
 			for(Client other : clients)
 			{
 				//Check visibility
-				Channel commonChannel = findCommonChannel(client, other);
+				Channel commonChannel = MemberListDisplayer.findCommonChannel(client, other);
 				
 				if(commonChannel != null || !other.isModeSet('i') || client == other
 						|| client.hasPermission(Permissions.seeInvisible))
@@ -96,30 +103,6 @@ public class Who implements Command
 		//Send end reply
 		client.send(client.newNickMessage("315").
 				appendParam(mask).appendParam("End of /WHO list"));
-	}
-	
-	/**
-	 * Responds to a WHO request from a channel
-	 */
-	private static void sendChannelWho(Client client, Channel channel)
-	{
-		//Can see channel?
-		boolean allSeeing = (channel.lookupMember(client) != null) ||
-								client.hasPermission(Permissions.seeInvisible);
-		
-		//Send replies
-		for(Entry<Client, ChannelMemberMode> other : channel.getMembers().entrySet())
-		{
-			//Can see client?
-			if(allSeeing || findCommonChannel(client, other.getKey()) != null)
-			{
-				//Send message
-				sendWhoMsg(client, other.getKey(), channel, other.getValue());
-			}
-		}
-		
-		//TODO update seeInvisible on NAMES etc
-		//TODO NAMES should not view members of any old channel (possibly)
 	}
 
 	/**
@@ -179,38 +162,6 @@ public class Who implements Command
 				appendParam(other.id.nick).
 				appendParam(info.toString()).
 				appendParam("0 " + other.realName));
-	}
-	
-	/**
-	 * Attempts to find a common channel between 2 clients
-	 * 
-	 * @param clientA first client
-	 * @param clientB second client
-	 * @return the common channel or null if there is no common channel
-	 */
-	public static Channel findCommonChannel(Client clientA, Client clientB)
-	{
-		Set<Channel> chansA = clientA.getChannels();
-		Set<Channel> chansB = clientB.getChannels();
-		
-		//Swap so clientB has most channels
-		if(chansA.size() > chansB.size())
-		{
-			Set<Channel> tmp = chansA;
-			chansB = chansA;
-			chansA = tmp;
-		}
-		
-		//Search for common channels
-		for(Channel channel : chansA)
-		{
-			if(chansB.contains(channel))
-			{
-				return channel;
-			}
-		}
-		
-		return null;
 	}
 	
 	@Override
