@@ -20,7 +20,7 @@ public class Wall implements Command
 		if(client.hasPermission(Permissions.wall))
 		{
 			//Send WALLOPS message
-			Message wMsg = new Message("WALL", client);
+			Message wMsg = new Message("WALLOPS", client);
 			wMsg.appendParam(msg.getParam(0));
 			
 			Client.sendTo(Server.getServer().getRegisteredClients(), wMsg);

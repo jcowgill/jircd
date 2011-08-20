@@ -72,7 +72,7 @@ public class Whois implements Command
 				//Setup new message
 				if(chanMsg == null)
 				{
-					chanMsg = client.newNickMessage("319");
+					chanMsg = client.newNickMessage("319").appendParam(other.id.nick);
 				}
 				else
 				{
@@ -98,6 +98,7 @@ public class Whois implements Command
 			//Send ending
 			if(chanMsg != null)
 			{
+				chanMsg.appendParam(builder.toString());
 				client.send(chanMsg);
 			}
 			
