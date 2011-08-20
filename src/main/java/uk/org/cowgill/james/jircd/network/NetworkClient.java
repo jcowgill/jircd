@@ -10,6 +10,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.security.SecureRandom;
+import java.util.Arrays;
+
 import org.apache.log4j.Logger;
 
 import uk.org.cowgill.james.jircd.Client;
@@ -27,6 +29,8 @@ final class NetworkClient extends Client
 	private static final ConnectionClass DEFAULT_CONN_CLASS = new ConnectionClass();
 	
 	private static final SecureRandom randomGen = new SecureRandom();
+	
+	private static ByteBuffer dummyBuffer = ByteBuffer.allocate(2);
 	
 	/**
 	 * Timeout after a ping has been sent to the client
@@ -62,7 +66,7 @@ final class NetworkClient extends Client
 	/**
 	 * Data for byte buffer
 	 */
-	private byte[] localBufferData = new byte[512];
+	private byte[] localBufferData = new byte[1024];
 	
 	/**
 	 * Byte buffer to recent messages
@@ -73,6 +77,11 @@ final class NetworkClient extends Client
 	 * Time of the last message to be received by the server
 	 */
 	private long lastMessageTime;
+	
+	/**
+	 * Timer used for the flood limiter
+	 */
+	private FloodTimer floodTimer = new FloodTimer(this);
 	
 	/**
 	 * Spoof check string
@@ -112,6 +121,8 @@ final class NetworkClient extends Client
 		
 		//Setup channel options
 		channel.configureBlocking(false);
+		channel.socket().setReceiveBufferSize(1024);
+		channel.socket().setSoLinger(true, 5);
 		changeClass(DEFAULT_CONN_CLASS, true);
 		
 		//Begin spoof check
@@ -131,13 +142,23 @@ final class NetworkClient extends Client
 	 */
 	void processReadEvent()
 	{
-		//Test for closures
 		try
 		{
+			//Read data
 			if(channel.read(localBuffer) == -1)
 			{
 				//Close client
 				close("Connection reset by peer");
+				return;
+			}
+			
+			//If there is anything left, exceeded limit
+			if(channel.read(dummyBuffer) > 0)
+			{
+				//Close client
+				close("ReadQ Limit Exceeded");
+				dummyBuffer.position(0);
+				dummyBuffer.limit(2);
 				return;
 			}
 		}
@@ -145,6 +166,12 @@ final class NetworkClient extends Client
 		{
 			logger.warn("Read error from socket", e);
 			close("Read error");
+			return;
+		}
+		
+		//Check flood timer
+		if(!floodTimer.checkTimer())
+		{
 			return;
 		}
 		
@@ -167,9 +194,9 @@ final class NetworkClient extends Client
 				if(localBuffer.remaining() == 0)
 				{
 					//Skip this blank message
-					if(i != 511)
+					if(i != localBuffer.capacity() - 1)
 					{
-						localBuffer.limit(512);
+						localBuffer.limit(localBuffer.capacity());
 						localBuffer.position(i + 1);
 					}
 					
@@ -186,29 +213,39 @@ final class NetworkClient extends Client
 				catch(CharacterCodingException e)
 				{
 					//Drop message
-					localBuffer.limit(512);
+					localBuffer.limit(localBuffer.capacity());
 					localBuffer.position(i + 1);
 					continue;
 				}
 				
 				//Dispatch message
+				floodTimer.processMessage();
 				Server.getServer().getModuleManager().executeCommand(this, msg);
 				
 				//Reset position and limit
-				localBuffer.limit(512);
+				localBuffer.limit(localBuffer.capacity());
 				localBuffer.position(i + 1);
+				
+				//If we're now limited, break now
+				if(!floodTimer.checkTimer())
+				{
+					break;
+				}
+			}
+			else
+			{
+				//Check for msg size exceeded
+				if((i - localBuffer.position()) >= 512)
+				{
+					//Oversized message
+					close("Read error: Message size exceeded");
+					return;
+				}
 			}
 		}
 		
 		//Copy data after position back to start
 		int bytesLeft = endByte - localBuffer.position();
-		
-		if(bytesLeft >= 512)
-		{
-			//Oversized message
-			close("Read error: Message size exceeded");
-			return;
-		}
 		
 		System.arraycopy(localBufferData, localBuffer.position(),
 						 localBufferData, 0, bytesLeft);
@@ -289,6 +326,7 @@ final class NetworkClient extends Client
 		try
 		{
 			//Close channel
+			channel.socket().shutdownOutput();
 			channel.close();
 		}
 		catch(IOException e)
@@ -357,7 +395,9 @@ final class NetworkClient extends Client
 		//Update buffer sizes
 		try
 		{
-			channel.socket().setReceiveBufferSize(clazz.readQueue);
+			localBufferData = Arrays.copyOf(localBufferData, clazz.readQueue);
+			localBuffer = ByteBuffer.wrap(localBufferData);
+			
 			channel.socket().setSendBufferSize(clazz.readQueue);
 		}
 		catch(IOException e)

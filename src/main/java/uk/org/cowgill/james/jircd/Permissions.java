@@ -78,7 +78,6 @@ public final class Permissions
 
     /**
      * Ignores the flood limiter
-     * TODO not implemented
      */
     public final static int noFloodLimit = 0x2000;
 

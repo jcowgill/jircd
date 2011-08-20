@@ -214,12 +214,15 @@ final class NetworkServer extends Server
 				//Perform ping checks
 				if(System.currentTimeMillis() - 1000 > lastPingCheck)
 				{
+					//Also process flood queue here
+					FloodTimer.processFloodQueue();
+					
 					//Iterate over all clients and ping if nessesary
 					for(Client locClient : clients)
 					{
 						if(locClient instanceof NetworkClient)
 						{
-							//((NetworkClient) locClient).pingCheckEvent();
+							((NetworkClient) locClient).pingCheckEvent();
 						}
 					}
 					
