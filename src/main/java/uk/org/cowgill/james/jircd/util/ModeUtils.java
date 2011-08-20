@@ -19,13 +19,13 @@ public final class ModeUtils
 	public static boolean isModeSet(long modeSet, char mode)
 	{
 		//Check modes bitset
-		if(mode >= 'A' && mode <= 'Z')
+		if(mode >= 'a' && mode <= 'z')
 		{
-			return (modeSet & (1 << (mode - 'A'))) != 0;
+			return (modeSet & (1 << (mode - 'a'))) != 0;
 		}
-		else if(mode >= 'a' && mode <= 'z')
+		else if(mode >= 'A' && mode <= 'Z')
 		{
-			return (modeSet & ((1 << 32) << (mode - 'a'))) != 0;
+			return (modeSet & ((1L << 32) << (mode - 'A'))) != 0;
 		}
 		else
 		{
@@ -43,13 +43,13 @@ public final class ModeUtils
 	 */
 	public static long setMode(long modeSet, char mode)
 	{
-		if(mode >= 'A' && mode <= 'Z')
+		if(mode >= 'a' && mode <= 'z')
 		{
-			return modeSet | 1 << (mode - 'A');
+			return modeSet | 1 << (mode - 'a');
 		}
-		else if(mode >= 'a' && mode <= 'z')
+		else if(mode >= 'A' && mode <= 'Z')
 		{
-			return modeSet | (1 << 32) << (mode - 'a');
+			return modeSet | (1L << 32) << (mode - 'A');
 		}
 		else
 		{
@@ -67,13 +67,13 @@ public final class ModeUtils
 	 */
 	public static long clearMode(long modeSet, char mode)
 	{
-		if(mode >= 'A' && mode <= 'Z')
+		if(mode >= 'a' && mode <= 'z')
 		{
-			return modeSet & ~(1 << (mode - 'A'));
+			return modeSet & ~(1 << (mode - 'a'));
 		}
-		else if(mode >= 'a' && mode <= 'z')
+		else if(mode >= 'A' && mode <= 'Z')
 		{
-			return modeSet & ~((1 << 32) << (mode - 'a'));
+			return modeSet & ~((1L << 32) << (mode - 'A'));
 		}
 		else
 		{

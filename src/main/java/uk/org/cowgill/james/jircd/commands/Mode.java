@@ -206,8 +206,8 @@ public class Mode implements Command
 			//Process modes
 			for(ModesParser.ChangeInfo change : parser.toChange)
 			{
-				//Do not grant opers
-				if(change.add && (change.flag == 'o' || change.flag == 'O'))
+				//Do not grant opers or allow setting bot flag
+				if(change.add && (change.flag == 'o' || change.flag == 'O' || change.flag == 'B'))
 				{
 					continue;
 				}

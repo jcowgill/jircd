@@ -162,36 +162,41 @@ public class ModesParser
 					}
 					else
 					{
-						//Set basic information
-						ChangeInfo info = new ChangeInfo();
-						info.add = isAdding;
-						info.flag = c;
-						
-						//Check mode type
-						switch(modes.get(c))
+						//Get mode type
+						ModeType type = modes.get(c);
+						if(type != null)
 						{
-						case OnOff:
-							//Add to changes
-							toChange.add(info);
-							break;
-							
-						case Param:
-							//Add to list if adding
-							if(isAdding || c == 'k')		//This k is a hack
+							//Set basic information
+							ChangeInfo info = new ChangeInfo();
+							info.add = isAdding;
+							info.flag = c;
+						
+							//Check mode type
+							switch(type)
 							{
-								paramQueue.offer(info);
-							}
-							else
-							{
+							case OnOff:
+								//Add to changes
 								toChange.add(info);
+								break;
+								
+							case Param:
+								//Add to list if adding
+								if(isAdding || c == 'k')		//This k is a hack
+								{
+									paramQueue.offer(info);
+								}
+								else
+								{
+									toChange.add(info);
+								}
+								break;
+								
+							case List:
+							case MemberList:
+								//Add to param queue
+								paramQueue.offer(info);
+								break;
 							}
-							break;
-							
-						case List:
-						case MemberList:
-							//Add to param queue
-							paramQueue.offer(info);
-							break;
 						}
 					}
 				}
