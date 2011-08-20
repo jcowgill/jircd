@@ -623,7 +623,7 @@ public abstract class Server
 		protected void append(LoggingEvent event)
 		{
 			String msg = Message.newStringFromServer("NOTICE ");
-			String logMsg = ":" + layout.format(event);
+			String logMsg = " :" + layout.format(event);
 			
 			//Go though everyone in the operator cache
 			for(Client client : operators)
