@@ -63,25 +63,19 @@ public final class Permissions
     public final static int joinAnyChannel = 0x400;
 
     /**
-     * Ability to change another user's nickname
-     * TODO not implemented
-     */
-    public final static int changeOtherNick = 0x800;
-
-    /**
      * Ignores the flood limiter
      */
-    public final static int noFloodLimit = 0x1000;
+    public final static int noFloodLimit = 0x800;
 
     /**
      * Can see users IPs
      */
-    public final static int userIP = 0x2000;
+    public final static int userIP = 0x1000;
 
     /**
      * Can see invisible (+i) users and all members in all channels
      */
-    public final static int seeInvisible = 0x4000;
+    public final static int seeInvisible = 0x2000;
 
 
     /**
