@@ -21,6 +21,7 @@ public class Module implements uk.org.cowgill.james.jircd.Module
 		modMan.registerCommand(new Mode());
 		
 		modMan.registerCommand(new Join());
+		modMan.registerCommand(new Join.JoinA());
 		modMan.registerCommand(new Part());
 		modMan.registerCommand(new Part.Leave());
 		modMan.registerCommand(new Topic());

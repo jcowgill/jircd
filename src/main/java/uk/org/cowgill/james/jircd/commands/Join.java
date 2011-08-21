@@ -3,10 +3,13 @@ package uk.org.cowgill.james.jircd.commands;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import uk.org.cowgill.james.jircd.Channel;
 import uk.org.cowgill.james.jircd.Client;
 import uk.org.cowgill.james.jircd.Command;
 import uk.org.cowgill.james.jircd.Message;
+import uk.org.cowgill.james.jircd.Permissions;
 import uk.org.cowgill.james.jircd.Server;
 import uk.org.cowgill.james.jircd.util.ChannelCheckError;
 import uk.org.cowgill.james.jircd.util.ChannelChecks;
@@ -63,7 +66,7 @@ public class Join implements Command
 	 * @param keyStrings all the keystrings that are searched
 	 * @param i join index into keystrings array
 	 */
-	private static void processJoin(Client client, String chanString, String[] keyStrings, int i)
+	private void processJoin(Client client, String chanString, String[] keyStrings, int i)
 	{
 		//Ensure leading #
 		if(chanString.charAt(0) != '#')
@@ -86,11 +89,11 @@ public class Join implements Command
 			//Check join
 			if(keyStrings.length > i)
 			{
-				error = ChannelChecks.canJoin(channel, client, keyStrings[i]);
+				error = ChannelChecks.canJoin(channel, client, keyStrings[i], allowJoinAny());
 			}
 			else
 			{
-				error = ChannelChecks.canJoin(channel, client, null);	
+				error = ChannelChecks.canJoin(channel, client, null, allowJoinAny());	
 			}
 			
 			//Display error
@@ -109,6 +112,27 @@ public class Join implements Command
 		
 		//Join channel
 		channel.join(client, true);
+		postJoin(channel, client);
+	}
+	
+	/**
+	 * Called after the the client has joined the channel specified
+	 * 
+	 * @param channel channel to join
+	 * @param client client who's joining
+	 */
+	protected void postJoin(Channel channel, Client client)
+	{
+	}
+	
+	/**
+	 * Called to delect whether operators are allowed to use joinAnyChannel permission
+	 * 
+	 * @return if joinAnyChannel is allowed
+	 */
+	protected boolean allowJoinAny()
+	{
+		return false;
 	}
 
 	@Override
@@ -127,5 +151,46 @@ public class Join implements Command
 	public int getFlags()
 	{
 		return FLAG_NORMAL;
+	}
+	
+	public static class JoinA extends Join
+	{
+		private static final Logger logger = Logger.getLogger(JoinA.class);
+		
+		@Override
+		public void run(Client client, Message msg)
+		{
+			//Validate permissions
+			if(client.hasPermission(Permissions.joinAdmin))
+			{
+				//Allowed
+				super.run(client, msg);
+			}
+			else
+			{
+				//Permission denied
+				logger.warn(client.id.toString() + " attempted to use JOINA but was denied");
+				client.send(client.newNickMessage("481").appendParam("JOINA: Permission Denied"));
+			}
+		}
+		
+		@Override
+		protected void postJoin(Channel channel, Client client)
+		{
+			//Set admin
+			channel.setMode(null, true, 'a', client);
+		}
+		
+		@Override
+		protected boolean allowJoinAny()
+		{
+			return true;
+		}
+		
+		@Override
+		public String getName()
+		{
+			return "JOINA";
+		}
 	}
 }

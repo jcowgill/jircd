@@ -22,9 +22,10 @@ public final class ChannelChecks
 	 * @param channel channel they are attempting to join
 	 * @param client client who's joining
 	 * @param key the channel key provided by the client or null
+	 * @param allowJoinAny allow opers with joinAnyChannel permission to bypass checks
 	 * @return the error or ChannelCheckError.OK if they can join
 	 */
-	public static ChannelCheckError canJoin(Channel channel, Client client, String key)
+	public static ChannelCheckError canJoin(Channel channel, Client client, String key, boolean allowJoinAny)
 	{
 		//Check already joined
 		if(channel.lookupMember(client) != null)
@@ -39,7 +40,7 @@ public final class ChannelChecks
 		}
 		
 		//Check if can join any channel
-		if(client.hasPermission(Permissions.joinAnyChannel))
+		if(allowJoinAny && client.hasPermission(Permissions.joinAnyChannel))
 		{
 			return OK;
 		}
@@ -126,7 +127,7 @@ public final class ChannelChecks
 	{
 		//Lookup both clients
 		ChannelMemberMode clientMode = channel.lookupMember(client);
-		ChannelMemberMode kickedMode = channel.lookupMember(client);
+		ChannelMemberMode kickedMode = channel.lookupMember(kicked);
 		
 		//Check if they exist
 		if(clientMode == null)

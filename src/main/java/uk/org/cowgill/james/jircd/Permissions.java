@@ -33,10 +33,9 @@ public final class Permissions
     public final static int kill = 0x10;
 
     /**
-     * Automatically become admin in all channels
-     * TODO not implemented
+     * Ability to join channels as an administrator (JOINA)
      */
-    public final static int autoAdmin = 0x20;
+    public final static int joinAdmin = 0x20;
 
     /**
      * Ability to see when someone WHOIS's you
@@ -44,52 +43,45 @@ public final class Permissions
     public final static int seeWhois = 0x40;
 
     /**
-     * Ability to see actual hostnames (not masked versions)
-     * TODO not implemented
-     */
-    public final static int seeHost = 0x80;
-
-
-    /**
      * Receives server notices (anything which generates a log info or higher)
      */
-    public final static int seeServerNotices = 0x100;
+    public final static int seeServerNotices = 0x80;
 
     /**
      * Ability to change anyone's user mode
      */
-    public final static int userModeHack = 0x200;
+    public final static int userModeHack = 0x100;
 
     /**
      * Ability to see all channels in LIST
      */
-    public final static int seeAllChannels = 0x400;
+    public final static int seeAllChannels = 0x200;
 
     /**
-     * Ability to join any channel regardless of flags
+     * Ability to join any channel regardless of flags (JOINA)
      */
-    public final static int joinAnyChannel = 0x800;
+    public final static int joinAnyChannel = 0x400;
 
     /**
      * Ability to change another user's nickname
      * TODO not implemented
      */
-    public final static int changeOtherNick = 0x1000;
+    public final static int changeOtherNick = 0x800;
 
     /**
      * Ignores the flood limiter
      */
-    public final static int noFloodLimit = 0x2000;
+    public final static int noFloodLimit = 0x1000;
 
     /**
      * Can see users IPs
      */
-    public final static int userIP = 0x4000;
+    public final static int userIP = 0x2000;
 
     /**
      * Can see invisible (+i) users and all members in all channels
      */
-    public final static int seeInvisible = 0x8000;
+    public final static int seeInvisible = 0x4000;
 
 
     /**
