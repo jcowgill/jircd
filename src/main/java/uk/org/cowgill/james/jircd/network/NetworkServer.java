@@ -247,8 +247,33 @@ final class NetworkServer extends Server
 			}
 		}
 		
+		//Close all listeners
+		for(ServerSocketChannel listener : listeners)
+		{
+			try
+			{
+				listener.close();
+			}
+			catch (IOException e)
+			{	//Ignore errors on close
+			}
+		}
+		
+		//Close selector
+		try
+		{
+			eventSelector.close();
+		}
+		catch (IOException e)
+		{	//Ignore errors on close
+		}
+		
 		//Shutdown resolver
 		resolver.shutdown();
+		
+		//Wipe variables
+		listeners = null;
+		eventSelector = null;
 	}
 	
 	/**
