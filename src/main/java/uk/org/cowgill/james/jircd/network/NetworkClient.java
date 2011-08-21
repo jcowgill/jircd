@@ -30,8 +30,6 @@ final class NetworkClient extends Client
 	
 	private static final SecureRandom randomGen = new SecureRandom();
 	
-	private static ByteBuffer dummyBuffer = ByteBuffer.allocate(2);
-	
 	/**
 	 * Timeout after a ping has been sent to the client
 	 */
@@ -66,7 +64,7 @@ final class NetworkClient extends Client
 	/**
 	 * Data for byte buffer
 	 */
-	private byte[] localBufferData = new byte[1024];
+	private byte[] localBufferData = new byte[1025];
 	
 	/**
 	 * Byte buffer to recent messages
@@ -151,21 +149,19 @@ final class NetworkClient extends Client
 				close("Connection reset by peer");
 				return;
 			}
-			
-			//If there is anything left, exceeded limit
-			if(channel.read(dummyBuffer) > 0)
-			{
-				//Close client
-				close("ReadQ Limit Exceeded");
-				dummyBuffer.position(0);
-				dummyBuffer.limit(2);
-				return;
-			}
 		}
 		catch(IOException e)
 		{
 			logger.warn("Read error from socket", e);
 			close("Read error");
+			return;
+		}
+		
+		//Chec exceeding ReadQ
+		if(localBuffer.remaining() <= 0)
+		{
+			//Close client
+			close("ReadQ Limit Exceeded");
 			return;
 		}
 		
@@ -395,7 +391,7 @@ final class NetworkClient extends Client
 		//Update buffer sizes
 		try
 		{
-			localBufferData = Arrays.copyOf(localBufferData, clazz.readQueue);
+			localBufferData = Arrays.copyOf(localBufferData, clazz.readQueue + 1);
 			localBuffer = ByteBuffer.wrap(localBufferData);
 			
 			channel.socket().setSendBufferSize(clazz.readQueue);

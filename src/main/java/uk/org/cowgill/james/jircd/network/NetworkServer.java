@@ -136,12 +136,6 @@ final class NetworkServer extends Server
 				//Select anything to do
 				eventSelector.select(1000);
 				
-				//Check shutdown condition
-				if(checkAndNotifyStop())
-				{
-					break;
-				}
-				
 				//Check for host resolver requests
 				NetworkClient client = resolver.drainOneFinished();
 				
@@ -230,6 +224,12 @@ final class NetworkServer extends Server
 					Client.processCloseQueue();
 				}
 
+				//Check shutdown condition
+				if(checkAndNotifyStop())
+				{
+					break;
+				}
+				
 				retryError = 0;
 			}
 			catch (Exception e)
