@@ -65,7 +65,7 @@ public final class ChannelChecks
 		}
 		
 		//Check invites
-		if(channel.isModeSet('i') && (channel.isOnInviteExceptList(client) || channel.isInvited(client)))
+		if(channel.isModeSet('i') && !channel.isOnInviteExceptList(client) && !channel.isInvited(client))
 		{
 			return JoinInviteOnly;
 		}
