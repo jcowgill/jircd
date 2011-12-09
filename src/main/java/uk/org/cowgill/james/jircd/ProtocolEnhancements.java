@@ -14,10 +14,10 @@ public final class ProtocolEnhancements
 	/**
 	 * Allows multiple prefixes in /NAMES
 	 */
-	public static int NamesX = 1;
+	public final static int NamesX = 1;
 	
 	/**
 	 * Adds the username and hostname to /NAMES commands
 	 */
-	public static int UhNames = 2;
+	public final static int UhNames = 2;
 }

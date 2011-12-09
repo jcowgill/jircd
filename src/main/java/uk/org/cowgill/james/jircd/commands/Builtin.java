@@ -1,11 +1,12 @@
 package uk.org.cowgill.james.jircd.commands;
 
 import uk.org.cowgill.james.jircd.ConfigBlock;
+import uk.org.cowgill.james.jircd.Module;
 import uk.org.cowgill.james.jircd.ModuleLoadException;
 import uk.org.cowgill.james.jircd.ModuleManager;
 import uk.org.cowgill.james.jircd.Server;
 
-public class Module implements uk.org.cowgill.james.jircd.Module
+public class Builtin implements Module
 {
 	@Override
 	public boolean startup(ConfigBlock config) throws ModuleLoadException

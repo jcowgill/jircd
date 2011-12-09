@@ -87,7 +87,7 @@ public final class ModeUtils
 	 * 
 	 * @param modeSet modeset to search
 	 * @param mode the mode to check
-	 * @param true to set the mode, false to clear it
+	 * @param adding true to set the mode, false to clear it
 	 * @return the new modeset
 	 */
 	public static long changeMode(long modeSet, char mode, boolean adding)

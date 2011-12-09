@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
@@ -35,16 +34,19 @@ import org.apache.log4j.Logger;
  * 
  * @author James
  */
-public final class Config implements Serializable
+public final class Config
 {
-	private static final long serialVersionUID = 1L;
-
 	private static final Logger logger = Logger.getLogger(Config.class);
 
 	/**
+	 * ASCII character set
+	 */
+	private static final Charset asciiCharset = Charset.forName("US-ASCII");
+	
+	/**
 	 * ASCII character set encoder
 	 */
-	private static final CharsetEncoder cEncoder = Charset.forName("US-ASCII").newEncoder();
+	private static final CharsetEncoder asciiEncoder = asciiCharset.newEncoder();
 	
 	/**
 	 * The server name
@@ -249,7 +251,7 @@ public final class Config implements Serializable
 	{
 		MessageDigest md = MessageDigest.getInstance("sha-1");
 		
-		return md.digest(cEncoder.encode(CharBuffer.wrap(password)).array());
+		return md.digest(asciiEncoder.encode(CharBuffer.wrap(password)).array());
 	}
 	
 	/**
@@ -415,12 +417,14 @@ public final class Config implements Serializable
 		}
 		else
 		{
+			BufferedReader reader = null;
+			
 			try
 			{
 				//Read file line by line
-				BufferedReader reader = new BufferedReader(
-											new InputStreamReader(
-											new FileInputStream(motdBlock.iterator().next().param)));
+				reader = new BufferedReader(new InputStreamReader(
+											new FileInputStream(motdBlock.iterator().next().param),
+											asciiCharset));
 				
 				String currLine = reader.readLine();
 				
@@ -432,8 +436,16 @@ public final class Config implements Serializable
 			}
 			catch(IOException e)
 			{
-				//Propogate upwards
+				//Propagate upwards
 				throw new ConfigException("Failed to read MotD file", e);
+			}
+			finally
+			{
+				//Close stream
+				if(reader != null)
+				{
+					reader.close();
+				}
 			}
 		}
 		

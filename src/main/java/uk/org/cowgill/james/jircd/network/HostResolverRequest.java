@@ -41,7 +41,7 @@ class HostResolverRequest implements Runnable
 		client.id.host = host;
 		
 		//Notify caller
-		finishQueue.offer(client);
+		finishQueue.add(client);
 		eventSelector.wakeup();
 	}
 }

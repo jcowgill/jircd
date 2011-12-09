@@ -11,7 +11,7 @@ package uk.org.cowgill.james.jircd;
  * @author James
  *
  */
-public class IRCMask implements Cloneable, Comparable<IRCMask>
+public class IRCMask implements Comparable<IRCMask>
 {
 	/**
 	 * The mask's nickname
@@ -35,18 +35,22 @@ public class IRCMask implements Cloneable, Comparable<IRCMask>
 	public String host;
 	
 	/**
-	 * Clones this IRC mask
+	 * Creates a new blank IRC Mask
 	 */
-	@Override
-	public IRCMask clone()
+	public IRCMask()
 	{
-		IRCMask mask = new IRCMask();
-		
-		mask.nick = nick;
-		mask.user = user;
-		mask.host = host;
-		
-		return mask;
+	}
+	
+	/**
+	 * Creates a new IRC Mask as a copy of another
+	 * 
+	 * @param mask mask to copy
+	 */
+	public IRCMask(IRCMask mask)
+	{
+		this.nick = mask.nick;
+		this.user = mask.user;
+		this.host = mask.host;
 	}
 	
 	/**

@@ -248,7 +248,7 @@ public final class Channel
 		this.creationTime = System.currentTimeMillis();
 		
 		//Default mode is +nt
-		mode = ModeUtils.setMode(mode, 'n');
+		mode = ModeUtils.setMode(0, 'n');			//First time uses 0 mode
 		mode = ModeUtils.setMode(mode, 't');
 	}
 	
