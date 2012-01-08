@@ -52,12 +52,12 @@ public abstract class Server
 	/**
 	 * The IRC Server version
 	 */
-	public final static String VERSION = "jircd0.1";
+	public final static String VERSION = "jircd1.0";
 	
 	/**
 	 * The longer IRC Server version
 	 */
-	public final static String VERSION_STR = "JIRC Server 0.1";
+	public final static String VERSION_STR = "JIRC Server 1.0";
 	
 	/**
 	 * Currently running server
