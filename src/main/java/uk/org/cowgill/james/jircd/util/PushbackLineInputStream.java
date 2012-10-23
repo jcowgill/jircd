@@ -31,7 +31,7 @@ public class PushbackLineInputStream extends PushbackInputStream
 	 */
 	public PushbackLineInputStream(InputStream in)
 	{
-		super(in);
+		super(in, 2);
 	}
 
 	/**
@@ -55,14 +55,16 @@ public class PushbackLineInputStream extends PushbackInputStream
 		switch(c)
 		{
 			case 13:
-				//Newline unless followed by a 10
+				//Check for windows style new lines before returning
 				c = super.read();
-				if(c == 10)
+				if(c != 10)
 				{
-					//Don't increase character number
+					//Undo this read and force current character to 10
 					super.unread(c);
-					return c;
+					c = 10;
 				}
+
+				//Fallthrough to new line handler
 
 			case 10:
 				//Newline

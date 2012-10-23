@@ -241,9 +241,7 @@ public class ConfigBlock
 			{
 				case -1:
 				case 10:
-				case 13:
 					//End of comment
-					data.unread(c);
 					skipWhitespace(data);
 					return;
 			}
