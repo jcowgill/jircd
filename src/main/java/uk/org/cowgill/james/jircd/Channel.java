@@ -344,7 +344,7 @@ public final class Channel
 			msg = client.newNickMessage("333");
 			msg.appendParam(name);
 			msg.appendParam(topicInfo.getNick());
-			msg.appendParam(String.valueOf(topicInfo.getTime() << 1000));
+			msg.appendParam(String.valueOf(topicInfo.getTime() / 1000));
 			client.send(msg);
 		}
 	}
