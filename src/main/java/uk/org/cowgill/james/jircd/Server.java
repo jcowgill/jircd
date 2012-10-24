@@ -30,6 +30,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;
@@ -96,7 +98,7 @@ public abstract class Server
 	 * 1 = Stop
 	 * 2 = Restart
 	 */
-	private int stopType = 0;
+	private AtomicInteger stopType = new AtomicInteger();
 	
 	/**
 	 * Reason for stop / restart (shown to all users and logged)
@@ -211,11 +213,9 @@ public abstract class Server
 	public void requestStop(String reason)
 	{
 		//Check and update stop type
-		if(stopType == 0)
+		if(stopType.compareAndSet(0, 1))
 		{
-			stopType = 1;
 			stopReason = reason;
-			stopRequested();
 		}
 	}
 
@@ -229,11 +229,9 @@ public abstract class Server
 	public void requestRestart(String reason)
 	{
 		//Check and update stop type
-		if(stopType == 0)
+		if(stopType.compareAndSet(0, 2))
 		{
-			stopType = 2;
 			stopReason = reason;
-			stopRequested();
 		}
 	}
 	
@@ -248,7 +246,7 @@ public abstract class Server
 		{
 			throw new UnsupportedOperationException("A server is already running");
 		}
-		if(stopType != 0)
+		if(stopType.get() != 0)
 		{
 			throw new UnsupportedOperationException("run() has already been called on this server");
 		}		
@@ -288,7 +286,7 @@ public abstract class Server
 		
 		//Return reason
 		globalServer = null;
-		return stopType == 2;
+		return stopType.get() == 2;
 	}
 	
 	/**
@@ -564,13 +562,6 @@ public abstract class Server
 	protected abstract void rehashed();
 	
 	/**
-	 * Event occurs after a stop or restart has been requested
-	 */
-	protected void stopRequested()
-	{
-	}
-	
-	/**
 	 * Called to run the server
 	 */
 	protected abstract void runServer();
@@ -587,8 +578,8 @@ public abstract class Server
 		String stopTypeStr;
 		
 		//Check stop type
-		switch(stopType)
-		{			
+		switch(stopType.get())
+		{
 		case 1:
 			stopTypeStr = "shutdown";
 			break;

@@ -32,29 +32,62 @@ class NetworkStarter
 		// Setup logger
 		Server.ensureLoggerSetup();
 		
+		// Add Ctrl-C Handler
+		CtrlCHandler ctrlCHandler = new CtrlCHandler();
+		Runtime.getRuntime().addShutdownHook(new Thread(ctrlCHandler));
+
 		// Get config file
 		File configFile = Server.getFileFromArgs(args);
 		
 		if(configFile != null)
 		{
-			for(;;)
-			{
-				//Create server
-				Server server = new NetworkServer(configFile);
-				
-				//Run server
-				if(!server.run())
-				{
-					//Stop server
-					break;
-				}
-				else
-				{
-					//Restart server
-					server = null;
+			//Run the server!
+			// The loop handles server restarts
+			while(new NetworkServer(configFile).run() && ctrlCHandler.canContinue)
+				;
+		}
+	}
 
-					//Do some GC work
-					System.gc();
+	/**
+	 * Handles control c events
+	 *
+	 * @author James
+	 */
+	private static class CtrlCHandler implements Runnable
+	{
+		private final Thread parentThread;
+		public boolean canContinue = true;
+
+		public CtrlCHandler()
+		{
+			this.parentThread = Thread.currentThread();
+		}
+
+		@Override
+		public void run()
+		{
+			//Mark as handled something
+			canContinue = false;
+
+			//Start loop to kill all servers!
+			while(parentThread.isAlive())
+			{
+				//Get current server
+				Server current = Server.getServer();
+
+				if(current != null)
+				{
+					//Request a close
+					current.requestStop("Control-C Pressed");
+				}
+
+				//Wait for parent to die
+				try
+				{
+					parentThread.join(10);
+				}
+				catch (InterruptedException e)
+				{
 				}
 			}
 		}
