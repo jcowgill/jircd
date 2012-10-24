@@ -84,6 +84,24 @@ public class Whois implements Command
 			
 			for(Channel channel : other.getChannels())
 			{
+				String chanName;
+
+				//Check for secret or private channels
+				if(channel.isModeSet('s'))
+				{
+					continue;
+				}
+				else if(channel.isModeSet('p'))
+				{
+					//Channel name is displayed as [private]
+					chanName = "[private]";
+				}
+				else
+				{
+					//Channel name contains prefix as well
+					chanName = channel.lookupMember(other).toPrefixString(true) + channel.getName();
+				}
+
 				//Setup new message
 				if(chanMsg == null)
 				{
@@ -95,8 +113,7 @@ public class Whois implements Command
 				}
 				
 				//Add channel
-				builder.append(channel.lookupMember(other).toPrefixString(true));
-				builder.append(channel.getName());
+				builder.append(chanName);
 				namesThisLine++;
 				
 				//If 8 names, send message
