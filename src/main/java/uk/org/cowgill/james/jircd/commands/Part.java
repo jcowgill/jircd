@@ -37,7 +37,7 @@ public class Part implements Command
 		
 		if(msg.paramCount() >= 2)
 		{
-			partMsg = msg.getParam(2);
+			partMsg = msg.getParam(1);
 		}
 		else
 		{
