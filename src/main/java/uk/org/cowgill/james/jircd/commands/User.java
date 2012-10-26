@@ -35,8 +35,7 @@ public class User implements Command
 		if((client.getRegistrationFlags() & RegistrationFlags.UserSet) != 0)
 		{
 			//No reregistering
-			client.send(Message.newMessageFromServer("462")
-					.appendParam("USER").appendParam("You cannot reregister"));
+			client.send(client.newNickMessage("462").appendParam("You cannot reregister"));
 			return;
 		}
 		

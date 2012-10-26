@@ -29,7 +29,7 @@ public class Xyzzy implements Command
 	@Override
 	public void run(Client client, Message msg)
 	{
-		client.send(Message.newMessageFromServer("421")
+		client.send(client.newNickMessage("421")
 				.appendParam(msg.getCommand())
 				.appendParam("Nothing happens"));
 	}

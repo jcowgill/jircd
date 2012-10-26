@@ -371,7 +371,7 @@ public final class ModuleManager
 			if(msg.getCommand().trim().length() != 0)
 			{
 				//Unknown Command
-				client.send(Message.newMessageFromServer("421")
+				client.send(client.newNickMessage("421")
 						.appendParam(msg.getCommand())
 						.appendParam("Unknown Command"));
 			}
@@ -386,7 +386,7 @@ public final class ModuleManager
 		if(msg.paramCount() < command.getMinParameters())
 		{
 			//Not Enough Parameters
-			client.send(Message.newMessageFromServer("461")
+			client.send(client.newNickMessage("461")
 					.appendParam(msg.getCommand())
 					.appendParam("Not enough parameters"));
 
@@ -399,7 +399,7 @@ public final class ModuleManager
 			//Allow registered only
 			if((command.getFlags() & Command.FLAG_NORMAL) == 0)
 			{
-				client.send(Message.newMessageFromServer("462")
+				client.send(client.newNickMessage("462")
 								.appendParam(msg.getCommand())
 								.appendParam("You cannot reregister"));
 				
@@ -411,7 +411,7 @@ public final class ModuleManager
 			//Allow registration commands only
 			if((command.getFlags() & Command.FLAG_REGISTRATION) == 0)
 			{
-				client.send(Message.newStringFromServer("451 :You have not registered"));
+				client.send(client.newNickMessage("451").appendParam("You have not registered"));
 				return;
 			}
 			
