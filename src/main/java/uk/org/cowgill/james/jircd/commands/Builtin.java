@@ -75,6 +75,8 @@ public class Builtin implements Module
 		modMan.registerCommand(new UserHostIp.UserHost());
 		modMan.registerCommand(new UserHostIp.UserIp());
 		
+		modMan.registerCommand(new Xyzzy());
+
 		return true;
 	}
 
