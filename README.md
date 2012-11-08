@@ -5,12 +5,13 @@ It implements all the main things in the IRC standards except multiple servers (
 
 Compiling
 ---------
-If you have [Eclipse 3.7](http://www.eclipse.org/), Eclipse should compile the project without needing anything else.
+If you have a recent version of [Eclipse](http://www.eclipse.org/), Eclipse should compile the project without
+needing anything else.
 
 Alternatively, install the following:
 
 *	[Java Development Kit 6 or 7](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
-*	[Maven 2](http://maven.apache.org/) - I havn't tested Maven 3 but it may work
+*	[Maven 2 or 3](http://maven.apache.org/)
 
 Then open the project folder in a terminal and type:
 
