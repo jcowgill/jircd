@@ -54,14 +54,14 @@ public final class Config
 	private static final Logger logger = Logger.getLogger(Config.class);
 
 	/**
-	 * ASCII character set
+	 * UTF-8 character set
 	 */
-	private static final Charset asciiCharset = Charset.forName("US-ASCII");
+	private static final Charset utf8Charset = Charset.forName("UTF-8");
 	
 	/**
-	 * ASCII character set encoder
+	 * UTF-8 character set encoder
 	 */
-	private static final CharsetEncoder asciiEncoder = asciiCharset.newEncoder();
+	private static final CharsetEncoder utf8Encoder = utf8Charset.newEncoder();
 	
 	/**
 	 * The server name
@@ -266,7 +266,7 @@ public final class Config
 	{
 		MessageDigest md = MessageDigest.getInstance("sha-1");
 		
-		return md.digest(asciiEncoder.encode(CharBuffer.wrap(password)).array());
+		return md.digest(utf8Encoder.encode(CharBuffer.wrap(password)).array());
 	}
 	
 	/**
@@ -439,7 +439,7 @@ public final class Config
 				//Read file line by line
 				reader = new BufferedReader(new InputStreamReader(
 											new FileInputStream(motdBlock.iterator().next().param),
-											asciiCharset));
+											utf8Charset));
 				
 				String currLine = reader.readLine();
 				
