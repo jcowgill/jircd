@@ -76,6 +76,14 @@ public class Whois implements Command
 						appendParam("is an IRC " + superStr + "operator"));
 			}
 			
+			//Secure?
+			if(other.isModeSet('z'))
+			{
+				client.send(client.newNickMessage("617").
+						appendParam(other.id.nick).
+						appendParam("is using a Secure Connection"));
+			}
+			
 			//Display channels
 			// Send up to 8 channels per line
 			StringBuilder builder = new StringBuilder();
