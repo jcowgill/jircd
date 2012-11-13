@@ -355,7 +355,6 @@ final class NetworkServer extends Server
 				channel = ServerSocketChannel.open();
 				channel.configureBlocking(false);
 				
-				channel.socket().setReuseAddress(true);
 				channel.socket().bind(sockAddr);
 				
 				//Register channel with event selector
