@@ -147,6 +147,7 @@ public class ServerISupport
 		modesChannel.put('m', ModeType.OnOff);
 		modesChannel.put('i', ModeType.OnOff);
 		modesChannel.put('O', ModeType.OnOff);
+		modesChannel.put('z', ModeType.OnOff);
 		
 		//Setup built-in isupport msgs (CHANMODES and MAXLIST handled later)
 		iSupportMsgs = new HashMap<String, String>();

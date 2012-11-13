@@ -66,6 +66,12 @@ public final class ChannelChecks
 			return JoinOpersOnly;
 		}
 		
+		//Check secure only channel
+		if(channel.isModeSet('z') && !client.isModeSet('z') && !client.isModeSet('B'))
+		{
+			return JoinSecureOnly;
+		}
+		
 		//Check channel full
 		if(channel.getLimit() > 0 && channel.getMembers().size() >= channel.getLimit())
 		{
