@@ -15,6 +15,8 @@
 */
 package uk.org.cowgill.james.jircd;
 
+import uk.org.cowgill.james.jircd.util.ModeUtils;
+
 /**
  * An abstract servelt helper class
  * 
@@ -40,7 +42,7 @@ public abstract class AbstractServlet extends Client
 	public AbstractServlet(IRCMask id) throws ModuleLoadException
 	{
 		//Set ID
-		super(id);
+		super(id, ModeUtils.setMode(0, 'B'));
 		
 		//Validate nickname
 		Server server = Server.getServer();

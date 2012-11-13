@@ -189,15 +189,15 @@ public abstract class Server
 		}
 		catch(ConfigException e)
 		{
-			logger.error("Config error: " + e.toString());
+			logger.error("Config error: " + e.toString(), e);
 		}
 		catch (FileNotFoundException e)
 		{
-			logger.error("Error reading config file: " + e.toString());
+			logger.error("Error reading config file: " + e.toString(), e);
 		}
 		catch (IOException e)
 		{
-			logger.error("Error reading config file: " + e.toString());
+			logger.error("Error reading config file: " + e.toString(), e);
 		}
 	
 		return false;

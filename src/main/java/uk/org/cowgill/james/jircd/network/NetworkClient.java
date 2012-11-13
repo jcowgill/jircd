@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 
 import uk.org.cowgill.james.jircd.Client;
 import uk.org.cowgill.james.jircd.ConnectionClass;
+import uk.org.cowgill.james.jircd.IRCMask;
 import uk.org.cowgill.james.jircd.Message;
 import uk.org.cowgill.james.jircd.Server;
 
@@ -39,7 +40,7 @@ import uk.org.cowgill.james.jircd.Server;
  * 
  * @author James
  */
-final class NetworkClient extends Client
+class NetworkClient extends Client
 {
 	private static final ConnectionClass DEFAULT_CONN_CLASS = new ConnectionClass();
 	
@@ -120,18 +121,42 @@ final class NetworkClient extends Client
 		DEFAULT_CONN_CLASS.readQueue = 1024;
 		DEFAULT_CONN_CLASS.sendQueue = 1024;
 	}
-	
+
 	/**
-	 * Sets up a new NetworkClient from a SocketChannel
+	 * Creates a new NetworkClient from a SocketChannel
+	 * 
+	 * You almost always want to call setup() after this
 	 * 
 	 * @param channel channel to setup from
 	 * @throws IOException thrown when an error occurs in setting socket options
 	 */
 	NetworkClient(SocketChannel channel) throws IOException
 	{
-		//Save channel
+		this(channel, 0);
+	}
+
+	/**
+	 * Creates a new NetworkClient from a SocketChannel
+	 * 
+	 * You almost always want to call setup() after this
+	 * 
+	 * @param channel channel to setup from
+	 * @param mode the initial mode of the client
+	 * @throws IOException thrown when an error occurs in setting socket options
+	 */
+	NetworkClient(SocketChannel channel, long mode) throws IOException
+	{
+		super(new IRCMask(), mode);
 		this.channel = channel;
-		
+	}
+	
+	/**
+	 * Called to complete setting up a new connection
+	 * 
+	 * Only call immediately after creating the NetworkClient
+	 */
+	void setup() throws IOException
+	{
 		//Setup channel options
 		channel.configureBlocking(false);
 		channel.socket().setReceiveBufferSize(1024);
@@ -158,11 +183,16 @@ final class NetworkClient extends Client
 		try
 		{
 			//Read data
-			if(channel.read(localBuffer) == -1)
+			switch(readWrapper(localBuffer))
 			{
-				//Close client
-				close("Connection reset by peer");
-				return;
+				case -1:
+					//Close client
+					close("Connection reset by peer");
+					return;
+					
+				case 0:
+					//Nothing received, so do nothing
+					return;
 			}
 		}
 		catch(IOException e)
@@ -172,7 +202,7 @@ final class NetworkClient extends Client
 			return;
 		}
 		
-		//Chec exceeding ReadQ
+		//Check exceeding ReadQ
 		if(localBuffer.remaining() <= 0)
 		{
 			//Close client
@@ -256,19 +286,15 @@ final class NetworkClient extends Client
 		}
 		
 		//Copy data after position back to start
-		int bytesLeft = endByte - localBuffer.position();
-		
-		System.arraycopy(localBufferData, localBuffer.position(),
-						 localBufferData, 0, bytesLeft);
-		
-		localBuffer.position(bytesLeft);
+		localBuffer.limit(endByte);
+		localBuffer.compact();
 		
 		//Process closure queue
 		processCloseQueue();
 	}
 
 	/**
-	 * Event which occurs when the ping timouts need checking
+	 * Event which occurs when the ping timeouts need checking
 	 */
 	void pingCheckEvent()
 	{
@@ -307,8 +333,12 @@ final class NetworkClient extends Client
 		try
 		{
 			//Encode object and write to socket with CRLF
-			rawSend(cEncoder.encode(CharBuffer.wrap(strData)));
-			rawSend(ByteBuffer.wrap(CRLF));
+			ByteBuffer encoded = cEncoder.encode(CharBuffer.wrap(strData));
+			
+			if(!writeWrapper(encoded) || !writeWrapper(ByteBuffer.wrap(CRLF)))
+			{
+				queueClose("SendQ Limit Exceeded");
+			}
 		}
 		catch(CharacterCodingException e)
 		{
@@ -320,15 +350,28 @@ final class NetworkClient extends Client
 			queueClose("IO Error");
 		}
 	}
-	
-	private void rawSend(ByteBuffer buffer) throws IOException
+
+	/**
+	 * Allows wrapping of the raw read operation
+	 * 
+	 * @param buffer buffer to read from
+	 * @return number of characters read
+	 */
+	protected int readWrapper(ByteBuffer buffer) throws IOException
 	{
-		//Write to buffer
-		if(channel.write(buffer) != buffer.limit())
-		{
-			//SendQ limit exceeded
-			queueClose("SendQ Limit Exceeded");
-		}
+		return channel.read(buffer);
+	}
+	
+	/**
+	 * Allows wrapping of the raw write operation
+	 * 
+	 * @param buffer buffer to write
+	 * @return number of characters written
+	 */
+	protected boolean writeWrapper(ByteBuffer buffer) throws IOException
+	{
+		//Order of this comparison is important
+		return buffer.remaining() == channel.write(buffer);
 	}
 
 	@Override
@@ -344,12 +387,6 @@ final class NetworkClient extends Client
 		{
 		}
 		
-		return true;
-	}
-	
-	@Override
-	public boolean isRemote()
-	{
 		return true;
 	}
 	

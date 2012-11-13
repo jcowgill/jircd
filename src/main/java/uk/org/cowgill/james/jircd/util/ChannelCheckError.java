@@ -36,6 +36,7 @@ public enum ChannelCheckError
 	JoinInvalidKey("475", "Cannot join channel (+k)"),
 	JoinInviteOnly("473", "Cannot join channel (+i)"),
 	JoinOpersOnly("520", "Cannot join channel (+O)"),
+	JoinSecureOnly("489", "Cannot join channel (+z)"),
 	JoinTooManyChannels("405", "You have joined too many channels"),
 	
 	SpeakBanned("404", "You are banned (+b)"),
