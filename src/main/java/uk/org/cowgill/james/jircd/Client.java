@@ -38,6 +38,17 @@ public abstract class Client
 	private static final Logger logger = Logger.getLogger(Client.class);
 	
 	/**
+	 * Modes which are restricted from changing using setMode
+	 */
+	private static long RESTRICTED_MODES;
+	
+	static
+	{
+		RESTRICTED_MODES = ModeUtils.setMode(0,                'B');	//Bot
+		RESTRICTED_MODES = ModeUtils.setMode(RESTRICTED_MODES, 'Z');	//Secure
+	}
+	
+	/**
 	 * List of clients to be closed when close queue is processed
 	 */
 	private static ArrayList<Client> queuedClosures = new ArrayList<Client>();
@@ -104,22 +115,16 @@ public abstract class Client
 	//------------------------------------------------
 
 	/**
-	 * Creates a new client with a blank id and adds it to global collections
-	 */
-	public Client()
-	{
-		this(new IRCMask());
-	}
-
-	/**
 	 * Creates a new client and adds it to global collections
 	 * 
 	 * @param id the IRCMask representing this client's id
+	 * @param mode initial mode of the client (allows setting restricted modes)
 	 */
-	public Client(IRCMask id)
+	public Client(IRCMask id, long mode)
 	{
-		//Set id
+		//Set id and mode
 		this.id = id;
+		this.mode = mode;
 		
 		//Add to global collections
 		Server.getServer().clients.add(this);
@@ -619,6 +624,11 @@ public abstract class Client
 					Server.getServer().operators.remove(this);
 				}
 			}
+			else if(ModeUtils.isModeSet(RESTRICTED_MODES, mode))
+			{
+				//Ignore this change
+				return;
+			}
 			
 			//Change mode
 			this.mode = ModeUtils.changeMode(this.mode, mode, adding);
@@ -681,7 +691,10 @@ public abstract class Client
 	 * 
 	 * @return true if this client is a remote user
 	 */
-	public abstract boolean isRemote();
+	public boolean isRemote()
+	{
+		return !ModeUtils.isModeSet(mode, 'B');
+	}
 	
 	/**
 	 * Marks this client for closure after the current client has finished processing

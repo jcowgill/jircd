@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 
 import uk.org.cowgill.james.jircd.Client;
 import uk.org.cowgill.james.jircd.ConnectionClass;
+import uk.org.cowgill.james.jircd.IRCMask;
 import uk.org.cowgill.james.jircd.Message;
 import uk.org.cowgill.james.jircd.Server;
 
@@ -129,6 +130,8 @@ final class NetworkClient extends Client
 	 */
 	NetworkClient(SocketChannel channel) throws IOException
 	{
+		super(new IRCMask(), mode);
+		
 		//Save channel
 		this.channel = channel;
 		
@@ -344,12 +347,6 @@ final class NetworkClient extends Client
 		{
 		}
 		
-		return true;
-	}
-	
-	@Override
-	public boolean isRemote()
-	{
 		return true;
 	}
 	
