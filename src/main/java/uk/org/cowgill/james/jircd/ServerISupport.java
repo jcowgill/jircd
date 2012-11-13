@@ -126,7 +126,7 @@ public class ServerISupport
 		modesUser.put('O', ModeType.OnOff);
 		modesUser.put('i', ModeType.OnOff);
 		modesUser.put('B', ModeType.OnOff);
-		modesUser.put('Z', ModeType.OnOff);
+		modesUser.put('z', ModeType.OnOff);
 		
 		//Setup built-in channel modes
 		modesChannel = new HashMap<Character, ModeType>();

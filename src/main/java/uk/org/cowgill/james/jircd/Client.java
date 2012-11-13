@@ -45,7 +45,7 @@ public abstract class Client
 	static
 	{
 		RESTRICTED_MODES = ModeUtils.setMode(0,                'B');	//Bot
-		RESTRICTED_MODES = ModeUtils.setMode(RESTRICTED_MODES, 'Z');	//Secure
+		RESTRICTED_MODES = ModeUtils.setMode(RESTRICTED_MODES, 'z');	//Secure
 	}
 	
 	/**

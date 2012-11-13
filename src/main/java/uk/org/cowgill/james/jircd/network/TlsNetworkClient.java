@@ -37,7 +37,7 @@ class TlsNetworkClient extends NetworkClient
 	 */
 	protected TlsNetworkClient(SocketChannel channel, SSLContext context) throws IOException
 	{
-		super(channel, ModeUtils.setMode(0, 'Z'));
+		super(channel, ModeUtils.setMode(0, 'z'));
 		
 		//Create new engine
 		engine = context.createSSLEngine();
