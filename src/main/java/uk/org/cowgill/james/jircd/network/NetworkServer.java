@@ -28,10 +28,12 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import org.apache.log4j.Logger;
 
 import uk.org.cowgill.james.jircd.Client;
+import uk.org.cowgill.james.jircd.Config;
 import uk.org.cowgill.james.jircd.Config.Ban;
 import uk.org.cowgill.james.jircd.IRCMask;
 import uk.org.cowgill.james.jircd.ModuleLoadException;
@@ -196,7 +198,18 @@ final class NetworkServer extends Server
 								continue;
 							}
 							
-							client = new NetworkClient(sockChannel);
+							//Create correct client (for TLS ports)
+							if((Config.PortType) key.attachment() == Config.PortType.SSL)
+							{
+								client = new TlsNetworkClient(sockChannel, getConfig().sslContext);
+							}
+							else
+							{
+								client = new NetworkClient(sockChannel);
+							}
+							
+							//Setup client connection + send nospoof ping
+							client.setup();
 							
 							//Resolver host
 							resolver.sumbitRequest(client);
@@ -297,9 +310,12 @@ final class NetworkServer extends Server
 	 * @return true if ports have been bound, false if no ports could be bound
 	 */
 	private boolean setupPorts()
-	{		
+	{
+		//Check if we have an ssl context
+		boolean usingSSL = getConfig().sslContext != null;
+		
 		//Copy ports set from config
-		Set<Integer> ports = new HashSet<Integer>(getConfig().ports);
+		Map<Integer, Config.PortType> ports = getConfig().ports;
 		
 		//Close listeners not in newPorts
 		Iterator<ServerSocketChannel> channelIter = listeners.iterator();
@@ -310,10 +326,10 @@ final class NetworkServer extends Server
 			channel = channelIter.next();
 			
 			//Check if port is in ports
-			if(!ports.contains(channel.socket().getLocalPort()))
+			if(!ports.containsKey(channel.socket().getLocalPort()))
 			{
 				//Close channel and remove
-				// We ignore any.severes while closing
+				// We ignore any errors while closing
 				try
 				{
 					channel.close();
@@ -332,19 +348,28 @@ final class NetworkServer extends Server
 		}
 		
 		//Create listeners
-		for(Integer port : ports)
+		for(Map.Entry<Integer, Config.PortType> port : ports.entrySet())
 		{
 			InetSocketAddress sockAddr;
 			
 			//Create address
 			try
 			{
-				sockAddr = new InetSocketAddress(port.intValue());
+				sockAddr = new InetSocketAddress(port.getKey().intValue());
 			}
 			catch(IllegalArgumentException e)
 			{
 				//Port number out of range
 				logger.error("Port number " + port + " out of range");
+				continue;
+			}
+			
+			//Ensure we have an SSL context for SSL ports
+			Config.PortType portType = port.getValue();
+			if(portType != Config.PortType.Normal && !usingSSL)
+			{
+				logger.error("Cannot use SSL port (" + sockAddr.getPort() +
+						") without an SSL context (do you have a top-level ssl directive?)");
 				continue;
 			}
 
@@ -359,7 +384,10 @@ final class NetworkServer extends Server
 				channel.socket().bind(sockAddr);
 				
 				//Register channel with event selector
-				channel.register(eventSelector, OP_ACCEPT);
+				SelectionKey key = channel.register(eventSelector, OP_ACCEPT);
+				
+				//Attach port type
+				key.attach(portType);
 			}
 			catch(IOException e)
 			{
@@ -369,7 +397,7 @@ final class NetworkServer extends Server
 				//Remove channel
 				if(channel != null)
 				{
-					//We ignore any.severes while closing
+					//We ignore any errors while closing
 					try
 					{
 						channel.close();

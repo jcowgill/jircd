@@ -24,18 +24,21 @@ import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
 
 import org.apache.log4j.Logger;
 
@@ -88,7 +91,7 @@ public final class Config
 	/**
 	 * Ports the server should listen on
 	 */
-	public Set<Integer> ports = new HashSet<Integer>();
+	public Map<Integer, PortType> ports = new HashMap<Integer, PortType>();
 	
 	/**
 	 * Map containing all connection classes
@@ -141,6 +144,11 @@ public final class Config
 	 * Set of permissions granted to super operators
 	 */
 	public int permissionsSuperOp = 0;
+	
+	/**
+	 * SSL Context (stores server certificate and key)
+	 */
+	public SSLContext sslContext = null;
 	
 	/**
 	 * Represents an accept entry
@@ -222,6 +230,24 @@ public final class Config
 		 * Reason for banning (or null if no reason)
 		 */
 		public String reason;
+	}
+	
+	/**
+	 * The type of port
+	 * 
+	 * @author James
+	 */
+	public static enum PortType
+	{
+		/**
+		 * Normal port allowing no secure traffic
+		 */
+		Normal,
+		
+		/**
+		 * SSL port allowing only secure traffic
+		 */
+		SSL,
 	}
 	
 	/**
@@ -467,7 +493,9 @@ public final class Config
 		//Ports
 		for(ConfigBlock block : root.getSubBlockNonNull("listen"))
 		{
-			config.ports.add(block.getParamAsInt());
+			PortType type = block.subBlocks.containsKey("ssl") ? PortType.SSL : PortType.Normal;
+			
+			config.ports.put(block.getParamAsInt(), type);
 		}
 		
 		//Classes
@@ -618,6 +646,51 @@ public final class Config
 			final ConfigBlock permBlock = permBlockIter.next();
 			config.permissionsSuperOp = calculatePermissions(permBlock.subBlocks.get("superop"));
 			config.permissionsOp = calculatePermissions(permBlock.subBlocks.get("op"));
+		}
+		
+		//SSL Context
+		Collection<ConfigBlock> sslBlocks = root.subBlocks.get("ssl");
+		if(sslBlocks != null)
+		{
+			FileInputStream stream = null;
+			
+			//Get first block
+			ConfigBlock sslBlock = sslBlocks.iterator().next();
+			
+			//Get arguments
+			String keyStore = sslBlock.getSubBlockParam("keystore");
+			char[] password = sslBlock.getSubBlockParam("password").toCharArray();
+			
+			try
+			{
+				//Read into new keystore
+				KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+				stream = new FileInputStream(keyStore);
+				ks.load(stream, password);
+				
+				//Create key manager
+				KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+				kmf.init(ks, password);
+				
+				//Create SSL Context
+				config.sslContext = SSLContext.getInstance("TLS");
+				config.sslContext.init(kmf.getKeyManagers(), null, null);
+			}
+			catch (GeneralSecurityException e)
+			{
+				//Error loading keystore
+				throw new ConfigException("Error creating ssl context", e);
+			}
+			catch (IOException e)
+			{
+				//Error reading keystore
+				throw new ConfigException("Error reading ssl keystore file", e);
+			}
+			finally
+			{
+				if(stream != null)
+					stream.close();
+			}
 		}
 		
 		//Merge classes with previous config
