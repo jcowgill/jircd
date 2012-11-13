@@ -235,6 +235,10 @@ public class ServerISupport
 				case List:
 					builderA.append(c.getKey());
 					break;
+					
+				default:
+					//This shuts the compiler up
+					break;
 				}
 			}
 			
