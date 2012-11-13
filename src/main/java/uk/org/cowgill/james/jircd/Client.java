@@ -703,7 +703,7 @@ public abstract class Client
 	 */
 	public final void queueClose(String quitStatus)
 	{
-		if(queuedCloseReason != null)
+		if(queuedCloseReason == null)
 		{
 			queuedCloseReason = quitStatus;
 			queuedClosures.add(this);
