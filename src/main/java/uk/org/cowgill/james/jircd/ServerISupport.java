@@ -139,7 +139,7 @@ public class ServerISupport
 		modesChannel.put('e', ModeType.List);
 		modesChannel.put('I', ModeType.List);
 		modesChannel.put('k', ModeType.Param);
-		modesChannel.put('k', ModeType.Param);
+		modesChannel.put('l', ModeType.Param);
 		modesChannel.put('p', ModeType.OnOff);
 		modesChannel.put('s', ModeType.OnOff);
 		modesChannel.put('t', ModeType.OnOff);

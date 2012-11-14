@@ -446,7 +446,8 @@ public final class Channel
 		
 		//Display mode
 		String modeString = ModeUtils.toString(mode);
-		String extra = "";
+		String limitStr = "";
+		String keyStr = "";
 		
 		if(limit > 0)
 		{
@@ -455,7 +456,7 @@ public final class Channel
 			//Add actual limit if on channel
 			if(onChannel)
 			{
-				extra = Integer.toString(limit) + ' ';
+				limitStr = Integer.toString(limit);
 			}
 		}
 		
@@ -466,7 +467,7 @@ public final class Channel
 			//Add actual key if on channel
 			if(onChannel)
 			{
-				extra += key;
+				keyStr = key;
 			}
 		}
 		
@@ -474,7 +475,8 @@ public final class Channel
 		client.send(client.newNickMessage("324").
 				appendParam(name).
 				appendParam(modeString).
-				appendParam(extra.trim()));
+				appendParam(limitStr).
+				appendParam(keyStr));
 	}
 
 	//Channel Actions
