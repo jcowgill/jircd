@@ -190,7 +190,7 @@ public class Mode implements Command
 		//Commit stuff
 		if(parser.printMode)
 		{
-			//Show if it's outselves or we're a hacker
+			//Show if it's ourselves or we're a hacker
 			if(client == other || client.hasPermission(Permissions.userModeHack))
 			{
 				//Display mode
