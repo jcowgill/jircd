@@ -446,7 +446,7 @@ class NetworkClient extends Client
 			localBufferData = Arrays.copyOf(localBufferData, clazz.readQueue + 1);
 			localBuffer = ByteBuffer.wrap(localBufferData);
 			
-			channel.socket().setSendBufferSize(clazz.readQueue);
+			channel.socket().setSendBufferSize(clazz.sendQueue);
 		}
 		catch(IOException e)
 		{
