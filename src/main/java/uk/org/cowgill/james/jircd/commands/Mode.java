@@ -222,7 +222,7 @@ public class Mode implements Command
 			for(ModesParser.ChangeInfo change : parser.toChange)
 			{
 				//Do not grant opers or allow setting bot flag
-				if(change.add && (change.flag == 'o' || change.flag == 'O' || change.flag == 'B'))
+				if(change.add && (change.flag == 'o' || change.flag == 'O'))
 				{
 					continue;
 				}
