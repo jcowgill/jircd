@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Pattern;
 
 import uk.org.cowgill.james.jircd.util.ModeType;
 
@@ -39,7 +38,7 @@ public class ServerISupport
 	 * <p>You are allowed to add ONOFF modes to this (do not add modes requiring parameters)
 	 * <p>When adding modes, all existing users will not have that mode set
 	 * 
-	 * @see updateISupport
+	 * @see #updateISupport
 	 */
 	public final Map<Character, ModeType> modesUser;
 	
@@ -49,7 +48,7 @@ public class ServerISupport
 	 * <p>You are allowed to add ONOFF modes to this (do not add modes requiring parameters)
 	 * <p>When adding modes, all existing channels will not have that mode set
 	 * 
-	 * @see updateISupport
+	 * @see #updateISupport
 	 */
 	public final Map<Character, ModeType> modesChannel;
 	
@@ -59,7 +58,7 @@ public class ServerISupport
 	 * <p>Mode related messages are not here, they are automatically
 	 * generated from the modesUser and modesChannel fields
 	 * 
-	 * @see updateISupport
+	 * @see #updateISupport
 	 */
 	public final Map<String, String> iSupportMsgs;
 	
@@ -317,9 +316,7 @@ public class ServerISupport
 	//############################
 	// Validation Checks
 	//############################
-	
-	private final static Pattern nameValidate = Pattern.compile("[a-zA-z]([a-zA-Z0-9\\[\\]\\\\\\Q`^{}-\\|\\E])*");
-	
+
 	/**
 	 * Checks whether a nickname is allowed
 	 * 
@@ -328,7 +325,28 @@ public class ServerISupport
 	 */
 	public static boolean validateNick(String nick)
 	{
-		return nick.length() <= NICKLEN && nameValidate.matcher(nick).matches();			
+		char c;
+
+		// Test length
+		if (nick == null || nick.length() == 0 || nick.length() > NICKLEN)
+			return false;
+
+		// Test first character (letters + special chars)
+		c = nick.charAt(0);
+		if (c < 'A' || c > '}')
+			return false;
+
+		// Test content
+		for (int i = 0; i < nick.length(); i++)
+		{
+			c = nick.charAt(i);
+
+			// Letters, special chars, numbers, minus
+			if (!(c == '-' || (c >= '0' && c <= '9') || (c >= 'A' && c <= '}')))
+				return false;
+		}
+
+		return true;
 	}
 	
 	/**
@@ -339,17 +357,46 @@ public class ServerISupport
 	 */
 	public static boolean validateUser(String user)
 	{
-		return user.length() <= USERLEN && nameValidate.matcher(user).matches();			
+		// Test length
+		if (user == null || user.length() == 0 || user.length() > USERLEN)
+			return false;
+
+		// Test content
+		for (int i = 0; i < user.length(); i++)
+		{
+			char c = user.charAt(i);
+
+			if (c >= 0x100 || c == '\0' || c == '\n' || c == '\r' || c == ' ' || c == '@')
+				return false;
+		}
+
+		return true;
 	}
 	
 	/**
 	 * Checks whether a channel is allowed
 	 * 
-	 * @param user channel to check
+	 * @param channel channel to check
 	 * @return whether it is allowed
 	 */
 	public static boolean validateChannel(String channel)
 	{
-		return channel.length() <= CHANNELLEN && nameValidate.matcher(channel).matches();			
+		// Test length
+		if (channel == null || channel.length() == 0 || channel.length() > CHANNELLEN)
+			return false;
+
+		// Test content
+		for (int i = 0; i < channel.length(); i++)
+		{
+			char c = channel.charAt(i);
+
+			if (c >= 0x100 || c == '\0' || c == 0x07 || c == '\n' || c == '\r' ||
+					c == ' ' || c == '.' || c == ',' || c == ':')
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 }
