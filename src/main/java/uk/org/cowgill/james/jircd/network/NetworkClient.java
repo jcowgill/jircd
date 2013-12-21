@@ -227,51 +227,22 @@ class NetworkClient extends Client
 		for(int i = 1; i < endByte; i++)
 		{
 			//Check for end of message
-			if(localBufferData[i] == '\n' && localBufferData[i - 1] == '\r')
+			if(localBufferData[i] == '\n' || localBufferData[i] == '\r')
 			{
-				//Found new line
-				localBuffer.limit(i - 1);
-				
-				if(localBuffer.remaining() == 0)
+				//Set end of message + process buffer
+				localBuffer.limit(i);
+				processLocalBufferMessage();
+
+				//Reset position and limit
+				if(i != localBuffer.capacity() - 1)
 				{
-					//Skip this blank message
-					if(i != localBuffer.capacity() - 1)
-					{
-						localBuffer.limit(localBuffer.capacity());
-						localBuffer.position(i + 1);
-					}
-					
-					continue;
-				}
-				
-				//Decode message
-				Message msg;
-				
-				try
-				{
-					msg = Message.parse(cDecoder.decode(localBuffer).toString());
-				}
-				catch(CharacterCodingException e)
-				{
-					//Drop message
 					localBuffer.limit(localBuffer.capacity());
 					localBuffer.position(i + 1);
-					continue;
 				}
-				
-				//Dispatch message
-				floodTimer.processMessage();
-				Server.getServer().getModuleManager().executeCommand(this, msg);
-				
-				//Reset position and limit
-				localBuffer.limit(localBuffer.capacity());
-				localBuffer.position(i + 1);
-				
+
 				//If we're now limited, break now
 				if(!floodTimer.checkTimer())
-				{
 					break;
-				}
 			}
 			else
 			{
@@ -284,13 +255,37 @@ class NetworkClient extends Client
 				}
 			}
 		}
-		
+
 		//Copy data after position back to start
 		localBuffer.limit(endByte);
 		localBuffer.compact();
-		
+
 		//Process closure queue
 		processCloseQueue();
+	}
+
+	private void processLocalBufferMessage()
+	{
+		//Ignore empty messages
+		if(localBuffer.remaining() == 0)
+			return;
+
+		//Decode message
+		Message msg;
+
+		try
+		{
+			msg = Message.parse(cDecoder.decode(localBuffer).toString());
+		}
+		catch(CharacterCodingException e)
+		{
+			//Drop message
+			return;
+		}
+
+		//Dispatch message
+		floodTimer.processMessage();
+		Server.getServer().getModuleManager().executeCommand(this, msg);
 	}
 
 	/**
