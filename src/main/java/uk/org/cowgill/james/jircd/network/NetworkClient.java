@@ -172,7 +172,7 @@ class NetworkClient extends Client
 		
 		spoofCheckChars = buffer.toString();
 		
-		send(Message.newStringFromServer("PING :" + spoofCheckChars));
+		send("PING :" + spoofCheckChars);
 	}
 	
 	/**
