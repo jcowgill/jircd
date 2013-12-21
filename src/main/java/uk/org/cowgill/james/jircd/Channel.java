@@ -433,9 +433,9 @@ public final class Channel
 	}
 	
 	/**
-	 * Sends this channel's mode to the given client
+	 * Sends this channel's mode to the given client, followed by the creation date
 	 * 
-	 * <p>This method uses IRC numeric 324
+	 * <p>This method uses IRC numerics 324 and 329
 	 * 
 	 * @param client client to send mode to
 	 */
@@ -477,6 +477,12 @@ public final class Channel
 				appendParam(modeString).
 				appendParam(limitStr).
 				appendParam(keyStr));
+
+		//Send creation date
+		// :prefix 329 James #test 7465767 (after 324)
+		client.send(client.newNickMessage("329").
+				appendParam(name).
+				appendParam(Long.toString(creationTime / 1000)));
 	}
 
 	//Channel Actions
