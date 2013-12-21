@@ -306,7 +306,7 @@ class NetworkClient extends Client
 			else if(isRegistered())
 			{
 				//Send ping
-				send(Message.newStringFromServer("PING " + id.nick));
+				send("PING " + id.nick);
 			}
 		}
 	}
