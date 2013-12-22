@@ -350,6 +350,34 @@ public final class Channel
 	}
 
 	/**
+	 * Returns the prefix string for each NAMES command
+	 *
+	 * @param client client to send messages to
+	 * @return the prefix message
+	 */
+	private String getNamesPrefix(Client client)
+	{
+		StringBuilder prefix = new StringBuilder();
+
+		prefix.append(client.newNickMessage("353").toString());
+		prefix.append(' ');
+
+		if(isModeSet('s'))
+			prefix.append('@');
+		else if(isModeSet('p'))
+			prefix.append('*');
+		else
+			prefix.append('=');
+
+		prefix.append(' ');
+		prefix.append(name);
+		prefix.append(' ');
+		prefix.append(':');
+
+		return prefix.toString();
+	}
+
+	/**
 	 * Sends a client the response of a names request to this channel
 	 * @param client client to send names to
 	 */
@@ -358,27 +386,12 @@ public final class Channel
 		//Detect enhancements
 		final boolean hasNamesX = client.hasProtocolEnhancement(ProtocolEnhancements.NamesX);
 		final boolean hasUhNames = client.hasProtocolEnhancement(ProtocolEnhancements.UhNames);
-		
-		//Construct prefix
-		final Message namesPrefix = client.newNickMessage("353");
-		
-		if(isModeSet('s'))
-		{
-			namesPrefix.appendParam("@");
-		}
-		else if(isModeSet('p'))
-		{
-			namesPrefix.appendParam("*");
-		}
-		else
-		{
-			namesPrefix.appendParam("=");
-		}
-		
-		namesPrefix.appendParam(name);
-		
+
+		//Get prefix
+		final String namesPrefix = getNamesPrefix(client);
+
 		//Start loop
-		final StringBuilder builder = new StringBuilder();
+		final StringBuilder builder = new StringBuilder(namesPrefix);
 		
 		MemberListDisplayer.Executer namesExecuter = new MemberListDisplayer.Executer()
 		{
@@ -388,12 +401,12 @@ public final class Channel
 			public void displayMember(Client client, Channel channel, Client other, ChannelMemberMode mode)
 			{
 				//Add space before previous name
-				if(builder.length() != 0)
+				if(builder.length() != namesPrefix.length())
 				{
 					builder.append(' ');
 				}
 				
-				//Add prefix and name
+				//Add client's mode prefix and name
 				builder.append(mode.toPrefixString(!hasNamesX));
 				if(hasUhNames)
 				{
@@ -409,10 +422,10 @@ public final class Channel
 				//If 8 names, send message
 				if(namesThisLine >= 8)
 				{
-					client.send(new Message(namesPrefix).appendParam(builder.toString()));
+					client.send(builder.toString());
 
 					namesThisLine = 0;
-					builder.setLength(0);
+					builder.setLength(namesPrefix.length());
 				}
 			}
 		};
@@ -422,16 +435,15 @@ public final class Channel
 		//Send last part
 		if(builder.length() != 0)
 		{
-			client.send(new Message(namesPrefix).appendParam(builder.toString()));
+			client.send(builder.toString());
 		}
 		
 		//Send end of names
-		Message msg = client.newNickMessage("366");
-		msg.appendParam(name);
-		msg.appendParam("End of /NAMES list");
-		client.send(msg);
+		client.send(client.newNickMessage("366").
+				appendParam(name).
+				appendParam("End of NAMES list"));
 	}
-	
+
 	/**
 	 * Sends this channel's mode to the given client, followed by the creation date
 	 * 
