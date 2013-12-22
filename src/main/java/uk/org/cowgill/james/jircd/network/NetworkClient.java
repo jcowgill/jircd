@@ -182,17 +182,11 @@ class NetworkClient extends Client
 	{
 		try
 		{
-			//Read data
-			switch(readWrapper(localBuffer))
+			if (readWrapper(localBuffer) == -1)
 			{
-				case -1:
-					//Close client
-					close("Connection reset by peer");
-					return;
-					
-				case 0:
-					//Nothing received, so do nothing
-					return;
+				//Close client
+				close("Connection reset by peer");
+				return;
 			}
 		}
 		catch(IOException e)
@@ -212,13 +206,15 @@ class NetworkClient extends Client
 		
 		//Check flood timer
 		if(!floodTimer.checkTimer())
-		{
 			return;
-		}
 		
 		//Read message into buffer
 		int endByte = localBuffer.position();
 		localBuffer.position(0);
+
+		//Exit now if there is nothing to do
+		if (endByte == 0)
+			return;
 		
 		//Update message time
 		lastMessageTime = System.currentTimeMillis();
