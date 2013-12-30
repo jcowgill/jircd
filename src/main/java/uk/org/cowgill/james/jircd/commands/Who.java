@@ -16,6 +16,9 @@
 package uk.org.cowgill.james.jircd.commands;
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+
 import uk.org.cowgill.james.jircd.Channel;
 import uk.org.cowgill.james.jircd.ChannelMemberMode;
 import uk.org.cowgill.james.jircd.Client;
@@ -24,7 +27,6 @@ import uk.org.cowgill.james.jircd.IRCMask;
 import uk.org.cowgill.james.jircd.Message;
 import uk.org.cowgill.james.jircd.Permissions;
 import uk.org.cowgill.james.jircd.Server;
-import uk.org.cowgill.james.jircd.util.MemberListDisplayer;
 
 /**
  * The WHO command - displays information about clients
@@ -58,6 +60,9 @@ public class Who implements Command
 			//Check opers only
 			operOnly = (msg.paramCount() >= 2 && msg.getParam(1).equals("o"));
 		}
+
+		//See invisible peoples
+		boolean seeInvisible = client.hasPermission(Permissions.seeInvisible);
 		
 		//Check for chanel
 		if(mask.charAt(0) == '#')
@@ -68,16 +73,15 @@ public class Who implements Command
 			if(channel != null)
 			{
 				//Print channel members
-				MemberListDisplayer.listChannel(client, channel, new MemberListDisplayer.Executer()
+				boolean allSeeing = (channel.lookupMember(client) != null) || seeInvisible;
+
+				//Send replies
+				for(Map.Entry<Client, ChannelMemberMode> other : channel.getMembers().entrySet())
 				{
-					@Override
-					public void displayMember(Client client, Channel channel, Client other,
-							ChannelMemberMode mode)
-					{
-						//Forward each member display to a new message
-						Who.sendWhoMsg(client, other, channel, mode);
-					}
-				});
+					//Can see client?
+					if(allSeeing || findCommonChannel(client, other.getKey()) != null)
+						Who.sendWhoMsg(client, other.getKey(), channel, other.getValue());
+				}
 			}
 		}
 		else
@@ -98,10 +102,9 @@ public class Who implements Command
 			for(Client other : clients)
 			{
 				//Check visibility
-				Channel commonChannel = MemberListDisplayer.findCommonChannel(client, other);
+				Channel commonChannel = findCommonChannel(client, other);
 				
-				if(commonChannel != null || !other.isModeSet('i') || client == other
-						|| client.hasPermission(Permissions.seeInvisible))
+				if(commonChannel != null || !other.isModeSet('i') || client == other || seeInvisible)
 				{
 					if(IRCMask.wildcardCompare(other.id.nick, mask) ||
 						IRCMask.wildcardCompare(other.id.user, mask) ||
@@ -120,12 +123,28 @@ public class Who implements Command
 				appendParam(mask).appendParam("End of /WHO list"));
 	}
 
+
+	@Override
+	public int getMinParameters()
+	{
+		return 0;
+	}
+
+	@Override
+	public String getName()
+	{
+		return "WHO";
+	}
+
+	@Override
+	public int getFlags() { return FLAG_NORMAL; }
+
 	/**
 	 * Sends a WHO reply to client
 	 * 
 	 * @param client client to reply to
 	 * @param other client information is read from
-	 * @param chanName common channel (or null if no common channel)
+	 * @param channel common channel (or null if no common channel)
 	 * @param chanMode other's channel mode (or null to find mode)
 	 */
 	private static void sendWhoMsg(Client client, Client other, Channel channel, ChannelMemberMode chanMode)
@@ -178,22 +197,36 @@ public class Who implements Command
 				appendParam(info.toString()).
 				appendParam("0 " + other.realName));
 	}
-	
-	@Override
-	public int getMinParameters()
-	{
-		return 0;
-	}
 
-	@Override
-	public String getName()
+	/**
+	 * Attempts to find a common channel between 2 clients
+	 *
+	 * @param clientA first client
+	 * @param clientB second client
+	 * @return the common channel or null if there is no common channel
+	 */
+	private static Channel findCommonChannel(Client clientA, Client clientB)
 	{
-		return "WHO";
-	}
+		Set<Channel> chansA = clientA.getChannels();
+		Set<Channel> chansB = clientB.getChannels();
 
-	@Override
-	public int getFlags()
-	{
-		return FLAG_NORMAL;
+		//Swap so clientB has most channels
+		if(chansA.size() > chansB.size())
+		{
+			Set<Channel> tmp = chansA;
+			chansB = chansA;
+			chansA = tmp;
+		}
+
+		//Search for common channels
+		for(Channel channel : chansA)
+		{
+			if(chansB.contains(channel))
+			{
+				return channel;
+			}
+		}
+
+		return null;
 	}
 }
