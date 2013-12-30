@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import uk.org.cowgill.james.jircd.util.MemberListDisplayer;
 import uk.org.cowgill.james.jircd.util.ModeUtils;
 import uk.org.cowgill.james.jircd.util.NamesListBuilder;
 
@@ -405,24 +404,20 @@ public final class Channel
 
 		//Build list of names and send them
 		final NamesListBuilder builder = new NamesListBuilder(client, getNamesPrefix(client));
-		
-		MemberListDisplayer.Executer namesExecuter = new MemberListDisplayer.Executer()
+
+		for(Entry<Client, ChannelMemberMode> entry : members.entrySet())
 		{
-			@Override
-			public void displayMember(Client client, Channel channel, Client other, ChannelMemberMode mode)
-			{
-				String name;
+			Client other = entry.getKey();
+			ChannelMemberMode mode = entry.getValue();
+			String name;
 
-				// Generate name from prefix and a nick
-				name  = mode.toPrefixString(!hasNamesX);
-				name += (hasUhNames ? other.id.toString() :other.id.nick);
+			// Generate name from prefix and a nick
+			name  = mode.toPrefixString(!hasNamesX);
+			name += (hasUhNames ? other.id.toString() :other.id.nick);
 
-				// Send to client
-				builder.addName(name);
-			}
-		};
-		
-		MemberListDisplayer.listChannel(client, this, namesExecuter);
+			// Send to client
+			builder.addName(name);
+		}
 		
 		//Send last part
 		builder.flush();
