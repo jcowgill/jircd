@@ -24,6 +24,7 @@ import java.util.Set;
 
 import uk.org.cowgill.james.jircd.util.MemberListDisplayer;
 import uk.org.cowgill.james.jircd.util.ModeUtils;
+import uk.org.cowgill.james.jircd.util.NamesListBuilder;
 
 /**
  * Represents an IRC channel
@@ -383,65 +384,48 @@ public final class Channel
 	 */
 	public void sendNames(Client client)
 	{
+		sendNamesWithoutEnd(client);
+
+		client.send(client.newNickMessage("366").
+				appendParam(name).
+				appendParam("End of NAMES list"));
+	}
+
+	/**
+	 * Sends names without the "End of NAMES list" message
+	 *
+	 * @param client client to send names to
+	 * @see #sendNames(Client)
+	 */
+	public void sendNamesWithoutEnd(Client client)
+	{
 		//Detect enhancements
 		final boolean hasNamesX = client.hasProtocolEnhancement(ProtocolEnhancements.NamesX);
 		final boolean hasUhNames = client.hasProtocolEnhancement(ProtocolEnhancements.UhNames);
 
-		//Get prefix
-		final String namesPrefix = getNamesPrefix(client);
-
-		//Start loop
-		final StringBuilder builder = new StringBuilder(namesPrefix);
+		//Build list of names and send them
+		final NamesListBuilder builder = new NamesListBuilder(client, getNamesPrefix(client));
 		
 		MemberListDisplayer.Executer namesExecuter = new MemberListDisplayer.Executer()
 		{
-			int namesThisLine;
-			
 			@Override
 			public void displayMember(Client client, Channel channel, Client other, ChannelMemberMode mode)
 			{
-				//Add space before previous name
-				if(builder.length() != namesPrefix.length())
-				{
-					builder.append(' ');
-				}
-				
-				//Add client's mode prefix and name
-				builder.append(mode.toPrefixString(!hasNamesX));
-				if(hasUhNames)
-				{
-					builder.append(other.id.toString());
-				}
-				else
-				{
-					builder.append(other.id.nick);
-				}
-				
-				namesThisLine++;
-				
-				//If 8 names, send message
-				if(namesThisLine >= 8)
-				{
-					client.send(builder.toString());
+				String name;
 
-					namesThisLine = 0;
-					builder.setLength(namesPrefix.length());
-				}
+				// Generate name from prefix and a nick
+				name  = mode.toPrefixString(!hasNamesX);
+				name += (hasUhNames ? other.id.toString() :other.id.nick);
+
+				// Send to client
+				builder.addName(name);
 			}
 		};
 		
 		MemberListDisplayer.listChannel(client, this, namesExecuter);
 		
 		//Send last part
-		if(builder.length() != 0)
-		{
-			client.send(builder.toString());
-		}
-		
-		//Send end of names
-		client.send(client.newNickMessage("366").
-				appendParam(name).
-				appendParam("End of NAMES list"));
+		builder.flush();
 	}
 
 	/**
