@@ -15,13 +15,10 @@
 */
 package uk.org.cowgill.james.jircd.commands;
 
-import uk.org.cowgill.james.jircd.Channel;
-import uk.org.cowgill.james.jircd.Client;
-import uk.org.cowgill.james.jircd.Command;
-import uk.org.cowgill.james.jircd.Message;
-import uk.org.cowgill.james.jircd.Server;
+import uk.org.cowgill.james.jircd.*;
 import uk.org.cowgill.james.jircd.util.ChannelCheckError;
 import uk.org.cowgill.james.jircd.util.ChannelChecks;
+import uk.org.cowgill.james.jircd.util.NamesListBuilder;
 
 /**
  * The NAMES command - views the memberlist of a channel
@@ -33,24 +30,59 @@ public class Names implements Command
 	@Override
 	public void run(Client client, Message msg)
 	{
-		//Lookup channel
-		Channel channel = Server.getServer().getChannel(msg.getParam(0));
-		
-		if(channel == null)
+		//Specific channel?
+		if (msg.paramCount() >= 1)
 		{
-			ChannelCheckError.GeneralNotInChannel.sendToClient(msg.getParam(0), client);
-		}
-		else
-		{
-			//Can view names?
-			if(ChannelChecks.canGetNames(channel, client))
-			{
-				channel.sendNames(client);
-			}
-			else
+			//Lookup channel
+			Channel channel = Server.getServer().getChannel(msg.getParam(0));
+
+			if(channel == null)
 			{
 				ChannelCheckError.GeneralNotInChannel.sendToClient(msg.getParam(0), client);
 			}
+			else
+			{
+				//Can view names?
+				if(ChannelChecks.canGetNames(channel, client))
+				{
+					channel.sendNames(client);
+				}
+				else
+				{
+					ChannelCheckError.GeneralNotInChannel.sendToClient(msg.getParam(0), client);
+				}
+			}
+		}
+		else
+		{
+			// Send NAMES of all channels (may take some time :)
+			for (Channel channel : Server.getServer().getChannels())
+			{
+				if (ChannelChecks.canGetNames(channel, client))
+					channel.sendNamesWithoutEnd(client);
+			}
+
+			// Send NAMES for visible users not in a channel
+			boolean seeInvisible = client.hasPermission(Permissions.seeInvisible);
+			boolean hasUhNames = client.hasProtocolEnhancement(ProtocolEnhancements.UhNames);
+			NamesListBuilder builder =
+					new NamesListBuilder(client, client.newNickMessage("353").toString() + " * * :");
+
+			for (Client other : Server.getServer().getRegisteredClients())
+			{
+				if (other.getChannels().size() == 0 &&
+						(seeInvisible || !other.isModeSet('i')))
+				{
+					builder.addName(hasUhNames ? other.id.toString() :other.id.nick);
+				}
+			}
+
+			builder.flush();
+
+			// Send End of NAMES
+			client.send(client.newNickMessage("366").
+					appendParam("*").
+					appendParam("End of NAMES list"));
 		}
 	}
 
