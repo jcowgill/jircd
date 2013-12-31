@@ -90,13 +90,9 @@ public class Who implements Command
 			Collection<Client> clients;
 			
 			if(operOnly)
-			{
-				clients = Server.getServer().getRegisteredClients();
-			}
-			else
-			{
 				clients = Server.getServer().getIRCOperators();
-			}
+			else
+				clients = Server.getServer().getRegisteredClients();
 			
 			//Do windcard test on all clients in the list
 			for(Client other : clients)
