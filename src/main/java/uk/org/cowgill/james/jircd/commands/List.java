@@ -41,7 +41,7 @@ public class List implements Command
 		boolean allSeeing = client.hasPermission(Permissions.seeAllChannels);
 		
 		//Prepare reply
-		String reply = Message.newStringFromServer("322") + " " + client.id.nick + " ";
+		String prefix = Message.newStringFromServer("322") + " " + client.id.nick + " ";
 		
 		//Process channel list
 		for(Channel channel : Server.getServer().getChannels())
@@ -61,14 +61,17 @@ public class List implements Command
 			}
 			
 			//Send channel
-			client.send(reply + channel.getName() + " " + channel.getMembers().size() +
-					" :" + channel.getTopic());
+			String reply = prefix + channel.getName() + " " + channel.getMembers().size() + " :";
+			if (channel.getTopic() != null)
+				reply += channel.getTopic();
+
+			client.send(reply);
 		}
 		
 		//Send private members
 		if(privateMembers > 0)
 		{
-			client.send(reply + "* " + privateMembers + " :");
+			client.send(prefix + "* " + privateMembers + " :");
 		}
 		
 		//Send end of list
