@@ -55,7 +55,7 @@ final class HostResolver
 	 * Submits a request for the resolver to process
 	 * @param client client whose hostname to resolve
 	 */
-	public void sumbitRequest(NetworkClient client)
+	public void submitRequest(NetworkClient client)
 	{
 		//Create new request and submit
 		eService.execute(new HostResolverRequest(client, hostResolveOutput, eventSelector));
@@ -65,7 +65,7 @@ final class HostResolver
 	 * Submits a request for the resolver to process
 	 * @param client resolution request
 	 */
-	public void sumbitRequest(HostResolverRequest request)
+	public void submitRequest(HostResolverRequest request)
 	{
 		//Create new request and submit
 		eService.execute(request);

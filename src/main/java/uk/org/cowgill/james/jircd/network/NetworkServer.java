@@ -212,7 +212,7 @@ final class NetworkServer extends Server
 							client.setup();
 							
 							//Resolver host
-							resolver.sumbitRequest(client);
+							resolver.submitRequest(client);
 							
 							//Register channel and attach client to it
 							try
