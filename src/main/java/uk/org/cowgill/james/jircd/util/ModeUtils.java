@@ -18,7 +18,8 @@ package uk.org.cowgill.james.jircd.util;
 /**
  * Contains a number of static members to manipulate mode bitsets
  *
- * <p>This does not handle modes assigned to channel members. Use {@link ChannelMemberMode} for that.
+ * <p>This does not handle modes assigned to channel members.
+ * Use {@link uk.org.cowgill.james.jircd.ChannelMemberMode} for that.
  *
  * @author James
  */
@@ -122,7 +123,7 @@ public final class ModeUtils
 	 *
 	 * <p>The mode always has a leading +
 	 *
-	 * @param mode the mode bitmask
+	 * @param modeSet the mode bitmask
 	 * @return the string containing the mode
 	 */
 	public static String toString(final long modeSet)

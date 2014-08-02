@@ -16,7 +16,7 @@
 package uk.org.cowgill.james.jircd;
 
 /**
- * Class containing clinet permission constants
+ * Class containing client permission constants
  *
  * @author James
  */

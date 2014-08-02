@@ -61,9 +61,9 @@ public class ModesParser
 	public boolean printMode;
 
 	/**
-	 * Creates a new modes parser with the specified avaliable modes
+	 * Creates a new modes parser with the specified available modes
 	 *
-	 * @param modes the avaliable modes
+	 * @param modes the available modes
 	 * 	<p>User and Channel modes can be found in the ServerISupport class
 	 */
 	public ModesParser(Map<Character, ModeType> modes)
@@ -74,7 +74,7 @@ public class ModesParser
 	/**
 	 * Creates a new modes parser with modes from another parser
 	 *
-	 * @param parser the parser to get avaliable modes from
+	 * @param parser the parser to get available modes from
 	 */
 	public ModesParser(ModesParser parser)
 	{

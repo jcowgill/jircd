@@ -33,7 +33,7 @@ import uk.org.cowgill.james.jircd.util.ModeType;
 public class ServerISupport
 {
 	/**
-	 * Avaliable user modes
+	 * Available user modes
 	 *
 	 * <p>You are allowed to add ONOFF modes to this (do not add modes requiring parameters)
 	 * <p>When adding modes, all existing users will not have that mode set
@@ -43,7 +43,7 @@ public class ServerISupport
 	public final Map<Character, ModeType> modesUser;
 
 	/**
-	 * Avaliable chanel modes
+	 * Available chanel modes
 	 *
 	 * <p>You are allowed to add ONOFF modes to this (do not add modes requiring parameters)
 	 * <p>When adding modes, all existing channels will not have that mode set
@@ -73,7 +73,7 @@ public class ServerISupport
 	public final static int MODES = 12;
 
 	/**
-	 * Maxmimum number of channels you can join
+	 * Maximum number of channels you can join
 	 */
 	public final static int MAXCHANNELS = 10;
 
@@ -93,17 +93,17 @@ public class ServerISupport
 	public final static int USERLEN = 30;
 
 	/**
-	 * Maxmimum topic length
+	 * Maximum topic length
 	 */
 	public final static int TOPICLEN = 300;
 
 	/**
-	 * Maxmimum length of kick message
+	 * Maximum length of kick message
 	 */
 	public final static int KICKLEN = 300;
 
 	/**
-	 * Maxmimum channel name length
+	 * Maximum channel name length
 	 */
 	public final static int CHANNELLEN = 30;
 

@@ -43,7 +43,7 @@ public class Nick implements Command
 		String nick = msg.getParam(0);
 		if(!ServerISupport.validateNick(nick))
 		{
-			client.send(client.newNickMessage("432").appendParam("Erronous nickname"));
+			client.send(client.newNickMessage("432").appendParam("Erroneous nickname"));
 			return;
 		}
 

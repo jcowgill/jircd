@@ -45,7 +45,7 @@ public final class Channel
 		/**
 		 * Creates a new set info object
 		 *
-		 * @param nick the client who set the object (null for server's name)
+		 * @param client the client who set the object (null for server's name)
 		 */
 		public SetInfo(Client client)
 		{
@@ -87,7 +87,7 @@ public final class Channel
 	}
 
 	//Collection of channel fields
-	// These are documented in the relevent getters
+	// These are documented in the relevant getters
 	private final String name;
 	private final long creationTime;
 	private String topic;
@@ -182,7 +182,7 @@ public final class Channel
 	}
 
 	/**
-	 * Gets the channel ban expeption list
+	 * Gets the channel ban exception list
 	 *
 	 * <p>The list returned is immutable
 	 *
@@ -485,7 +485,7 @@ public final class Channel
 	 * <p>If no-one is on the channel, the client joins with OPS. Otherwise, the user has no extra modes.
 	 *
 	 * @param client Client to add
-	 * @return true on sucess, false if the client is already on the channel
+	 * @return true on success, false if the client is already on the channel
 	 */
 	public boolean join(Client client)
 	{
@@ -500,7 +500,7 @@ public final class Channel
 	 *
 	 * @param client Client to add
 	 * @param banChecked set to true if the ban lists have been checked and this client is not banned
-	 * @return true on sucess, false if the client is already on the channel
+	 * @return true on success, false if the client is already on the channel
 	 */
 	public boolean join(Client client, boolean banChecked)
 	{
@@ -552,7 +552,7 @@ public final class Channel
 	 *
 	 * @param client the client who's leaving
 	 * @param partMsg the part / quit message of the client
-	 * @param sendToSelf whether to send the quit message to the client
+	 * @param forQuit true if the client is quitting
 	 * @return false if the client is not on the channel
 	 */
 	private boolean part(Client client, Object partMsg, boolean forQuit)
@@ -661,7 +661,7 @@ public final class Channel
 	}
 
 	/**
-	 * Invites a client to a fake channel (non-existant one)
+	 * Invites a client to a fake channel (non-existent one)
 	 *
 	 * @param channel channel name to invite to
 	 * @param inviter client giving the invitation
@@ -782,7 +782,7 @@ public final class Channel
 	 * Processes a set mode for list request
 	 *
 	 * @param setter mode setting client
-	 * @param add whether the mode shuold be added
+	 * @param add whether the mode should be added
 	 * @param list the list to modify
 	 * @param param mode parameter
 	 * @param msg output message
@@ -1156,7 +1156,7 @@ public final class Channel
 			}
 		}
 
-		//Tranverse ban lists
+		//Traverse ban lists
 		String mask = client.id.toString();
 		boolean banned = traverseList(banList, mask) && !traverseList(banExceptList, mask);
 
@@ -1197,7 +1197,7 @@ public final class Channel
 	 *
 	 * @param client the client to check
 	 * @return true if the member is banned
-	 * @see isBanned
+	 * @see #isBanned
 	 */
 	public boolean isBannedSkipMember(Client client)
 	{

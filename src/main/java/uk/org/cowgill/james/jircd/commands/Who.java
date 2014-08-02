@@ -94,7 +94,7 @@ public class Who implements Command
 			else
 				clients = Server.getServer().getRegisteredClients();
 
-			//Do windcard test on all clients in the list
+			//Do wildcard test on all clients in the list
 			for(Client other : clients)
 			{
 				//Check visibility

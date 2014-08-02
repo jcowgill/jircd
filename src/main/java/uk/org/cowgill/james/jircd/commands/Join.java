@@ -141,7 +141,7 @@ public class Join implements Command
 	}
 
 	/**
-	 * Called to delect whether operators are allowed to use joinAnyChannel permission
+	 * Called to detect whether operators are allowed to use joinAnyChannel permission
 	 *
 	 * @return if joinAnyChannel is allowed
 	 */

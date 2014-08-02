@@ -68,7 +68,7 @@ public class MultiHashMap<K, V> implements MultiMap<K, V>
 	public boolean containsValue(Object value)
 	{
 		//If value is a Collection, pass to data
-		// otherwize check every collection
+		// otherwise check every collection
 		if(value instanceof Collection<?>)
 		{
 			return data.containsValue(value);
@@ -92,7 +92,7 @@ public class MultiHashMap<K, V> implements MultiMap<K, V>
 	@Override
 	public void putAllValues(Map<? extends K, ? extends V> map)
 	{
-		//Put each vaue separately
+		//Put each value separately
 		for(Map.Entry<? extends K, ? extends V> entry : map.entrySet())
 		{
 			this.putValue(entry.getKey(), entry.getValue());

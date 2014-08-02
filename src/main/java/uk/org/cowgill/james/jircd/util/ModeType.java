@@ -16,7 +16,7 @@
 package uk.org.cowgill.james.jircd.util;
 
 /**
- * Contains the avaliable types of mode used by the mode parser
+ * Contains the available types of mode used by the mode parser
  *
  * @author James
  */

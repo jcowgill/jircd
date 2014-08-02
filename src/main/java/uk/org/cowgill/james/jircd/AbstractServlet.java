@@ -18,7 +18,7 @@ package uk.org.cowgill.james.jircd;
 import uk.org.cowgill.james.jircd.util.ModeUtils;
 
 /**
- * An abstract servelt helper class
+ * An abstract servlet helper class
  *
  * @author James
  */

@@ -31,7 +31,7 @@ public class User implements Command
 	@Override
 	public void run(Client client, Message msg)
 	{
-		//Musn't have USER set already
+		//Can't have USER set already
 		if((client.getRegistrationFlags() & RegistrationFlags.UserSet) != 0)
 		{
 			//No reregistering

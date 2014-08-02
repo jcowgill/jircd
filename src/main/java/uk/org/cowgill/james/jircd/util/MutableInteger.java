@@ -117,7 +117,7 @@ public final class MutableInteger extends Number implements Comparable<MutableIn
 			return true;
 		}
 
-		//Check instace
+		//Check instance
 		if(!(obj instanceof MutableInteger))
 		{
 			return false;

@@ -108,7 +108,6 @@ class TlsNetworkClient extends NetworkClient
 	/**
 	 * Processes handshake tasks after a wrap / unwrap operation
 	 *
-	 * @param hStatus handshake status code
 	 * @return false if a wrap and send failed (sendq exceeded)
 	 */
 	private boolean processHandshakeTasks() throws IOException

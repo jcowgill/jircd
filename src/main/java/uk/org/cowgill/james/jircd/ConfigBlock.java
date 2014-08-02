@@ -256,7 +256,7 @@ public class ConfigBlock
 	private static String parseParameter(PushbackLineInputStream data) throws IOException, ConfigException
 	{
 		//Terms can be separated with whitespace
-		// terms are concated with one space replacing any whitespace
+		// terms are concatenated with one space replacing any whitespace
 		StringBuilder outString = new StringBuilder();
 		int c;
 		boolean runLoop;
@@ -517,7 +517,7 @@ public class ConfigBlock
 	}
 
 	/**
-	 * Parses the given string data into a heirachy of ConfigBlocks
+	 * Parses the given string data into a hierarchy of ConfigBlocks
 	 *
 	 * @param data The data stream to parse into blocks
 	 * @return The config block

@@ -63,7 +63,8 @@ final class HostResolver
 
 	/**
 	 * Submits a request for the resolver to process
-	 * @param client resolution request
+	 *
+	 * @param request resolution request
 	 */
 	public void submitRequest(HostResolverRequest request)
 	{

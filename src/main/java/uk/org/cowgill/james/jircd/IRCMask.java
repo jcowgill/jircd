@@ -16,7 +16,7 @@
 package uk.org.cowgill.james.jircd;
 
 /**
- * Represents a Nick, User and Host trupal in the IRC server
+ * Represents a Nick, User and Host tuple in the IRC server
  *
  * Used to store a client's nick, user and host.
  * Also used to store masks for bans or other checking.
@@ -179,7 +179,7 @@ public class IRCMask implements Comparable<IRCMask>
 					//Collapse *s
 					while (mask.charAt(wildPos) == '*')
 					{
-						//Increace for next part of loop
+						//Increase for next part of loop
 						++wildPos;
 
 						if (wildPos == mask.length())
@@ -213,7 +213,7 @@ public class IRCMask implements Comparable<IRCMask>
 						++wildPos;
 					}
 
-					//Otherwize c = the \ character
+					//Otherwise c = the \ character
 
 				default:
 					if (strPos == data.length() || c != data.charAt(strPos))

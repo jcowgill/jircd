@@ -60,9 +60,8 @@ public class ChannelMemberMode
 	public static final int OWNER = 64;
 
 	/**
-	 * Finds the highest mode of a member
+	 * Finds the highest mode of this member
 	 *
-	 * @param mode member's mode
 	 * @return a member mode with only 1 (or 0) bit set with the mode
 	 */
 	public int getHighestMode()

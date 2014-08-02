@@ -168,7 +168,7 @@ public abstract class Server
 	 *
 	 * <p>Returns false if the reload fails. In this case the server configuration is unmodified
 	 *
-	 * @return True if the rehash suceeded with no errors
+	 * @return True if the rehash succeeded with no errors
 	 */
 	public boolean rehash()
 	{
@@ -267,7 +267,7 @@ public abstract class Server
 		if(!moduleMan.serverStartupEvent())
 		{
 			//Module error
-			logger.fatal("Module load failiure - exiting");
+			logger.fatal("Module load failure - exiting");
 			return false;
 		}
 
@@ -359,9 +359,9 @@ public abstract class Server
 	}
 
 	/**
-	 * Returns the number of unregisterd clients connected to the server
+	 * Returns the number of unregistered clients connected to the server
 	 *
-	 * @return the number of unregisterd clients connected to the server
+	 * @return the number of unregistered clients connected to the server
 	 */
 	public int getUnregisteredClients()
 	{

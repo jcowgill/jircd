@@ -44,7 +44,7 @@ public enum ChannelCheckError
 	SpeakNotInChannel("404", "No external channel messages (+n)"),
 
 	//Kick can produce GeneralNotAnOp
-	KickOtherNotInChannel("441", "They arn't on that channel"),
+	KickOtherNotInChannel("441", "They aren't on that channel"),
 
 	//Invite can produce GeneralNotAnOp and GeneralNotInChannel
 	InviteAlreadyInChannel("443", "is already on that channel"),
@@ -93,7 +93,7 @@ public enum ChannelCheckError
 	/**
 	 * Sends this error to a client
 	 *
-	 * @param channel channel the error occured on
+	 * @param channel channel the error occurred on
 	 * @param client client to send the error to
 	 */
 	public void sendToClient(Channel channel, Client client)
@@ -107,7 +107,7 @@ public enum ChannelCheckError
 	/**
 	 * Sends this error to a client using a string channel
 	 *
-	 * @param channel channel the error occured on
+	 * @param channel channel the error occurred on
 	 * @param client client to send the error to
 	 */
 	public void sendToClient(String channel, Client client)

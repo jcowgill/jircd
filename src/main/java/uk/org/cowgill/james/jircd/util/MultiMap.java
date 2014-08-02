@@ -35,7 +35,7 @@ public interface MultiMap<K, V> extends Map<K, Collection<V>>
 	boolean putValue(K key, V value);
 
 	/**
-	 * Removes a sepific value from the multimap
+	 * Removes a specific value from the multimap
 	 *
 	 * @param key The key which contains the value
 	 * @param value The value to remove

@@ -16,7 +16,7 @@
 package uk.org.cowgill.james.jircd;
 
 /**
- * Collection of flags used to mark wheather clients can accept protocol enhancements
+ * Collection of flags used to mark whether clients can accept protocol enhancements
  *
  * @author James
  */

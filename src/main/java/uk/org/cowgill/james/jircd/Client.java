@@ -98,7 +98,7 @@ public abstract class Client
 	/**
 	 * Flags containing protocol enhancements
 	 *
-	 * @see ProtocolEnhancments
+	 * @see ProtocolEnhancements
 	 */
 	private int protocolEnhancements;
 
@@ -346,7 +346,7 @@ public abstract class Client
 	}
 
 	/**
-	 * Returns the time the client signed on in mulliseconds since the UNIX Epoch
+	 * Returns the time the client signed on in milliseconds since the UNIX Epoch
 	 *
 	 * @return the time the client signed on
 	 */
@@ -791,14 +791,14 @@ public abstract class Client
 	public abstract void send(Object data);
 
 	/**
-	 * Performs client sepific close routines
+	 * Performs client specific close routines
 	 *
-	 * @return Returns true if the close was a sucess. Returns false to abort the close.
+	 * @return Returns true if the close was a success. Returns false to abort the close.
 	 */
 	protected abstract boolean rawClose();
 
 	/**
-	 * Returns the the in milliseconds this cient has been idle for
+	 * Returns the the in milliseconds this client has been idle for
 	 *
 	 * @return idle time of this client in milliseconds
 	 */

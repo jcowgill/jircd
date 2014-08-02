@@ -104,7 +104,7 @@ public final class ChannelChecks
 	/**
 	 * Determines whether a client can speak in a channel
 	 *
-	 * @param channel channel they are attempting to speask in
+	 * @param channel channel they are attempting to speak in
 	 * @param client client who's speaking
 	 * @return the error or ChannelCheckError.OK if they can speak
 	 */

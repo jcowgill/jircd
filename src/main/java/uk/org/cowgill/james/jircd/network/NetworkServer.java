@@ -44,7 +44,7 @@ import uk.org.cowgill.james.jircd.Server;
  * Server which uses listeners to listen for remote connections
  *
  * The NetworkServer class contains the main network loop which dispatches requests to other parts
- *  of the frameworK
+ *  of the framework
  *
  * @author James
  */
@@ -75,7 +75,7 @@ final class NetworkServer extends Server
 	/**
 	 * Checks whether a client is ip banned
 	 *
-	 * @param client client to check
+	 * @param channel channel of the client to check
 	 * @return true if banned (informed)
 	 */
 	private boolean handleIPBans(SocketChannel channel) throws IOException
@@ -227,7 +227,7 @@ final class NetworkServer extends Server
 						}
 						else if(key.isReadable())
 						{
-							//Read event occured
+							//Read event occurred
 							((NetworkClient) key.attachment()).processReadEvent();
 						}
 					}
@@ -239,7 +239,7 @@ final class NetworkServer extends Server
 					//Also process flood queue here
 					FloodTimer.processFloodQueue();
 
-					//Iterate over all clients and ping if nessesary
+					//Iterate over all clients and ping if necessary
 					for(Client locClient : clients)
 					{
 						if(locClient instanceof NetworkClient)

@@ -391,7 +391,7 @@ public final class Config
 	 *
 	 * @return The new config object
 	 * @throws ConfigException
-	 * @throws IOException when an IOExeption reading data occurs
+	 * @throws IOException when an exception reading data occurs
 	 */
 	public static Config parse(InputStream data, Config mergeWith) throws ConfigException, IOException
 	{

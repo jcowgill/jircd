@@ -58,7 +58,7 @@ public final class ModuleManager
 
 		if(loadModules(modules) != modules.size())
 		{
-			//Module load failiure
+			//Module load failure
 			serverStopEvent();
 			return false;
 		}
@@ -428,7 +428,7 @@ public final class ModuleManager
 		}
 		catch(Exception e)
 		{
-			logger.error("Exception occured while dispatching command", e);
+			logger.error("Exception occurred while dispatching command", e);
 		}
 
 		//Check if registered
@@ -468,7 +468,7 @@ public final class ModuleManager
 		}
 
 		/**
-		 * Increment numer of times this command has been run
+		 * Increment number of times this command has been run
 		 */
 		void incrementCounter()
 		{
