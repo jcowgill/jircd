@@ -49,7 +49,7 @@ public class Admin implements Command
 			{
 				lineCode = "257";
 			}
-			else if(i == admin.length)
+			else if(i == admin.length - 1)
 			{
 				lineCode = "259";
 			}
