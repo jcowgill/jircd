@@ -25,19 +25,19 @@ import org.apache.log4j.Logger;
 
 /**
  * The KILL command - ejects a client from the server
- * 
+ *
  * @author James
  */
 public class Kill implements Command
 {
 	private static final Logger logger = Logger.getLogger(Kill.class);
-	
+
 	@Override
 	public void run(Client client, Message msg)
 	{
 		//Lookup client
 		Client other = Server.getServer().getClient(msg.getParam(0));
-		
+
 		if(other == null)
 		{
 			//No such nickname

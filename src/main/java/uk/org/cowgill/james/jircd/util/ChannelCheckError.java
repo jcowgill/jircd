@@ -20,16 +20,16 @@ import uk.org.cowgill.james.jircd.Client;
 
 /**
  * Enumeration containing all the errors used by the ChannelChecks class
- * 
+ *
  * @author James
  */
 public enum ChannelCheckError
 {
 	OK(null, null),
-	
+
 	GeneralNotAnOp("482", "You're not a channel operator"),
 	GeneralNotInChannel("442", "You're not on that channel"),
-	
+
 	JoinAlreadyInChannel(null, null),
 	JoinBanned("474", "Cannot join channel (+b)"),
 	JoinChannelFull("471", "Cannot join channel (+l)"),
@@ -38,25 +38,25 @@ public enum ChannelCheckError
 	JoinOpersOnly("520", "Cannot join channel (+O)"),
 	JoinSecureOnly("489", "Cannot join channel (+z)"),
 	JoinTooManyChannels("405", "You have joined too many channels"),
-	
+
 	SpeakBanned("404", "You are banned (+b)"),
 	SpeakModerated("404", "You need voice (+v)"),
 	SpeakNotInChannel("404", "No external channel messages (+n)"),
-	
+
 	//Kick can produce GeneralNotAnOp
 	KickOtherNotInChannel("441", "They arn't on that channel"),
-	
+
 	//Invite can produce GeneralNotAnOp and GeneralNotInChannel
 	InviteAlreadyInChannel("443", "is already on that channel"),
-	
+
 	//SetTopic can produce GeneralNotAnOp and GeneralNotInChannel
-	
+
 	//SetMode can produce GeneralNotAnOp
 	SetModeHalfOpDeny("460", "Half-ops cannot set that mode"),
 	SetModeOwnerOnly("499", "You're not channel owner"),
 	SetModeNotAnIrcOp("481", "Only IRC Operators can set mode O"),
 	SetModeListFull("478", "Channel list is full");
-	
+
 	private final String numeric;
 	private final String text;
 
@@ -68,31 +68,31 @@ public enum ChannelCheckError
 
 	/**
 	 * Returns the IRC numeric associated with this error
-	 * 
+	 *
 	 * <p>This can be null if there is no message associated with this error
-	 * 
+	 *
 	 * @return the number as a string
 	 */
 	public String getNumeric()
 	{
 		return numeric;
 	}
-	
+
 	/**
 	 * Returns the textual description associated with this error
-	 * 
+	 *
 	 * <p>This can be null if there is no message associated with this error
-	 * 
+	 *
 	 * @return the description
 	 */
 	public String getText()
 	{
 		return text;
 	}
-	
+
 	/**
 	 * Sends this error to a client
-	 * 
+	 *
 	 * @param channel channel the error occured on
 	 * @param client client to send the error to
 	 */
@@ -103,10 +103,10 @@ public enum ChannelCheckError
 			client.send(client.newNickMessage(numeric).appendParam(channel.getName()).appendParam(text));
 		}
 	}
-	
+
 	/**
 	 * Sends this error to a client using a string channel
-	 * 
+	 *
 	 * @param channel channel the error occured on
 	 * @param client client to send the error to
 	 */

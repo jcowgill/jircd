@@ -17,13 +17,13 @@ package uk.org.cowgill.james.jircd;
 
 /**
  * Contains the channel member modes
- * 
+ *
  * @author James
  */
 public class ChannelMemberMode
 {
 	private int mode = 0;
-	
+
 	/**
 	 * Set if the ban lists have been checked for this member since they were last updated
 	 */
@@ -53,29 +53,29 @@ public class ChannelMemberMode
 	 * Set if member is an administrator
 	 */
 	public static final int ADMIN = 32;
-	
+
 	/**
 	 * Set if member is a channel owner
 	 */
 	public static final int OWNER = 64;
-	
+
 	/**
 	 * Finds the highest mode of a member
-	 * 
+	 *
 	 * @param mode member's mode
 	 * @return a member mode with only 1 (or 0) bit set with the mode
 	 */
 	public int getHighestMode()
 	{
 		int currMode = mode;
-		
+
 		currMode |= currMode >> 1;
 		currMode |= currMode >> 2;
 		currMode |= currMode >> 4;
-		
+
 		return currMode - (currMode >> 1);
 	}
-	
+
 	/**
 	 * Gets the channel mode
 	 * @return the channel mode
@@ -84,7 +84,7 @@ public class ChannelMemberMode
 	{
 		return mode;
 	}
-	
+
 	/**
 	 * Sets all modes to the specified value
 	 * @param mode all modes
@@ -93,7 +93,7 @@ public class ChannelMemberMode
 	{
 		this.mode = mode;
 	}
-	
+
 	/**
 	 * Sets a mode
 	 * @param mode mode to set
@@ -102,7 +102,7 @@ public class ChannelMemberMode
 	{
 		this.mode |= mode;
 	}
-	
+
 	/**
 	 * Clears a mode
 	 * @param mode mode to clear
@@ -111,7 +111,7 @@ public class ChannelMemberMode
 	{
 		this.mode &= ~mode;
 	}
-	
+
 	/**
 	 * Returns weather a mode has been set
 	 * @param mode mode to check
@@ -121,14 +121,14 @@ public class ChannelMemberMode
 	{
 		return (this.mode & mode) != 0;
 	}
-	
+
 	/**
 	 * Returns the mode string for this member
 	 */
 	public String toModeString()
 	{
 		String str = "+";
-		
+
 		if((mode & OWNER) != 0)
 		{
 			str += 'q';
@@ -149,7 +149,7 @@ public class ChannelMemberMode
 		{
 			str += 'v';
 		}
-		
+
 		if(str.length() == 1)
 		{
 			return "";
@@ -159,16 +159,16 @@ public class ChannelMemberMode
 			return str;
 		}
 	}
-	
+
 	/**
 	 * Returns the prefix string for this member
-	 * 
+	 *
 	 * @param oneChar return only the highest prefix
 	 */
 	public String toPrefixString(boolean oneChar)
 	{
 		String str = "";
-		
+
 		if((mode & OWNER) != 0)
 		{
 			str += '~';
@@ -189,7 +189,7 @@ public class ChannelMemberMode
 		{
 			str += '+';
 		}
-		
+
 		if(oneChar && str.length() >= 2)
 		{
 			return str.substring(0, 1);

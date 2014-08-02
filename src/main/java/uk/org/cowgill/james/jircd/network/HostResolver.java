@@ -22,7 +22,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Class which manages host resolution of client's ips
- * 
+ *
  * @author James
  */
 final class HostResolver
@@ -36,12 +36,12 @@ final class HostResolver
 	 * List of clients whose hosts have been resolved and need attention
 	 */
 	private LinkedBlockingQueue<NetworkClient> hostResolveOutput = new LinkedBlockingQueue<NetworkClient>();
-	
+
 	/**
 	 * Resolver's server
 	 */
 	private Selector eventSelector;
-	
+
 	/**
 	 * Creates a new host resolver with a wake up selector
 	 * @param eventSelector selector to wake up when each request has completed
@@ -50,7 +50,7 @@ final class HostResolver
 	{
 		this.eventSelector = eventSelector;
 	}
-	
+
 	/**
 	 * Submits a request for the resolver to process
 	 * @param client client whose hostname to resolve
@@ -60,7 +60,7 @@ final class HostResolver
 		//Create new request and submit
 		eService.execute(new HostResolverRequest(client, hostResolveOutput, eventSelector));
 	}
-	
+
 	/**
 	 * Submits a request for the resolver to process
 	 * @param client resolution request
@@ -70,20 +70,20 @@ final class HostResolver
 		//Create new request and submit
 		eService.execute(request);
 	}
-	
+
 	/**
 	 * Checks if any requests have finished, if they have returns one.
-	 * 
+	 *
 	 * If no more requests have finished since drainOneFinished was last called,
 	 *  this returns null
-	 * 
+	 *
 	 * @return null or the finished client
 	 */
 	public NetworkClient drainOneFinished()
 	{
 		return hostResolveOutput.poll();
 	}
-	
+
 	/**
 	 * Immediately shuts down the hostname resolver and aborts all running requests
 	 */
@@ -91,7 +91,7 @@ final class HostResolver
 	{
 		eService.shutdownNow();
 	}
-	
+
 	@Override
 	protected void finalize()
 	{

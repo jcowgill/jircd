@@ -25,7 +25,7 @@ import uk.org.cowgill.james.jircd.Server;
 
 /**
  * The USERHOST and USERIP commands - displays the user and host/ip of a nickname
- * 
+ *
  * @author James
  */
 public abstract class UserHostIp implements Command
@@ -41,40 +41,40 @@ public abstract class UserHostIp implements Command
 		{
 			processNick(client, nicks.next(), output);
 		}
-		
+
 		//Send information
 		client.send(client.newNickMessage(getNumeric()).appendParam(output.toString().trim()));
 	}
-	
+
 	private void processNick(Client client, String nick, StringBuilder output)
 	{
 		//Lookup client
 		Client other = Server.getServer().getClient(nick);
-		
+
 		if(other != null)
 		{
 			//Get user host
 			String host = getUserHost(client, other);
-			
+
 			//Send information
 			output.append(other.id.nick);
-			
+
 			if(other.isModeSet('o') || other.isModeSet('O'))
 			{
 				output.append('*');
 			}
-			
+
 			output.append('=');
 			output.append(other.isAway() ? '-' : '+');
 			output.append(host);
 		}
 	}
-	
+
 	/**
 	 * Should return the username@hostname of the given client
-	 * 
+	 *
 	 * <p>If null is returned, the client is not processed
-	 * 
+	 *
 	 * @param client client who is fetching the information
 	 * @param other other client to get information from
 	 */
@@ -85,7 +85,7 @@ public abstract class UserHostIp implements Command
 	 * @return the IRC numeric of this command
 	 */
 	protected abstract String getNumeric();
-	
+
 	@Override
 	public int getMinParameters()
 	{
@@ -100,7 +100,7 @@ public abstract class UserHostIp implements Command
 
 	/**
 	 * The USERHOST command - displays the user and host of a nickname
-	 * 
+	 *
 	 * @author James
 	 */
 	public static class UserHost extends UserHostIp
@@ -126,7 +126,7 @@ public abstract class UserHostIp implements Command
 
 	/**
 	 * The USERIP command - displays the user and ip of a nickname
-	 * 
+	 *
 	 * @author James
 	 */
 	public static class UserIp extends UserHostIp

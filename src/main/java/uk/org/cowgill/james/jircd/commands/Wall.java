@@ -23,7 +23,7 @@ import uk.org.cowgill.james.jircd.Server;
 
 /**
  * The WALL command - sends a message to all clients
- * 
+ *
  * @author James
  */
 public class Wall implements Command
@@ -37,7 +37,7 @@ public class Wall implements Command
 			//Send WALLOPS message
 			Message wMsg = new Message("WALLOPS", client);
 			wMsg.appendParam(msg.getParam(0));
-			
+
 			Client.sendTo(Server.getServer().getRegisteredClients(), wMsg);
 		}
 		else

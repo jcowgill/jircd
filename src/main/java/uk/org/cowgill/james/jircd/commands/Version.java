@@ -22,7 +22,7 @@ import uk.org.cowgill.james.jircd.Server;
 
 /**
  * The VERSION command - sends the server version
- * 
+ *
  * @author James
  */
 public class Version implements Command

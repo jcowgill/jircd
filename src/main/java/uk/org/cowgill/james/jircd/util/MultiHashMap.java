@@ -30,37 +30,37 @@ public class MultiHashMap<K, V> implements MultiMap<K, V>
 	{
 		//Find key value
 		Collection<V> keyData = data.get(key);
-		
+
 		if(keyData == null)
 		{
 			//Create new collection
 			keyData = new ArrayList<V>();
 			data.put(key, keyData);
 		}
-		
+
 		//Add to collection
 		return keyData.add(value);
 	}
 
 	@Override
 	public boolean removeValue(K key, V value)
-	{		
+	{
 		//Find key value
 		boolean removeStatus = false;
 		Collection<V> keyData = data.get(key);
-		
+
 		if(keyData != null)
 		{
 			//Remove from collection
 			removeStatus = keyData.remove(value);
-			
+
 			//If empty, remove key
 			if(keyData.isEmpty())
 			{
 				data.remove(key);
 			}
 		}
-		
+
 		return removeStatus;
 	}
 
@@ -83,7 +83,7 @@ public class MultiHashMap<K, V> implements MultiMap<K, V>
 					return true;
 				}
 			}
-			
+
 			//Not found
 			return false;
 		}
@@ -114,7 +114,7 @@ public class MultiHashMap<K, V> implements MultiMap<K, V>
 	{
 		//Key exists?
 		Collection<V> keyData = data.get(key);
-		
+
 		if(keyData == null)
 		{
 			data.put(key, new ArrayList<V>(values));
@@ -129,13 +129,13 @@ public class MultiHashMap<K, V> implements MultiMap<K, V>
 	public int totalSize()
 	{
 		int currSize = 0;
-		
+
 		//Add up every collection's size
 		for(Map.Entry<K, Collection<V>> entry : data.entrySet())
 		{
 			currSize += entry.getValue().size();
 		}
-		
+
 		return currSize;
 	}
 
@@ -143,7 +143,7 @@ public class MultiHashMap<K, V> implements MultiMap<K, V>
 	public int size(K key)
 	{
 		Collection<V> keyData = data.get(key);
-		
+
 		if(keyData == null)
 		{
 			return 0;
@@ -153,9 +153,9 @@ public class MultiHashMap<K, V> implements MultiMap<K, V>
 			return keyData.size();
 		}
 	}
-	
+
 	//-------------------------------------------------------------------
-	
+
 	@Override
 	public void clear()
 	{

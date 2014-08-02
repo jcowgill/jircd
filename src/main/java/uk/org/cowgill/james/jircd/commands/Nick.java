@@ -24,7 +24,7 @@ import uk.org.cowgill.james.jircd.ServerISupport;
 
 /**
  * The NICK command - changes your own nickname
- * 
+ *
  * @author James
  */
 public class Nick implements Command
@@ -38,7 +38,7 @@ public class Nick implements Command
 			client.send(client.newNickMessage("431").appendParam("No nickname given"));
 			return;
 		}
-		
+
 		//Validate nick
 		String nick = msg.getParam(0);
 		if(!ServerISupport.validateNick(nick))
@@ -46,7 +46,7 @@ public class Nick implements Command
 			client.send(client.newNickMessage("432").appendParam("Erronous nickname"));
 			return;
 		}
-		
+
 		//Cannot change if banned in any channel
 		for(Channel chan : client.getChannels())
 		{
@@ -58,7 +58,7 @@ public class Nick implements Command
 				return;
 			}
 		}
-		
+
 		//Set nick
 		if(client.setNick(nick))
 		{

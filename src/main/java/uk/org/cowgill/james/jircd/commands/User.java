@@ -23,7 +23,7 @@ import uk.org.cowgill.james.jircd.ServerISupport;
 
 /**
  * The USER command - registers your username
- * 
+ *
  * @author James
  */
 public class User implements Command
@@ -38,11 +38,11 @@ public class User implements Command
 			client.send(client.newNickMessage("462").appendParam("You cannot reregister"));
 			return;
 		}
-		
+
 		//Get relevant parameters
 		String user = msg.getParam(0);
 		String realName = msg.getParam(3);
-		
+
 		//Validate
 		if(!ServerISupport.validateUser(user))
 		{
@@ -51,7 +51,7 @@ public class User implements Command
 			client.close("Hostile username");
 			return;
 		}
-		
+
 		//Set user and realname
 		client.id.user = user;
 		client.realName = realName;

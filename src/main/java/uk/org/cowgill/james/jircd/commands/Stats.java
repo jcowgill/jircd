@@ -27,7 +27,7 @@ import uk.org.cowgill.james.jircd.Server;
 
 /**
  * The STATS command - displays server statistics
- * 
+ *
  * @author James
  */
 public class Stats implements Command
@@ -36,12 +36,12 @@ public class Stats implements Command
 	public void run(Client client, Message msg)
 	{
 		char statsCmd;
-		
+
 		//Perform requested operation
 		if(msg.paramCount() > 0 && msg.getParam(0).length() == 1)
 		{
 			statsCmd = Character.toLowerCase(msg.getParam(0).charAt(0));
-			
+
 			//Only very basic stuff here i'm afraid
 			switch(statsCmd)
 			{
@@ -49,7 +49,7 @@ public class Stats implements Command
 				//Get command statistics
 				Map<String, ModuleManager.CommandInfo> commands =
 						Server.getServer().getModuleManager().getCommands();
-				
+
 				//Generate messages in sorted order
 				TreeMap<String, Message> messages = new TreeMap<String, Message>();
 				for(Entry<String, ModuleManager.CommandInfo> entry : commands.entrySet())
@@ -63,25 +63,25 @@ public class Stats implements Command
 									appendParam(Integer.toString(entry.getValue().getTimesRun())));
 					}
 				}
-				
+
 				//Send messages
 				for(Message outMsg : messages.values())
 				{
 					client.send(outMsg);
 				}
-				
+
 				break;
-				
+
 			case 'u':
 				//Get uptime
-				int upTime = (int) ((System.currentTimeMillis() - 
+				int upTime = (int) ((System.currentTimeMillis() -
 										Server.getServer().creationTime.getTime()) / 1000);
-				
+
 				int secs = upTime % 60;
 				int mins = (upTime / 60) % 60;
 				int hours = (upTime / 3600) % 24;
 				int days = upTime / (24 * 3600);
-				
+
 				client.send(client.newNickMessage("242").appendParam(
 						String.format("Server Up %d day%s %d:%d:%d",
 								days,
@@ -89,7 +89,7 @@ public class Stats implements Command
 								hours,
 								mins,
 								secs)));
-				
+
 				break;
 			}
 		}
@@ -97,12 +97,12 @@ public class Stats implements Command
 		{
 			statsCmd = '*';
 		}
-		
+
 		//End of /STATS
 		client.send(client.newNickMessage("219").
 				appendParam(Character.toString(statsCmd)).appendParam("End of /STATS report"));
 	}
-	
+
 	@Override
 	public int getMinParameters()
 	{

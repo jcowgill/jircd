@@ -42,46 +42,46 @@ import uk.org.cowgill.james.jircd.Server;
 
 /**
  * Server which uses listeners to listen for remote connections
- * 
+ *
  * The NetworkServer class contains the main network loop which dispatches requests to other parts
  *  of the frameworK
- * 
+ *
  * @author James
  */
 final class NetworkServer extends Server
-{	
+{
 	private static final Logger logger = Logger.getLogger(NetworkServer.class);
-	
+
 	/**
 	 * Server event selector (all events are handled by this)
 	 */
 	private Selector eventSelector;
-	
+
 	/**
 	 * Listening channels
 	 */
 	private Set<ServerSocketChannel> listeners = new HashSet<ServerSocketChannel>();
-	
+
 	/**
 	 * Time of the last ping check
 	 */
 	private long lastPingCheck;
-	
+
 	public NetworkServer(File configFile)
 	{
 		super(configFile);
 	}
-	
+
 	/**
 	 * Checks whether a client is ip banned
-	 * 
+	 *
 	 * @param client client to check
 	 * @return true if banned (informed)
 	 */
 	private boolean handleIPBans(SocketChannel channel) throws IOException
 	{
 		String ipAddress = NetworkClient.getIpAddress(channel);
-		
+
 		//Process everything in ip ban list
 		for(Ban ipBan : getConfig().banIP)
 		{
@@ -93,7 +93,7 @@ final class NetworkServer extends Server
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 
@@ -122,7 +122,7 @@ final class NetworkServer extends Server
 			logger.error("Only the network subsystem can implement the PING and PONG commands", e);
 			return;
 		}
-		
+
 		// Create selector
 		try
 		{
@@ -133,54 +133,54 @@ final class NetworkServer extends Server
 			logger.fatal("Failed to open selector", e);
 			return;
 		}
-		
+
 		// Create listeners
 		if(!setupPorts())
 		{
 			return;
 		}
-		
+
 		// Create host resolver
 		HostResolver resolver = new HostResolver(eventSelector);
-		
+
 		//Process IO Events
 		int retryError = 0;
-		
+
 		for(;;)
 		{
 			try
 			{
 				//Select anything to do
 				eventSelector.select(1000);
-				
+
 				//Check for host resolver requests
 				NetworkClient client = resolver.drainOneFinished();
-				
+
 				while(client != null)
 				{
 					if(!client.isClosed() && !client.isRegistered())
 					{
 						//Set host bit
 						client.setRegistrationFlag(RegistrationFlags.HostSet);
-						
+
 						//Check registered event
 						client.registeredEvent();
 					}
-					
+
 					//Next client
 					client = resolver.drainOneFinished();
 				}
-				
+
 				//Check all selected keys
 				Iterator<SelectionKey> keyIter = eventSelector.selectedKeys().iterator();
 				SelectionKey key;
-				
+
 				while(keyIter.hasNext())
 				{
 					//Get key
 					key = keyIter.next();
 					keyIter.remove();
-					
+
 					if(key.isValid())
 					{
 						//Check accept
@@ -188,16 +188,16 @@ final class NetworkServer extends Server
 						{
 							//Get listener
 							ServerSocketChannel channel = (ServerSocketChannel) key.channel();
-							
+
 							//Create new client from channel
 							SocketChannel sockChannel = channel.accept();
-							
+
 							if(handleIPBans(sockChannel))
 							{
 								//Ignore
 								continue;
 							}
-							
+
 							//Create correct client (for TLS ports)
 							if((Config.PortType) key.attachment() == Config.PortType.SSL)
 							{
@@ -207,13 +207,13 @@ final class NetworkServer extends Server
 							{
 								client = new NetworkClient(sockChannel);
 							}
-							
+
 							//Setup client connection + send nospoof ping
 							client.setup();
-							
+
 							//Resolver host
 							resolver.submitRequest(client);
-							
+
 							//Register channel and attach client to it
 							try
 							{
@@ -232,13 +232,13 @@ final class NetworkServer extends Server
 						}
 					}
 				}
-				
+
 				//Perform ping checks
 				if(System.currentTimeMillis() - 1000 > lastPingCheck)
 				{
 					//Also process flood queue here
 					FloodTimer.processFloodQueue();
-					
+
 					//Iterate over all clients and ping if nessesary
 					for(Client locClient : clients)
 					{
@@ -247,7 +247,7 @@ final class NetworkServer extends Server
 							((NetworkClient) locClient).pingCheckEvent();
 						}
 					}
-					
+
 					lastPingCheck = System.currentTimeMillis();
 					Client.processCloseQueue();
 				}
@@ -257,14 +257,14 @@ final class NetworkServer extends Server
 				{
 					break;
 				}
-				
+
 				retryError = 0;
 			}
 			catch (Exception e)
 			{
 				//Pretty bad error
 				logger.error("Exception in i/o loop", e);
-				
+
 				//Check for 5 errors in a row
 				retryError++;
 				if(retryError >= 5)
@@ -274,7 +274,7 @@ final class NetworkServer extends Server
 				}
 			}
 		}
-		
+
 		//Close all listeners
 		for(ServerSocketChannel listener : listeners)
 		{
@@ -286,7 +286,7 @@ final class NetworkServer extends Server
 			{	//Ignore errors on close
 			}
 		}
-		
+
 		//Close selector
 		try
 		{
@@ -295,36 +295,36 @@ final class NetworkServer extends Server
 		catch (IOException e)
 		{	//Ignore errors on close
 		}
-		
+
 		//Shutdown resolver
 		resolver.shutdown();
-		
+
 		//Wipe variables
 		listeners = null;
 		eventSelector = null;
 	}
-	
+
 	/**
 	 * Binds to the ports specified in the config file
-	 * 
+	 *
 	 * @return true if ports have been bound, false if no ports could be bound
 	 */
 	private boolean setupPorts()
 	{
 		//Check if we have an ssl context
 		boolean usingSSL = getConfig().sslContext != null;
-		
+
 		//Copy ports set from config
 		Map<Integer, Config.PortType> ports = getConfig().ports;
-		
+
 		//Close listeners not in newPorts
 		Iterator<ServerSocketChannel> channelIter = listeners.iterator();
 		ServerSocketChannel channel;
-		
+
 		while(channelIter.hasNext())
 		{
 			channel = channelIter.next();
-			
+
 			//Check if port is in ports
 			if(!ports.containsKey(channel.socket().getLocalPort()))
 			{
@@ -337,7 +337,7 @@ final class NetworkServer extends Server
 				catch (IOException e)
 				{
 				}
-				
+
 				channelIter.remove();
 			}
 			else
@@ -346,12 +346,12 @@ final class NetworkServer extends Server
 				ports.remove(channel.socket().getLocalPort());
 			}
 		}
-		
+
 		//Create listeners
 		for(Map.Entry<Integer, Config.PortType> port : ports.entrySet())
 		{
 			InetSocketAddress sockAddr;
-			
+
 			//Create address
 			try
 			{
@@ -363,7 +363,7 @@ final class NetworkServer extends Server
 				logger.error("Port number " + port + " out of range");
 				continue;
 			}
-			
+
 			//Ensure we have an SSL context for SSL ports
 			Config.PortType portType = port.getValue();
 			if(portType != Config.PortType.Normal && !usingSSL)
@@ -379,12 +379,12 @@ final class NetworkServer extends Server
 			{
 				channel = ServerSocketChannel.open();
 				channel.configureBlocking(false);
-				
+
 				channel.socket().bind(sockAddr);
-				
+
 				//Register channel with event selector
 				SelectionKey key = channel.register(eventSelector, OP_ACCEPT);
-				
+
 				//Attach port type
 				key.attach(portType);
 			}
@@ -392,7 +392,7 @@ final class NetworkServer extends Server
 			{
 				//Error binding to port
 				logger.error("Could not bind to port " + sockAddr.getPort(), e);
-				
+
 				//Remove channel
 				if(channel != null)
 				{
@@ -405,14 +405,14 @@ final class NetworkServer extends Server
 					{
 					}
 				}
-				
+
 				continue;
 			}
-			
+
 			//Add channel to listeners
 			listeners.add(channel);
 		}
-		
+
 		//No ports left?
 		if(listeners.isEmpty())
 		{
@@ -420,7 +420,7 @@ final class NetworkServer extends Server
 			{
 				logger.warn("No listening ports in configuration file");
 			}
-			
+
 			logger.fatal("Failed to bind to any ports");
 			return false;
 		}

@@ -22,7 +22,7 @@ import uk.org.cowgill.james.jircd.ServerISupport;
 
 /**
  * The AWAY command - marks a client as away or returned
- * 
+ *
  * @author James
  */
 public class Away implements Command
@@ -56,7 +56,7 @@ public class Away implements Command
 			}
 		}
 	}
-	
+
 	@Override
 	public int getMinParameters()
 	{

@@ -22,7 +22,7 @@ import uk.org.cowgill.james.jircd.Server;
 
 /**
  * The ADMIN command - displays server administrative info
- * 
+ *
  * @author James
  */
 public class Admin implements Command
@@ -33,18 +33,18 @@ public class Admin implements Command
 		//Send admin information
 		String serverName = Server.getServer().getConfig().serverName;
 		String[] admin = Server.getServer().getConfig().admin;
-		
+
 		//Send admin start
 		client.send(client.newNickMessage("256").
 				appendParam(serverName).
 				appendParam("Administrative info for server " + serverName));
-		
+
 		//Send messages
 		for(int i = 0; i < admin.length; ++i)
 		{
 			//What line?
 			String lineCode;
-			
+
 			if(i == 0)
 			{
 				lineCode = "257";
@@ -57,7 +57,7 @@ public class Admin implements Command
 			{
 				lineCode = "258";
 			}
-			
+
 			//Send message
 			client.send(client.newNickMessage(lineCode).appendParam(admin[i]));
 		}

@@ -22,7 +22,7 @@ import uk.org.cowgill.james.jircd.Server;
 
 /**
  * The LINKS command - displays links with other servers
- * 
+ *
  * @author James
  */
 public class Links implements Command
@@ -32,13 +32,13 @@ public class Links implements Command
 	{
 		String name = Server.getServer().getConfig().serverName;
 		String info = Server.getServer().getConfig().serverDescription;
-		
+
 		//Send info about ourselves
 		client.send(client.newNickMessage("364").
 				appendParam(name).
 				appendParam(name).
 				appendParam("0 " + info));
-		
+
 		//Send end of list
 		client.send(client.newNickMessage("365").appendParam("*").appendParam("End of /LINKS list"));
 	}

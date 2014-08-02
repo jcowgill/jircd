@@ -30,7 +30,7 @@ import uk.org.cowgill.james.jircd.Server;
 
 /**
  * The WHO command - displays information about clients
- * 
+ *
  * @author James
  */
 public class Who implements Command
@@ -41,7 +41,7 @@ public class Who implements Command
 		//Get mask
 		String mask;
 		boolean operOnly = false;
-		
+
 		if(msg.paramCount() == 0)
 		{
 			//Force everyone
@@ -51,25 +51,25 @@ public class Who implements Command
 		{
 			//Use given mask
 			mask = msg.getParam(0);
-			
+
 			if(mask.equals("0"))
 			{
 				mask = "*";
 			}
-			
+
 			//Check opers only
 			operOnly = (msg.paramCount() >= 2 && msg.getParam(1).equals("o"));
 		}
 
 		//See invisible peoples
 		boolean seeInvisible = client.hasPermission(Permissions.seeInvisible);
-		
+
 		//Check for chanel
 		if(mask.charAt(0) == '#')
 		{
 			//Print channel members
 			Channel channel = Server.getServer().getChannel(mask);
-			
+
 			if(channel != null)
 			{
 				//Print channel members
@@ -88,18 +88,18 @@ public class Who implements Command
 		{
 			//Search all clients
 			Collection<Client> clients;
-			
+
 			if(operOnly)
 				clients = Server.getServer().getIRCOperators();
 			else
 				clients = Server.getServer().getRegisteredClients();
-			
+
 			//Do windcard test on all clients in the list
 			for(Client other : clients)
 			{
 				//Check visibility
 				Channel commonChannel = findCommonChannel(client, other);
-				
+
 				if(commonChannel != null || !other.isModeSet('i') || client == other || seeInvisible)
 				{
 					if(IRCMask.wildcardCompare(other.id.nick, mask) ||
@@ -113,7 +113,7 @@ public class Who implements Command
 				}
 			}
 		}
-		
+
 		//Send end reply
 		client.send(client.newNickMessage("315").
 				appendParam(mask).appendParam("End of /WHO list"));
@@ -137,7 +137,7 @@ public class Who implements Command
 
 	/**
 	 * Sends a WHO reply to client
-	 * 
+	 *
 	 * @param client client to reply to
 	 * @param other client information is read from
 	 * @param channel common channel (or null if no common channel)
@@ -151,17 +151,17 @@ public class Who implements Command
 		{
 			//Get name
 			chanName = channel.getName();
-			
+
 			//Get mode
 			if(chanMode == null)
 			{
 				chanMode = channel.lookupMember(other);
 			}
 		}
-		
+
 		//Send reply
 		StringBuilder info = new StringBuilder();
-		
+
 		if(other.isAway())
 		{
 			info.append('G');
@@ -170,7 +170,7 @@ public class Who implements Command
 		{
 			info.append('H');
 		}
-		
+
 		//IRC op prefix
 		if(other.isModeSet('o') || other.isModeSet('O'))
 		{
@@ -182,7 +182,7 @@ public class Who implements Command
 		{
 			info.append(chanMode.toPrefixString(true));
 		}
-		
+
 		//Final send
 		client.send(client.newNickMessage("352").
 				appendParam(chanName).

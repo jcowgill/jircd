@@ -26,7 +26,7 @@ import uk.org.cowgill.james.jircd.util.ChannelChecks;
 
 /**
  * The TOPIC command - views or changes a channel topic
- * 
+ *
  * @author James
  */
 public class Topic implements Command
@@ -35,9 +35,9 @@ public class Topic implements Command
 	public void run(Client client, Message msg)
 	{
 		//Lookup channel
-		ChannelCheckError checkError;		
+		ChannelCheckError checkError;
 		Channel channel = Server.getServer().getChannel(msg.getParam(0));
-		
+
 		if(channel == null)
 		{
 			ChannelCheckError.GeneralNotInChannel.sendToClient(msg.getParam(0), client);
@@ -52,7 +52,7 @@ public class Topic implements Command
 				{
 					//Show topic
 					String topic = channel.getTopic();
-					
+
 					if(topic == null)
 					{
 						client.send(client.newNickMessage("331").appendParam(channel.getName()).
@@ -62,7 +62,7 @@ public class Topic implements Command
 					{
 						Channel.SetInfo topicInfo = channel.getTopicInfo();
 						String time = Long.toString(topicInfo.getTime() / 1000);
-						
+
 						//Send topic
 						client.send(client.newNickMessage("332").appendParam(channel.getName()).
 								appendParam(topic));
@@ -73,7 +73,7 @@ public class Topic implements Command
 								appendParam(topicInfo.getNick()).
 								appendParam(time));
 					}
-					
+
 					return;
 				}
 				else
@@ -86,15 +86,15 @@ public class Topic implements Command
 				//Set topic
 				// Validate topic
 				String topic = msg.getParam(1);
-				
+
 				if(topic.length() > ServerISupport.TOPICLEN)
 				{
 					return;
 				}
-				
-				//Can set topic?				
+
+				//Can set topic?
 				checkError = ChannelChecks.canSetTopic(channel, client);
-				
+
 				if(checkError == ChannelCheckError.OK)
 				{
 					//Set the topic
@@ -102,7 +102,7 @@ public class Topic implements Command
 					return;
 				}
 			}
-			
+
 			//If we're here, we have an error
 			checkError.sendToClient(channel, client);
 		}

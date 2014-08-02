@@ -21,26 +21,26 @@ import uk.org.cowgill.james.jircd.Permissions;
 
 /**
  * Class which handles whether networking clients can process messages in the flood limit
- * 
+ *
  * @author james
  */
 class FloodTimer
 {
 	private static LinkedList<NetworkClient> floodQueue = new LinkedList<NetworkClient>();
-	
+
 	private NetworkClient client;
 	private long timer;
-	
+
 	/**
 	 * Creates a new flood timer for the given client
-	 * 
+	 *
 	 * @param client client to create timer for
 	 */
 	public FloodTimer(NetworkClient client)
 	{
 		this.client = client;
 	}
-	
+
 	/**
 	 * Raise the read event on all clients in the flood queue
 	 */
@@ -51,7 +51,7 @@ class FloodTimer
 			//Extract flood queue
 			LinkedList<NetworkClient> queue = floodQueue;
 			floodQueue = new LinkedList<NetworkClient>();
-			
+
 			//Raise read event on all entries
 			for(NetworkClient client : queue)
 			{
@@ -62,12 +62,12 @@ class FloodTimer
 			}
 		}
 	}
-	
+
 	/**
 	 * Determines whether messages can be processed and adds you to the flood queue
-	 * 
+	 *
 	 * <p>If this returns false, this method will also add the client to the flood queue
-	 * 
+	 *
 	 * @return true if messages can be processed
 	 */
 	public boolean checkTimer()
@@ -84,7 +84,7 @@ class FloodTimer
 			return false;
 		}
 	}
-	
+
 	/**
 	 * Updates the flood timer after a message has been processed
 	 */
@@ -96,7 +96,7 @@ class FloodTimer
 			//Fast-forward timer first
 			timer = System.currentTimeMillis();
 		}
-		
+
 		//Add 2 second penalty
 		timer += 2000;
 	}

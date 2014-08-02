@@ -23,7 +23,7 @@ import uk.org.cowgill.james.jircd.Server;
 
 /**
  * The TIME command - displays the server time
- * 
+ *
  * @author James
  */
 public class Time implements Command

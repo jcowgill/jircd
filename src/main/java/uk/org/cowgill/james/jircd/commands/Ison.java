@@ -24,7 +24,7 @@ import uk.org.cowgill.james.jircd.Server;
 
 /**
  * The ISON command - determines whether given clients are online
- * 
+ *
  * @author James
  */
 public class Ison implements Command
@@ -34,20 +34,20 @@ public class Ison implements Command
 	{
 		//Lookup each client
 		StringBuilder clients = new StringBuilder();
-		
+
 		Iterator<String> paramIter = msg.paramIterator();
 		while(paramIter.hasNext())
 		{
 			//Lookup client
 			Client otherClient = Server.getServer().getClient(paramIter.next());
-			
+
 			if(otherClient != null)
 			{
 				clients.append(otherClient.id.nick);
 				clients.append(' ');
 			}
 		}
-		
+
 		//Send reply
 		client.send(client.newNickMessage("303").appendParam(clients.toString().trim()));
 	}

@@ -21,7 +21,7 @@ import uk.org.cowgill.james.jircd.Message;
 
 /**
  * The QUIT command - quits the IRC server
- * 
+ *
  * @author James
  */
 public class Quit implements Command
@@ -39,7 +39,7 @@ public class Quit implements Command
 		{
 			quitMsg = msg.getParam(0);
 		}
-		
+
 		client.close(quitMsg);
 	}
 

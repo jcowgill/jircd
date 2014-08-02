@@ -22,7 +22,7 @@ import uk.org.cowgill.james.jircd.RegistrationFlags;
 
 /**
  * PONG command implementation
- * 
+ *
  * @author James
  */
 class Pong implements Command
@@ -35,12 +35,12 @@ class Pong implements Command
 		{
 			client.send(Message.newStringFromServer("409 :No origin specified"));
 		}
-		
+
 		//Ignore unless replying to a spoof check
 		if(msg.paramCount() != 0 && client instanceof NetworkClient)
 		{
 			NetworkClient netClient = (NetworkClient) client;
-			
+
 			//Spoof check?
 			if(netClient.spoofCheckChars != null)
 			{

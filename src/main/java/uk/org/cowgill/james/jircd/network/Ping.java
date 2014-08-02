@@ -22,7 +22,7 @@ import uk.org.cowgill.james.jircd.Server;
 
 /**
  * PING command implementation
- * 
+ *
  * @author James
  */
 class Ping implements Command
@@ -36,7 +36,7 @@ class Ping implements Command
 		{
 			client.send(Message.newStringFromServer("409 :No origin specified"));
 		}
-		
+
 		// Pong back with server name
 		Message reply = new Message("PONG")
 				.appendParam(Server.getServer().getConfig().serverName);

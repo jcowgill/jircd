@@ -27,30 +27,30 @@ import uk.org.cowgill.james.jircd.util.NamesListBuilder;
 
 /**
  * Represents an IRC channel
- * 
+ *
  * @author James
  */
 public final class Channel
-{	
+{
 	/**
 	 * Information about when something was last set
-	 * 
+	 *
 	 * @author James
 	 */
 	public static class SetInfo
 	{
 		private final long time;
 		private final String nick;
-		
+
 		/**
 		 * Creates a new set info object
-		 * 
+		 *
 		 * @param nick the client who set the object (null for server's name)
 		 */
 		public SetInfo(Client client)
 		{
 			this.time = System.currentTimeMillis();
-			
+
 			if(client == null)
 			{
 				this.nick = Server.getServer().getConfig().serverName;
@@ -60,24 +60,24 @@ public final class Channel
 				this.nick = client.id.nick;
 			}
 		}
-		
+
 		/**
 		 * Gets the time the object was set
-		 * 
+		 *
 		 * <p>Time is the number of milliseconds since the UNIX Epoch
-		 * 
+		 *
 		 * @return time the object was set
 		 */
 		public long getTime()
 		{
 			return time;
 		}
-		
+
 		/**
 		 * Gets the nickname who set the object
-		 * 
+		 *
 		 * <p>This can be the server's name
-		 * 
+		 *
 		 * @return nickname who set the object
 		 */
 		public String getNick()
@@ -85,7 +85,7 @@ public final class Channel
 			return nick;
 		}
 	}
-	
+
 	//Collection of channel fields
 	// These are documented in the relevent getters
 	private final String name;
@@ -100,12 +100,12 @@ public final class Channel
 	private Map<String, SetInfo> inviteExceptList = new HashMap<String, SetInfo>();
 	Set<Client> invited = new HashSet<Client>();		//Set of clients invited by ops
 	private Map<Client, ChannelMemberMode> members = new HashMap<Client, ChannelMemberMode>();
-	
+
 	//Field getters
-	
+
 	/**
 	 * Gets the name of this channel with the leading #
-	 * 
+	 *
 	 * @return the name
 	 */
 	public String getName()
@@ -115,9 +115,9 @@ public final class Channel
 
 	/**
 	 * Gets the time this channel was created
-	 * 
+	 *
 	 * <p>Time is the number of milliseconds since the UNIX Epoch
-	 * 
+	 *
 	 * @return the creationTime
 	 */
 	public long getCreationTime()
@@ -127,9 +127,9 @@ public final class Channel
 
 	/**
 	 * Gets the topic of the channel
-	 * 
+	 *
 	 * <p>If no topic has ever been set, this is null
-	 * 
+	 *
 	 * @return the topic
 	 */
 	public String getTopic()
@@ -139,9 +139,9 @@ public final class Channel
 
 	/**
 	 * Gets the information about the last topic set
-	 * 
+	 *
 	 * <p>If no topic has ever been set, this is null
-	 * 
+	 *
 	 * @return the topicInfo
 	 */
 	public SetInfo getTopicInfo()
@@ -151,7 +151,7 @@ public final class Channel
 
 	/**
 	 * Gets the channel key or null if there is no key
-	 * 
+	 *
 	 * @return the key
 	 */
 	public String getKey()
@@ -161,7 +161,7 @@ public final class Channel
 
 	/**
 	 * Gets the channel limit or 0 if there is no limit
-	 * 
+	 *
 	 * @return the limit
 	 */
 	public int getLimit()
@@ -171,9 +171,9 @@ public final class Channel
 
 	/**
 	 * Gets the channel ban list
-	 * 
+	 *
 	 * <p>The list returned is immutable
-	 * 
+	 *
 	 * @return the banList
 	 */
 	public Map<String, SetInfo> getBanList()
@@ -183,9 +183,9 @@ public final class Channel
 
 	/**
 	 * Gets the channel ban expeption list
-	 * 
+	 *
 	 * <p>The list returned is immutable
-	 * 
+	 *
 	 * @return the banExceptList
 	 */
 	public Map<String, SetInfo> getBanExceptList()
@@ -195,9 +195,9 @@ public final class Channel
 
 	/**
 	 * Gets the channel invite exception list
-	 * 
+	 *
 	 * <p>The list returned is immutable
-	 * 
+	 *
 	 * @return the inviteExceptList
 	 */
 	public Map<String, SetInfo> getInviteExceptList()
@@ -207,23 +207,23 @@ public final class Channel
 
 	/**
 	 * Gets a list of channel members
-	 * 
+	 *
 	 * <p>The list returned is immutable
-	 * 
+	 *
 	 * @return the members
 	 */
 	public Map<Client, ChannelMemberMode> getMembers()
 	{
 		return Collections.unmodifiableMap(members);
 	}
-	
+
 	//Mode testing
-	
+
 	/**
 	 * Tests whether a channel mode has been set
-	 * 
+	 *
 	 * <p>This method does not work with list modes
-	 * 
+	 *
 	 * @param mode the mode to test
 	 * @return whether the mode is set
 	 */
@@ -233,45 +233,45 @@ public final class Channel
 		{
 		case 'l':
 			return limit != 0;
-			
+
 		case 'k':
 			return key != null;
-			
+
 		default:
 			return ModeUtils.isModeSet(this.mode, mode);
 		}
 	}
-	
+
 	/**
 	 * Returns the single mode long
-	 * 
+	 *
 	 * <p>Use ModeUtils to read
 	 * <p>Does not contain lists or l and k
-	 * 
+	 *
 	 * @return long containing the single modes
 	 */
 	public long getSingleMode()
 	{
 		return mode;
 	}
-	
+
 	//Channel creation
 	private Channel(String name)
 	{
 		//Setup default channel stuff
 		this.name = name;
 		this.creationTime = System.currentTimeMillis();
-		
+
 		//Default mode is +nt
 		mode = ModeUtils.setMode(0, 'n');			//First time uses 0 mode
 		mode = ModeUtils.setMode(mode, 't');
 	}
-	
+
 	/**
 	 * Creates a new blank channel with the specified name
-	 * 
+	 *
 	 * <p>If the channel already exists, null is returned
-	 * 
+	 *
 	 * @param name the name of the channel
 	 * @return the new channel
 	 */
@@ -290,24 +290,24 @@ public final class Channel
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Sends this channel a message
-	 * 
+	 *
 	 * <p>To speak in a channel, use speak() instead
-	 * 
+	 *
 	 * @param data message to send
 	 */
 	public void send(Object data)
 	{
 		send(data, null);
 	}
-	
+
 	/**
 	 * Sends this channel a message
-	 * 
+	 *
 	 * <p>To speak in a channel, use speak() instead
-	 * 
+	 *
 	 * @param data message to send
 	 * @param except do not send data to this client
 	 */
@@ -315,9 +315,9 @@ public final class Channel
 	{
 		Client.sendTo(members.keySet(), data, except);
 	}
-	
+
 	//Information Senders
-	
+
 	/**
 	 * Sends a client the response of a topic request to this channel
 	 * @param client client to send topic to
@@ -339,7 +339,7 @@ public final class Channel
 			msg.appendParam(name);
 			msg.appendParam(topic);
 			client.send(msg);
-	
+
 			//Send channel topic info
 			msg = client.newNickMessage("333");
 			msg.appendParam(name);
@@ -418,50 +418,50 @@ public final class Channel
 			// Send to client
 			builder.addName(name);
 		}
-		
+
 		//Send last part
 		builder.flush();
 	}
 
 	/**
 	 * Sends this channel's mode to the given client, followed by the creation date
-	 * 
+	 *
 	 * <p>This method uses IRC numerics 324 and 329
-	 * 
+	 *
 	 * @param client client to send mode to
 	 */
 	public void sendMode(Client client)
 	{
 		//Is client on the channel?
 		boolean onChannel = lookupMember(client) != null;
-		
+
 		//Display mode
 		String modeString = ModeUtils.toString(mode);
 		String limitStr = "";
 		String keyStr = "";
-		
+
 		if(limit > 0)
 		{
 			modeString += 'l';
-			
+
 			//Add actual limit if on channel
 			if(onChannel)
 			{
 				limitStr = Integer.toString(limit);
 			}
 		}
-		
+
 		if(key != null)
 		{
 			modeString += 'k';
-			
+
 			//Add actual key if on channel
 			if(onChannel)
 			{
 				keyStr = key;
 			}
 		}
-		
+
 		//Send mode
 		client.send(client.newNickMessage("324").
 				appendParam(name).
@@ -480,10 +480,10 @@ public final class Channel
 
 	/**
 	 * Causes a client to join this channel
-	 * 
+	 *
 	 * <p>No checks are performed by this method. Do NOT just let anyone use this without checks.
 	 * <p>If no-one is on the channel, the client joins with OPS. Otherwise, the user has no extra modes.
-	 * 
+	 *
 	 * @param client Client to add
 	 * @return true on sucess, false if the client is already on the channel
 	 */
@@ -491,13 +491,13 @@ public final class Channel
 	{
 		return join(client, false);
 	}
-	
+
 	/**
 	 * Causes a client to join this channel
-	 * 
+	 *
 	 * <p>No checks are performed by this method. Do NOT just let anyone use this without checks.
 	 * <p>If no-one is on the channel, the client joins with OPS. Otherwise, the user has no extra modes.
-	 * 
+	 *
 	 * @param client Client to add
 	 * @param banChecked set to true if the ban lists have been checked and this client is not banned
 	 * @return true on sucess, false if the client is already on the channel
@@ -509,47 +509,47 @@ public final class Channel
 		{
 			return false;
 		}
-		 
+
 		//Setup mode
 		ChannelMemberMode chanMode = new ChannelMemberMode();
 		if(banChecked)
 		{
 			chanMode.setMode(ChannelMemberMode.BANCHECKED);
 		}
-		
+
 		if(members.isEmpty())
 		{
 			chanMode.setMode(ChannelMemberMode.OP);
 		}
-		
+
 		//Add member
 		members.put(client, chanMode);
 		client.channels.add(this);
-		
+
 		if(invited.remove(client))
 		{
 			client.invited.remove(this);
 		}
-		
+
 		//Notify others
 		Message msg = new Message("JOIN", client);
 		msg.appendParam(this.name);
 		send(msg);
-		
+
 		//Send topic
 		if(topic != null)
 		{
 			sendTopic(client);
 		}
-		
+
 		//Send channel names
 		sendNames(client);
 		return true;
 	}
-	
+
 	/**
 	 * Causes a client to leave this channel
-	 * 
+	 *
 	 * @param client the client who's leaving
 	 * @param partMsg the part / quit message of the client
 	 * @param sendToSelf whether to send the quit message to the client
@@ -564,20 +564,20 @@ public final class Channel
 			{
 				//Send message
 				send(partMsg);
-				
+
 				//Update client list
 				client.channels.remove(this);
 			}
-			
+
 			//Update member list
 			members.remove(client);
-			
+
 			//If channel is empty, delete
 			if(members.isEmpty())
 			{
 				Server.getServer().channels.remove(name);
 			}
-			
+
 			return true;
 		}
 		else
@@ -585,10 +585,10 @@ public final class Channel
 			return false;
 		}
 	}
-	
+
 	/**
 	 * Causes a client to part this channel without sending a message or updating client channels list
-	 * 
+	 *
 	 * @param client client parting channel
 	 * @return the collection of remaining members
 	 */
@@ -605,10 +605,10 @@ public final class Channel
 			return Collections.emptySet();
 		}
 	}
-	
+
 	/**
 	 * Causes a client to part this channel
-	 * 
+	 *
 	 * @param client client parting channel
 	 * @param partMsg part message
 	 * @return false if the client is not on the channel
@@ -619,14 +619,14 @@ public final class Channel
 		Message msg = new Message("PART", client);
 		msg.appendParam(name);
 		msg.appendParam(partMsg);
-		
+
 		//Forward
 		return part(client, msg, false);
 	}
-	
+
 	/**
 	 * Speaks a message into the channel
-	 * 
+	 *
 	 * @param client client who spoke the message (or null for server)
 	 * @param command command message was sent with (PRIVMSG or NOTICE)
 	 * @param data data to send
@@ -636,13 +636,13 @@ public final class Channel
 		Message msg = new Message(command, client);
 		msg.appendParam(name);
 		msg.appendParam(data);
-		
+
 		send(msg, client);
 	}
-	
+
 	/**
 	 * Kicks a client from this channel
-	 * 
+	 *
 	 * @param kicker client who is kicking
 	 * @param kicked client to be kicked
 	 * @param kickMsg kick message
@@ -655,14 +655,14 @@ public final class Channel
 		msg.appendParam(name);
 		msg.appendParam(kicked.id.nick);
 		msg.appendParam(kickMsg);
-		
+
 		//Forward
 		return part(kicked, msg, false);
 	}
-	
+
 	/**
 	 * Invites a client to a fake channel (non-existant one)
-	 * 
+	 *
 	 * @param channel channel name to invite to
 	 * @param inviter client giving the invitation
 	 * @param invitedClient client to be invited
@@ -670,7 +670,7 @@ public final class Channel
 	public static void inviteFake(String channel, Client inviter, Client invitedClient)
 	{
 		Message msg;
-		
+
 		//Notify relevant people
 		if(inviter != null)
 		{
@@ -679,16 +679,16 @@ public final class Channel
 			msg.appendParam(channel);
 			inviter.send(msg);
 		}
-		
+
 		msg = new Message("INVITE", inviter);
 		msg.appendParam(invitedClient.id.nick);
 		msg.appendParam(channel);
 		invitedClient.send(msg);
 	}
-	
+
 	/**
 	 * Invites a client into a channel
-	 * 
+	 *
 	 * @param inviter client giving the invitation
 	 * @param invitedClient client to be invited
 	 */
@@ -696,7 +696,7 @@ public final class Channel
 	{
 		//Add to invited list if inviter is an op
 		ChannelMemberMode inviterMode = members.get(inviter);
-		
+
 		if(inviterMode != null && inviterMode.getMode() >= ChannelMemberMode.OP)
 		{
 			//Add to invited
@@ -704,12 +704,12 @@ public final class Channel
 			{
 				invitedClient.invited.add(this);
 			}
-			
+
 			//Notify other opers
 			Message msg = Message.newMessageFromServer("NOTICE");
 			msg.appendParam("@" + name);
 			msg.appendParam(inviter.id.nick + " invited " + invitedClient.id.nick + " into the channel");
-			
+
 			for(Entry<Client, ChannelMemberMode> entry : members.entrySet())
 			{
 				//Is op?
@@ -719,14 +719,14 @@ public final class Channel
 				}
 			}
 		}
-		
+
 		//Notify relevant people
 		inviteFake(name, inviter, invitedClient);
 	}
-	
+
 	/**
 	 * Sets the channel topic
-	 * 
+	 *
 	 * @param setter client who set the topic
 	 * @param topic the new topic
 	 */
@@ -735,19 +735,19 @@ public final class Channel
 		//Update topic and info
 		this.topic = topic;
 		this.topicInfo = new SetInfo(setter);
-		
+
 		//Tell everyone
 		Message msg = new Message("TOPIC", setter);
 		msg.appendParam(name);
 		msg.appendParam(topic);
 		send(msg);
 	}
-	
+
 	//Set mode
-	
+
 	/**
 	 * The reason why a setMode request failed
-	 * 
+	 *
 	 * @author James
 	 */
 	public enum SetModeFailReason
@@ -756,17 +756,17 @@ public final class Channel
 		 * The mode has successfully been set
 		 */
 		OK,
-		
+
 		/**
 		 * The parameter in a +l request is not a number
 		 */
 		InvalidNumber,
-		
+
 		/**
 		 * The mode has already been set / unset
 		 */
 		AlreadySet,
-		
+
 		/**
 		 * In a client mode change, the client does not exist
 		 */
@@ -777,10 +777,10 @@ public final class Channel
 		 */
 		ClientNotMember,
 	}
-	
+
 	/**
 	 * Processes a set mode for list request
-	 * 
+	 *
 	 * @param setter mode setting client
 	 * @param add whether the mode shuold be added
 	 * @param list the list to modify
@@ -793,7 +793,7 @@ public final class Channel
 	{
 		//Sanitize param
 		String entry = IRCMask.sanitize(param.toString());
-		
+
 		//Process list
 		if(add)
 		{
@@ -801,7 +801,7 @@ public final class Channel
 			{
 				return SetModeFailReason.AlreadySet;
 			}
-			
+
 			list.put(entry, new SetInfo(setter));
 		}
 		else
@@ -811,14 +811,14 @@ public final class Channel
 				return SetModeFailReason.AlreadySet;
 			}
 		}
-		
+
 		msg.appendParam(entry);
 		return SetModeFailReason.OK;
 	}
-	
+
 	/**
 	 * Processes a member mode change
-	 * 
+	 *
 	 * @param add whether to add the mode
 	 * @param modeVal mode integer value
 	 * @param param client to change
@@ -829,7 +829,7 @@ public final class Channel
 	{
 		//Lookup client
 		Client client;
-		
+
 		if(param instanceof Client)
 		{
 			client = (Client) param;
@@ -838,22 +838,22 @@ public final class Channel
 		{
 			//Lookup client
 			client = Server.getServer().getClient(param.toString());
-			
+
 			if(client == null)
 			{
 				return SetModeFailReason.InvalidClient;
 			}
 		}
-		
+
 		//Find client in members list
 		ChannelMemberMode mode = members.get(client);
-		
+
 		//Check membership
 		if(mode == null)
 		{
 			return SetModeFailReason.ClientNotMember;
 		}
-		
+
 		//Change mode
 		if(add)
 		{
@@ -877,14 +877,14 @@ public final class Channel
 				return SetModeFailReason.AlreadySet;
 			}
 		}
-		
+
 		msg.appendParam(client.id.nick);
 		return SetModeFailReason.OK;
 	}
-	
+
 	/**
 	 * Sets a channel's mode and tells the channel about it
-	 * 
+	 *
 	 * @param setter client who set the mode (or null if server set it)
 	 * @param add whether the mode is being added or deleted
 	 * @param mode mode to set
@@ -893,7 +893,7 @@ public final class Channel
 	public SetModeFailReason setMode(Client setter, boolean add, char mode, Object param)
 	{
 		SetModeFailReason error = SetModeFailReason.OK;
-		
+
 		//Setup mode message
 		Message msg = new Message("MODE", setter);
 		msg.appendParam(name);
@@ -909,7 +909,7 @@ public final class Channel
 				msg.appendParam("-" + mode);
 			}
 		}
-		
+
 		//Check for special modes
 		switch(mode)
 		{
@@ -919,7 +919,7 @@ public final class Channel
 			{
 				//Set limit from param
 				int newLimit;
-				
+
 				if(param instanceof Integer)
 				{
 					newLimit = ((Integer) param).intValue();
@@ -936,13 +936,13 @@ public final class Channel
 						return SetModeFailReason.InvalidNumber;
 					}
 				}
-				
+
 				//Limit must be >= 0
 				if(newLimit < 0)
 				{
 					return SetModeFailReason.InvalidNumber;
 				}
-				
+
 				//Set limit
 				this.limit = newLimit;
 				msg.appendParam(Integer.toString(newLimit));
@@ -952,9 +952,9 @@ public final class Channel
 				//Limit is unset to 0
 				this.limit = 0;
 			}
-			
+
 			break;
-		
+
 		case 'k':
 			//Set key
 			if(add)
@@ -966,9 +966,9 @@ public final class Channel
 			{
 				this.key = null;
 			}
-			
+
 			break;
-			
+
 		case 'b':
 			//Set lists
 			if((error = processList(setter, add, this.banList, param, msg)) == SetModeFailReason.OK)
@@ -976,50 +976,50 @@ public final class Channel
 				invalidateBanCache(add);
 			}
 			break;
-			
+
 		case 'e':
 			if((error = processList(setter, add, this.banExceptList, param, msg)) == SetModeFailReason.OK)
 			{
 				invalidateBanCache(!add);
 			}
 			break;
-			
+
 		case 'I':
 			error = processList(setter, add, this.inviteExceptList, param, msg);
 			break;
-			
+
 		case 'v':
 			error = processMember(add, ChannelMemberMode.VOICE, param, msg);
 			break;
-			
+
 		case 'h':
 			error = processMember(add, ChannelMemberMode.HALFOP, param, msg);
 			break;
-			
+
 		case 'o':
 			error = processMember(add, ChannelMemberMode.OP, param, msg);
 			break;
-			
+
 		case 'a':
 			error = processMember(add, ChannelMemberMode.ADMIN, param, msg);
 			break;
-			
+
 		case 'q':
 			error = processMember(add, ChannelMemberMode.OWNER, param, msg);
 			break;
-			
+
 		case 'p':
 		case 's':
 			//Remove the other when adding
 			if(add)
 			{
 				String modeStr = "+" + mode;
-				
+
 				if(mode == 'p')
 				{
 					//Remove secret mode
 					this.mode = ModeUtils.setMode(this.mode, 'p');
-					
+
 					if(isModeSet('s'))
 					{
 						this.mode = ModeUtils.clearMode(this.mode, 's');
@@ -1030,14 +1030,14 @@ public final class Channel
 				{
 					//Remove private mode
 					this.mode = ModeUtils.setMode(this.mode, 's');
-					
+
 					if(isModeSet('p'))
 					{
 						this.mode = ModeUtils.clearMode(this.mode, 'p');
 						modeStr += "-p";
 					}
 				}
-				
+
 				msg.appendParam(modeStr);
 			}
 			else
@@ -1047,36 +1047,36 @@ public final class Channel
 				msg.appendParam("-" + mode);
 			}
 			break;
-			
+
 		default:
 			//Standard mode
-			long oldMode = this.mode; 
+			long oldMode = this.mode;
 			this.mode = ModeUtils.changeMode(this.mode, mode, add);
-			
+
 			if(oldMode == this.mode)
 			{
 				return SetModeFailReason.AlreadySet;
 			}
-			
+
 			break;
 		}
-		
+
 		//Send mode message
 		if(error == SetModeFailReason.OK)
 		{
 			send(msg);
 		}
-		
+
 		return error;
 	}
 
 	//Banning methods
-	
+
 	/**
 	 * Looks up the mode of a channel member
-	 * 
+	 *
 	 * <p>Will return null if the client is not a member of this channel
-	 * 
+	 *
 	 * @param client the client to lookup
 	 * @return the mode of the client
 	 */
@@ -1084,10 +1084,10 @@ public final class Channel
 	{
 		return members.get(client);
 	}
-	
+
 	/**
 	 * Returns true if the given mask is on the specified list
-	 * 
+	 *
 	 * @param list list to check
 	 * @param mask mask to compare with
 	 * @return true if the mask matches any 1 of the entries in the list
@@ -1103,13 +1103,13 @@ public final class Channel
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 
 	/**
 	 * Invalidates the member ban cache when the ban list is changed
-	 * 
+	 *
 	 * @param addingBan true if MORE people could be banned by the mode change
 	 */
 	private void invalidateBanCache(boolean addingBan)
@@ -1123,10 +1123,10 @@ public final class Channel
 			}
 		}
 	}
-	
+
 	/**
 	 * Determines whether a client is banned from the channel
-	 * 
+	 *
 	 * @param client the client to check
 	 * @param skipMemberCheck if true, skips checking the member cache
 	 * @return true if the member is banned
@@ -1134,12 +1134,12 @@ public final class Channel
 	private boolean isBanned(Client client, boolean skipMemberCheck)
 	{
 		ChannelMemberMode mode = null;
-		
+
 		//If a member, check the cache first
 		if(!skipMemberCheck)
 		{
 			mode = members.get(client);
-			
+
 			//Check banned
 			if(mode != null)
 			{
@@ -1148,18 +1148,18 @@ public final class Channel
 				{
 					return false;
 				}
-				
+
 				if(mode.isModeSet(ChannelMemberMode.BANCHECKED))
 				{
 					return mode.isModeSet(ChannelMemberMode.BANNED);
 				}
 			}
 		}
-		
+
 		//Tranverse ban lists
 		String mask = client.id.toString();
 		boolean banned = traverseList(banList, mask) && !traverseList(banExceptList, mask);
-		
+
 		//Cache result
 		if(mode != null)
 		{
@@ -1171,19 +1171,19 @@ public final class Channel
 			{
 				mode.clearMode(ChannelMemberMode.BANNED);
 			}
-			
+
 			mode.setMode(ChannelMemberMode.BANCHECKED);
 		}
-		
+
 		return banned;
 	}
 
 	/**
 	 * Determines whether a client is banned from the channel
-	 * 
+	 *
 	 * <p>If the client has voice or higher, this returns false.
 	 * To ignore this, use isBannedSkipMember()
-	 * 
+	 *
 	 * @param client the client to check
 	 * @return true if the member is banned
 	 */
@@ -1194,7 +1194,7 @@ public final class Channel
 
 	/**
 	 * Determines whether a client is banned from the channel without checking the member cache
-	 * 
+	 *
 	 * @param client the client to check
 	 * @return true if the member is banned
 	 * @see isBanned
@@ -1203,10 +1203,10 @@ public final class Channel
 	{
 		return isBanned(client, true);
 	}
-	
+
 	/**
 	 * Determines whether a client is on the invite exception list
-	 * 
+	 *
 	 * @param client the client to check
 	 * @return true if the member is on the invite exception list
 	 */
@@ -1215,12 +1215,12 @@ public final class Channel
 		//No caching here
 		return traverseList(inviteExceptList, client.id.toString());
 	}
-	
+
 	/**
 	 * Determines whether a client has been given an invite to this channel
-	 * 
+	 *
 	 * <p>Does not check the invite exception list
-	 * 
+	 *
 	 * @param client the client to check
 	 * @return true if the member has been invited by an oper
 	 */

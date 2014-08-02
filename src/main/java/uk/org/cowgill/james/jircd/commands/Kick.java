@@ -25,7 +25,7 @@ import uk.org.cowgill.james.jircd.util.ChannelChecks;
 
 /**
  * The KICK command - ejects a client from a channel
- * 
+ *
  * @author James
  */
 public class Kick implements Command
@@ -37,7 +37,7 @@ public class Kick implements Command
 		String[] channels = msg.getParam(0).split(",");
 		String[] clients = msg.getParam(1).split(",");
 		String kickMsg;
-		
+
 		//Get kick message
 		if(msg.paramCount() >= 3)
 		{
@@ -47,14 +47,14 @@ public class Kick implements Command
 		{
 			kickMsg = client.id.nick;
 		}
-		
+
 		//Prelookup for single channel
 		Channel singleChannel = null;
-		
+
 		if(channels.length == 1)
 		{
 			singleChannel = Server.getServer().getChannel(channels[0]);
-			
+
 			if(singleChannel == null)
 			{
 				//No such channel
@@ -63,17 +63,17 @@ public class Kick implements Command
 				return;
 			}
 		}
-		
+
 		//Process kicks
 		for(int i = 0; i < clients.length; ++i)
 		{
 			Channel channel;
-			
+
 			if(singleChannel == null)
 			{
 				//Lookup channel
 				channel = Server.getServer().getChannel(channels[i]);
-				
+
 				if(channel == null)
 				{
 					//No such channel
@@ -86,10 +86,10 @@ public class Kick implements Command
 			{
 				channel = singleChannel;
 			}
-			
+
 			//Lookup client
 			Client other = Server.getServer().getClient(clients[i]);
-			
+
 			if(other == null)
 			{
 				//No such channel
@@ -97,10 +97,10 @@ public class Kick implements Command
 						appendParam("No such nick / channel"));
 				continue;
 			}
-			
+
 			//Can kick?
 			ChannelCheckError error = ChannelChecks.canKick(channel, client, other);
-			
+
 			if(error == ChannelCheckError.OK)
 			{
 				//Kick

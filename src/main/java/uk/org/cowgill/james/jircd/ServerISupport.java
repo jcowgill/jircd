@@ -25,83 +25,83 @@ import uk.org.cowgill.james.jircd.util.ModeType;
 
 /**
  * Contains a list of server limits and options sent in ISUPPORT messages
- * 
+ *
  * <p>Also contains the string validation routines
- * 
+ *
  * @author James
  */
 public class ServerISupport
 {
 	/**
 	 * Avaliable user modes
-	 * 
+	 *
 	 * <p>You are allowed to add ONOFF modes to this (do not add modes requiring parameters)
 	 * <p>When adding modes, all existing users will not have that mode set
-	 * 
+	 *
 	 * @see #updateISupport
 	 */
 	public final Map<Character, ModeType> modesUser;
-	
+
 	/**
 	 * Avaliable chanel modes
-	 * 
+	 *
 	 * <p>You are allowed to add ONOFF modes to this (do not add modes requiring parameters)
 	 * <p>When adding modes, all existing channels will not have that mode set
-	 * 
+	 *
 	 * @see #updateISupport
 	 */
 	public final Map<Character, ModeType> modesChannel;
-	
+
 	/**
 	 * Map of isupport messages (key=value)
-	 * 
+	 *
 	 * <p>Mode related messages are not here, they are automatically
 	 * generated from the modesUser and modesChannel fields
-	 * 
+	 *
 	 * @see #updateISupport
 	 */
 	public final Map<String, String> iSupportMsgs;
-	
+
 	/**
 	 * Maximum number of entries in lists (ban, exception, invite exception)
 	 */
 	public final static int MAXLIST = 60;
-	
+
 	/**
 	 * Maximum number of modes which can be changed per message
 	 */
 	public final static int MODES = 12;
-	
+
 	/**
 	 * Maxmimum number of channels you can join
 	 */
 	public final static int MAXCHANNELS = 10;
-	
+
 	/**
 	 * Maximum length of away message
 	 */
 	public final static int AWAYLEN = 300;
-	
+
 	/**
 	 * Maximum length of nickname
 	 */
 	public final static int NICKLEN = 30;
-	
+
 	/**
 	 * Maximum length of username
 	 */
 	public final static int USERLEN = 30;
-	
+
 	/**
 	 * Maxmimum topic length
 	 */
 	public final static int TOPICLEN = 300;
-	
+
 	/**
 	 * Maxmimum length of kick message
 	 */
 	public final static int KICKLEN = 300;
-	
+
 	/**
 	 * Maxmimum channel name length
 	 */
@@ -111,9 +111,9 @@ public class ServerISupport
 	private String iSupportCache004User = null;
 	private String iSupportCache004Channel = null;
 	private List<String> iSupportCache005 = null;
-	
+
 	private final static int ISUPPORTLEN = 300;
-	
+
 	/**
 	 * Creates a new ServerISupport object with the default modes and ISupport messages
 	 */
@@ -126,7 +126,7 @@ public class ServerISupport
 		modesUser.put('i', ModeType.OnOff);
 		modesUser.put('B', ModeType.OnOff);
 		modesUser.put('z', ModeType.OnOff);
-		
+
 		//Setup built-in channel modes
 		modesChannel = new HashMap<Character, ModeType>();
 		modesChannel.put('q', ModeType.MemberList);
@@ -147,7 +147,7 @@ public class ServerISupport
 		modesChannel.put('i', ModeType.OnOff);
 		modesChannel.put('O', ModeType.OnOff);
 		modesChannel.put('z', ModeType.OnOff);
-		
+
 		//Setup built-in isupport msgs (CHANMODES and MAXLIST handled later)
 		iSupportMsgs = new HashMap<String, String>();
 		iSupportMsgs.put("AWAYLEN", Integer.toString(AWAYLEN));
@@ -157,7 +157,7 @@ public class ServerISupport
 		iSupportMsgs.put("TOPICLEN", Integer.toString(TOPICLEN));
 		iSupportMsgs.put("KICKLEN", Integer.toString(KICKLEN));
 		iSupportMsgs.put("CHANNELLEN", Integer.toString(CHANNELLEN));
-		
+
 		iSupportMsgs.put("PREFIX", "(qaohv)~&@%+");
 		iSupportMsgs.put("CHANTYPES", "#");
 		iSupportMsgs.put("CASEMAPPING", "ascii");
@@ -167,10 +167,10 @@ public class ServerISupport
 		iSupportMsgs.put("NAMESX", "");
 		iSupportMsgs.put("UHNAMES", "");
 	}
-	
+
 	/**
 	 * Invalidates the ISupport string cache
-	 * 
+	 *
 	 * <p>Must be called to update ISupport messages after the server has started
 	 */
 	public void updateISupport()
@@ -179,10 +179,10 @@ public class ServerISupport
 		iSupportCache004Channel = null;
 		iSupportCache005 = null;
 	}
-	
+
 	/**
 	 * Sends the isupport messages (004 and 005)
-	 * 
+	 *
 	 * @param client client to send to
 	 */
 	public void sendISupportMsgs(Client client)
@@ -192,32 +192,32 @@ public class ServerISupport
 		{
 			//Create mode caches
 			StringBuilder builder = new StringBuilder();
-			
+
 			for(Character c : modesChannel.keySet())
 			{
 				builder.append(c);
 			}
-			
+
 			iSupportCache004Channel = builder.toString();
-			
+
 			//User modes
 			builder = new StringBuilder();
-			
+
 			for(Character c : modesUser.keySet())
 			{
 				builder.append(c);
 			}
-			
+
 			iSupportCache004User = builder.toString();
 		}
-		
+
 		if(iSupportCache005 == null)
 		{
 			//Create CHANMODES cache
 			StringBuilder builderA = new StringBuilder();
 			StringBuilder builderC = new StringBuilder();
 			StringBuilder builderD = new StringBuilder();
-			
+
 			for(Entry<Character, ModeType> c : modesChannel.entrySet())
 			{
 				switch(c.getValue())
@@ -225,24 +225,24 @@ public class ServerISupport
 				case OnOff:
 					builderD.append(c.getKey());
 					break;
-					
+
 				case Param:
 					if(c.getKey() != 'k')
 					{
 						builderC.append(c.getKey());
 					}
 					break;
-					
+
 				case List:
 					builderA.append(c.getKey());
 					break;
-					
+
 				default:
 					//This shuts the compiler up
 					break;
 				}
 			}
-			
+
 			//Generate isupport messages
 			StringBuilder iBuilder = new StringBuilder("CHANMODES=");
 			iBuilder.append(builderA);
@@ -254,49 +254,49 @@ public class ServerISupport
 			iBuilder.append(builderA);
 			iBuilder.append(':');
 			iBuilder.append(Integer.toString(MAXLIST));
-			
+
 			//Add messages
 			int lenBefore;
 			iSupportCache005 = new ArrayList<String>();
-			
+
 			for(Entry<String, String> entry : iSupportMsgs.entrySet())
-			{	
+			{
 				iBuilder.append(' ');
 				lenBefore = iBuilder.length();
-				
+
 				iBuilder.append(entry.getKey());
 				if(!entry.getValue().isEmpty())
 				{
 					iBuilder.append('=');
 					iBuilder.append(entry.getValue());
 				}
-				
+
 				//Check max characters
 				if(iBuilder.length() > ISUPPORTLEN)
 				{
 					//Rollback this change
 					iBuilder.setLength(lenBefore);
-					
+
 					//Add ending
 					iBuilder.append(":are supported by this server");
-					
+
 					//Add to list
 					iSupportCache005.add(iBuilder.toString());
 					iBuilder.setLength(0);
 				}
 			}
-			
+
 			//Add last message
 			if(iBuilder.length() != 0)
 			{
 				//Add ending
 				iBuilder.append(":are supported by this server");
-				
+
 				//Add to list
 				iSupportCache005.add(iBuilder.toString());
 			}
 		}
-		
+
 		//Send 004
 		Message msg004 = client.newNickMessage("004");
 		msg004.appendParam(Server.getServer().getConfig().serverName);
@@ -304,7 +304,7 @@ public class ServerISupport
 		msg004.appendParam(iSupportCache004User);
 		msg004.appendParam(iSupportCache004Channel);
 		client.send(msg004);
-		
+
 		//Send 005
 		String startMsg = client.newNickMessage("005").toString() + " ";
 		for(String entry : iSupportCache005)
@@ -312,14 +312,14 @@ public class ServerISupport
 			client.send(startMsg + entry);
 		}
 	}
-	
+
 	//############################
 	// Validation Checks
 	//############################
 
 	/**
 	 * Checks whether a nickname is allowed
-	 * 
+	 *
 	 * @param nick nickname to check
 	 * @return whether it is allowed
 	 */
@@ -348,10 +348,10 @@ public class ServerISupport
 
 		return true;
 	}
-	
+
 	/**
 	 * Checks whether a username is allowed
-	 * 
+	 *
 	 * @param user username to check
 	 * @return whether it is allowed
 	 */
@@ -372,10 +372,10 @@ public class ServerISupport
 
 		return true;
 	}
-	
+
 	/**
 	 * Checks whether a channel is allowed
-	 * 
+	 *
 	 * @param channel channel to check
 	 * @return whether it is allowed
 	 */

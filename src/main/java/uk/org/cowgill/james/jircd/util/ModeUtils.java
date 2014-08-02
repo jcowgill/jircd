@@ -17,16 +17,16 @@ package uk.org.cowgill.james.jircd.util;
 
 /**
  * Contains a number of static members to manipulate mode bitsets
- * 
+ *
  * <p>This does not handle modes assigned to channel members. Use {@link ChannelMemberMode} for that.
- * 
+ *
  * @author James
  */
 public final class ModeUtils
 {
 	/**
 	 * Checks whether a mode is set
-	 * 
+	 *
 	 * @param modeSet modeset to search
 	 * @param mode the mode to check
 	 * @return true if the mode is set
@@ -48,10 +48,10 @@ public final class ModeUtils
 			return false;
 		}
 	}
-	
+
 	/**
 	 * Sets a mode in the modeset
-	 * 
+	 *
 	 * @param modeSet modeset to search
 	 * @param mode the mode to check
 	 * @return the new modeset
@@ -72,10 +72,10 @@ public final class ModeUtils
 			throw new IllegalArgumentException("mode");
 		}
 	}
-	
+
 	/**
 	 * Clears a mode in the modeset
-	 * 
+	 *
 	 * @param modeSet modeset to search
 	 * @param mode the mode to check
 	 * @return the new modeset
@@ -99,7 +99,7 @@ public final class ModeUtils
 
 	/**
 	 * Changes a mode in the modeset
-	 * 
+	 *
 	 * @param modeSet modeset to search
 	 * @param mode the mode to check
 	 * @param adding true to set the mode, false to clear it
@@ -119,9 +119,9 @@ public final class ModeUtils
 
 	/**
 	 * Converts a mode bitmask to a string
-	 * 
+	 *
 	 * <p>The mode always has a leading +
-	 * 
+	 *
 	 * @param mode the mode bitmask
 	 * @return the string containing the mode
 	 */
@@ -138,10 +138,10 @@ public final class ModeUtils
 			{
 				modeStr.append(c);
 			}
-			
+
 			lowerSet >>= 1;
 		}
-		
+
 		//Uppercase
 		int upperSet = (int) (modeSet >> 32);
 		for(char c = 'A'; c <= 'Z'; c++)
@@ -151,10 +151,10 @@ public final class ModeUtils
 			{
 				modeStr.append(c);
 			}
-			
+
 			upperSet >>= 1;
 		}
-		
+
 		if(modeStr.length() == 1)
 		{
 			return "";
@@ -164,7 +164,7 @@ public final class ModeUtils
 			return modeStr.toString();
 		}
 	}
-	
+
 	private ModeUtils()
 	{
 	}

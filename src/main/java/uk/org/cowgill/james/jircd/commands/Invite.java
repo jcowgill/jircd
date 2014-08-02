@@ -25,7 +25,7 @@ import uk.org.cowgill.james.jircd.util.ChannelChecks;
 
 /**
  * The INVITE command - invites a client into a channel
- * 
+ *
  * @author James
  */
 public class Invite implements Command
@@ -36,7 +36,7 @@ public class Invite implements Command
 		//Lookup client and channel
 		Client other = Server.getServer().getClient(msg.getParam(0));
 		Channel channel = Server.getServer().getChannel(msg.getParam(1));
-		
+
 		if(other == null)
 		{
 			//No such nickname
@@ -49,12 +49,12 @@ public class Invite implements Command
 			if(channel != null)
 			{
 				ChannelCheckError error = ChannelChecks.canInvite(channel, client, other);
-				
+
 				if(error == ChannelCheckError.OK)
 				{
 					//Away message
 					other.sendAwayMsgTo(client);
-					
+
 					//Do the invite
 					channel.invite(client, other);
 				}

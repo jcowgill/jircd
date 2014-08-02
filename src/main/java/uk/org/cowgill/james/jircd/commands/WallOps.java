@@ -23,7 +23,7 @@ import uk.org.cowgill.james.jircd.Server;
 
 /**
  * The WALLOPS command - sends a message to other operators
- * 
+ *
  * @author James
  */
 public class WallOps implements Command
@@ -37,7 +37,7 @@ public class WallOps implements Command
 			//Send WALLOPS message
 			Message wMsg = new Message("WALLOPS", client);
 			wMsg.appendParam(msg.getParam(0));
-			
+
 			Client.sendTo(Server.getServer().getIRCOperators(), wMsg);
 		}
 		else

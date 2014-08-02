@@ -21,7 +21,7 @@ import uk.org.cowgill.james.jircd.Server;
 
 /**
  * Class responsible for starting the server in network mode
- * 
+ *
  * @author James
  */
 class NetworkStarter
@@ -31,14 +31,14 @@ class NetworkStarter
 		//Server entry point
 		// Setup logger
 		Server.ensureLoggerSetup();
-		
+
 		// Add Ctrl-C Handler
 		CtrlCHandler ctrlCHandler = new CtrlCHandler();
 		Runtime.getRuntime().addShutdownHook(new Thread(ctrlCHandler));
 
 		// Get config file
 		File configFile = Server.getFileFromArgs(args);
-		
+
 		if(configFile != null)
 		{
 			//Run the server!

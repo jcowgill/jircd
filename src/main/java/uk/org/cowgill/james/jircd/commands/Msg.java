@@ -25,7 +25,7 @@ import uk.org.cowgill.james.jircd.util.ChannelChecks;
 
 /**
  * The PRIVMSG or NOTICE command - relays a message to another client or channel
- * 
+ *
  * @author James
  */
 public abstract class Msg implements Command
@@ -38,12 +38,12 @@ public abstract class Msg implements Command
 		{
 			//Channel lookup
 			Channel channel = Server.getServer().getChannel(msg.getParam(0));
-			
+
 			if(channel != null)
 			{
 				//Can speak?
 				ChannelCheckError error = ChannelChecks.canSpeak(channel, client);
-				
+
 				if(error == ChannelCheckError.OK)
 				{
 					channel.speak(client, getName(), msg.getParam(1));
@@ -53,7 +53,7 @@ public abstract class Msg implements Command
 					//Send error
 					error.sendToClient(channel, client);
 				}
-				
+
 				return;
 			}
 		}
@@ -61,22 +61,22 @@ public abstract class Msg implements Command
 		{
 			//Client lookup
 			Client other = Server.getServer().getClient(msg.getParam(0));
-			
+
 			if(other != null)
 			{
 				//Away message
 				other.sendAwayMsgTo(client);
-				
+
 				//Send message
 				Message relayMsg = new Message(getName(), client);
 				relayMsg.appendParam(client.id.nick);
 				relayMsg.appendParam(msg.getParam(1));
-				
+
 				other.send(relayMsg);
 				return;
 			}
 		}
-		
+
 		//No such client / channel
 		client.send(client.newNickMessage("401").appendParam(msg.getParam(0)).
 				appendParam("No such nick / channel"));
@@ -96,7 +96,7 @@ public abstract class Msg implements Command
 
 	/**
 	 * The PRIVMSG message - sends a private message to a client or channel
-	 * 
+	 *
 	 * @author James
 	 */
 	public static class PrivMsg extends Msg
@@ -107,10 +107,10 @@ public abstract class Msg implements Command
 			return "PRIVMSG";
 		}
 	}
-	
+
 	/**
 	 * The NOTICE message - sends a notice to a client or channel
-	 * 
+	 *
 	 * @author James
 	 */
 	public static class Notice extends Msg

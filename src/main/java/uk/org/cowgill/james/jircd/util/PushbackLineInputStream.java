@@ -71,7 +71,7 @@ public class PushbackLineInputStream extends PushbackInputStream
 				lineNo++;
 				charNo = 1;
 				return c;
-				
+
 			case -1:
 				//EOF
 				return c;
@@ -107,7 +107,7 @@ public class PushbackLineInputStream extends PushbackInputStream
 		if(b != -1)
 		{
 			super.unread(b);
-	
+
 			if(charNo == 1)
 			{
 				//Go up 1 row. Using 0 as character since we don't know!
@@ -136,7 +136,7 @@ public class PushbackLineInputStream extends PushbackInputStream
 	{
 		return charNo;
 	}
-	
+
 	/**
 	 * This method is not implemented and throws UnsupportedOperationException
 	 */
@@ -146,7 +146,7 @@ public class PushbackLineInputStream extends PushbackInputStream
 		//Error - not allowed for this stream
 		throw new UnsupportedOperationException();
 	}
-	
+
 	/**
 	 * This method is not implemented and throws UnsupportedOperationException
 	 */
@@ -156,7 +156,7 @@ public class PushbackLineInputStream extends PushbackInputStream
 		//Error - not allowed for this stream
 		throw new UnsupportedOperationException();
 	}
-	
+
 	/**
 	 * This method is not implemented and throws UnsupportedOperationException
 	 */
@@ -166,5 +166,5 @@ public class PushbackLineInputStream extends PushbackInputStream
 		//Error - not allowed for this stream
 		throw new UnsupportedOperationException();
 	}
-	
+
 }

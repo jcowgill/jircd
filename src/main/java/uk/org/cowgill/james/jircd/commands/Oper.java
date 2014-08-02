@@ -29,23 +29,23 @@ import org.apache.log4j.Logger;
 
 /**
  * The OPER command - authenticates as an IRC operator
- * 
+ *
  * @author James
  */
 public class Oper implements Command
 {
 	private static final Logger logger = Logger.getLogger(Oper.class);
-	
+
 	@Override
 	public void run(Client client, Message msg)
 	{
 		//Get parameters
 		String name = msg.getParam(0);
 		String password = msg.getParam(1);
-		
+
 		//Find operator name
 		Config.Operator operator = Server.getServer().getConfig().operators.get(name);
-		
+
 		if(operator == null || !client.id.wildcardCompareTo(operator.mask))
 		{
 			//No valid oper lines
@@ -53,10 +53,10 @@ public class Oper implements Command
 			client.send(client.newNickMessage("491").appendParam("No O-Lines for your host"));
 			return;
 		}
-		
+
 		//Hash password
 		byte[] passwordHash = null;
-		
+
 		try
 		{
 			passwordHash = Config.passwordHash(password);
@@ -69,7 +69,7 @@ public class Oper implements Command
 		{
 			logger.warn("Exception while hashing OPER request ", e);
 		}
-		
+
 		//Check password
 		if(!Arrays.equals(passwordHash, operator.password))
 		{
@@ -78,24 +78,24 @@ public class Oper implements Command
 			client.send(client.newNickMessage("464").appendParam("Password Incorrect"));
 			return;
 		}
-		
+
 		//Make operator
 		logOperMsg(true, client, name, false);
 		if(operator.newClass != null)
 		{
 			client.changeClass(operator.newClass);
 		}
-		
+
 		client.setMode(operator.isSuperOp ? 'O' : 'o', true);
 	}
-	
+
 	/**
 	 * Logs an operator message
 	 */
 	private static void logOperMsg(boolean valid, Client client, String operName, boolean badPasswd)
 	{
 		StringBuilder msg = new StringBuilder();
-		
+
 		if(valid)
 		{
 			msg.append("Successful OPER attempt from ");
@@ -104,13 +104,13 @@ public class Oper implements Command
 		{
 			msg.append("Failed OPER attempt from ");
 		}
-		
+
 		msg.append(client.id.toString());
 		msg.append("(");
 		msg.append(client.getIpAddress());
 		msg.append("), using oper name ");
 		msg.append(operName);
-		
+
 		if(badPasswd)
 		{
 			msg.append(". Incorrect Password");
@@ -119,7 +119,7 @@ public class Oper implements Command
 		{
 			msg.append('.');
 		}
-		
+
 		if(valid)
 		{
 			logger.info(msg.toString());

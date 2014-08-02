@@ -23,7 +23,7 @@ import uk.org.cowgill.james.jircd.Server;
 
 /**
  * The PART command - parts a channel
- * 
+ *
  * @author James
  */
 public class Part implements Command
@@ -34,7 +34,7 @@ public class Part implements Command
 		//Parse the part parameters
 		String[] channelStrings = msg.getParam(0).split(",");
 		String partMsg;
-		
+
 		if(msg.paramCount() >= 2)
 		{
 			partMsg = msg.getParam(1);
@@ -43,20 +43,20 @@ public class Part implements Command
 		{
 			partMsg = client.id.nick;
 		}
-		
+
 		//Process requests
 		for(int i = 0; i < channelStrings.length; ++i)
 		{
 			//Lookup channel
 			Channel channel = Server.getServer().getChannel(channelStrings[i]);
-			
+
 			if(channel == null)
 			{
 				client.send(client.newNickMessage("403").appendParam(channelStrings[i]).
 						appendParam("No such channel"));
 				continue;
 			}
-			
+
 			//Part
 			if(!channel.part(client, partMsg))
 			{
@@ -84,10 +84,10 @@ public class Part implements Command
 	{
 		return FLAG_NORMAL;
 	}
-	
+
 	/**
 	 * The LEAVE command - alias of PART
-	 * 
+	 *
 	 * @author James
 	 */
 	public static class Leave extends Part

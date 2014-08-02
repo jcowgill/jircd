@@ -17,12 +17,12 @@ package uk.org.cowgill.james.jircd;
 
 /**
  * Represents a Nick, User and Host trupal in the IRC server
- * 
+ *
  * Used to store a client's nick, user and host.
  * Also used to store masks for bans or other checking.
- * 
+ *
  * IRCMasks are case-insensitive
- * 
+ *
  * @author James
  *
  */
@@ -30,35 +30,35 @@ public class IRCMask implements Comparable<IRCMask>
 {
 	/**
 	 * The mask's nickname
-	 * 
+	 *
 	 * This field must not be set to null
 	 */
 	public String nick;
-	
+
 	/**
 	 * The mask's username
-	 * 
+	 *
 	 * This field must not be set to null
 	 */
 	public String user;
-	
+
 	/**
 	 * The mask's hostname
-	 * 
+	 *
 	 * This field must not be set to null
 	 */
 	public String host;
-	
+
 	/**
 	 * Creates a new blank IRC Mask
 	 */
 	public IRCMask()
 	{
 	}
-	
+
 	/**
 	 * Creates a new IRC Mask as a copy of another
-	 * 
+	 *
 	 * @param mask mask to copy
 	 */
 	public IRCMask(IRCMask mask)
@@ -67,7 +67,7 @@ public class IRCMask implements Comparable<IRCMask>
 		this.user = mask.user;
 		this.host = mask.host;
 	}
-	
+
 	/**
 	 * Calculates the hash code for this mask
 	 */
@@ -75,13 +75,13 @@ public class IRCMask implements Comparable<IRCMask>
 	public int hashCode()
 	{
 		int hash = nick.toLowerCase().hashCode();
-		
+
 		hash = hash * 47 + user.toLowerCase().hashCode();
 		hash = hash * 37 + host.toLowerCase().hashCode();
-		
+
 		return hash;
 	}
-	
+
 	/**
 	 * Gets weather this IRC mask is equal to another mask
 	 */
@@ -90,20 +90,20 @@ public class IRCMask implements Comparable<IRCMask>
 	{
 		if(object == null)
 			return false;
-		
+
 		if(object == this)
 			return true;
-		
+
 		if(object.getClass() != this.getClass())
 			return false;
-		
+
 		IRCMask mask = (IRCMask) object;
-		
+
 		return nick.equalsIgnoreCase(mask.nick) &&
 				user.equalsIgnoreCase(mask.user) &&
 				host.equalsIgnoreCase(mask.host);
 	}
-	
+
 	/**
 	 * Compares this mask with another mask
 	 */
@@ -111,36 +111,36 @@ public class IRCMask implements Comparable<IRCMask>
 	public int compareTo(IRCMask mask)
 	{
 		int value = host.compareToIgnoreCase(mask.host);
-		
+
 		if(value == 0)
 		{
 			value = user.compareToIgnoreCase(mask.user);
-			
+
 			if(value == 0)
 			{
 				value = nick.compareToIgnoreCase(mask.nick);
 			}
 		}
-		
+
 		return value;
 	}
-	
+
 	/**
 	 * Converts the mask to a string without the nickname part
 	 */
 	public String toStringUser()
 	{
 		//User + host
-		return user + "@" + host; 
+		return user + "@" + host;
 	}
-	
+
 	@Override
 	public String toString()
 	{
 		if(nick == null || nick.length() == 0)
 		{
 			//User + host
-			return user + "@" + host; 
+			return user + "@" + host;
 		}
 		else
 		{
@@ -148,7 +148,7 @@ public class IRCMask implements Comparable<IRCMask>
 			return nick + "!" + user + "@" + host;
 		}
 	}
-	
+
 	//Wildcard comparison with starting indexes
 	private static boolean wildcardCompare(String data, String mask, int strPos, int wildPos)
 	{
@@ -229,12 +229,12 @@ public class IRCMask implements Comparable<IRCMask>
 		//End of wild string reached
 		return strPos == data.length();
 	}
-	
+
 	/**
 	 * Performs a wildcard comparison between data and a mask
-	 * 
+	 *
 	 * The comparison is case-insensitive
-	 * 
+	 *
 	 * @param data The data to be checked
 	 * @param mask The mask to check against
 	 * @return True if the data matches the mask
@@ -243,12 +243,12 @@ public class IRCMask implements Comparable<IRCMask>
 	{
 		return wildcardCompare(data.toLowerCase(), mask.toLowerCase(), 0, 0);
 	}
-	
+
 	/**
 	 * Performs a wildcard comparison between an IRCMask and a wildcard mask
-	 * 
+	 *
 	 * The comparison is case-insensitive
-	 * 
+	 *
 	 * @param data The IRCMask to be checked
 	 * @param mask The wildcard mask to check against
 	 * @return True if the data matches the mask
@@ -257,12 +257,12 @@ public class IRCMask implements Comparable<IRCMask>
 	{
 		return wildcardCompare(data.toString(), mask);
 	}
-	
+
 	/**
 	 * Performs a wildcard comparison between this IRCMask and a wildcard mask
-	 * 
+	 *
 	 * The comparison is case-insensitive
-	 * 
+	 *
 	 * @param mask The wildcard mask to check against
 	 * @return True if the data matches the mask
 	 */
@@ -270,12 +270,12 @@ public class IRCMask implements Comparable<IRCMask>
 	{
 		return wildcardCompare(this, mask);
 	}
-	
+
 	/**
 	 * Completes a wildcard mask by adding an empty nickname or hostname part
-	 * 
+	 *
 	 * This must be done before wildcardCompareTo on a mask without ! and @ characters in
-	 * 
+	 *
 	 * @param mask The mask to complete
 	 * @return The completed mask
 	 */
@@ -287,22 +287,22 @@ public class IRCMask implements Comparable<IRCMask>
 			//Prepend user part
 			mask = "*@" + mask;
 		}
-		
+
 		//Check if it contains nick part
 		if(mask.indexOf('!') == -1)
 		{
 			//Prepend nick part
 			mask = "*!" + mask;
 		}
-		
+
 		return mask;
 	}
-	
+
 	/**
 	 * Sanitizes the irc mask given
-	 * 
+	 *
 	 * <p>This adds any parts of the mask not given and assigns them * (wildcard) names
-	 * 
+	 *
 	 * @param mask mask to sanitize
 	 * @return the sanitized mask
 	 */
@@ -310,11 +310,11 @@ public class IRCMask implements Comparable<IRCMask>
 	{
 		//Sanitize mask
 		mask = mask.trim();
-		
+
 		//Find whether there is a ! or @
 		int exPos = mask.indexOf('!');
 		int atPos = mask.indexOf('@');
-		
+
 		//Test what to output
 		if(exPos == -1)
 		{

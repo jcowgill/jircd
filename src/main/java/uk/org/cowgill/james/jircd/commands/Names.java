@@ -22,7 +22,7 @@ import uk.org.cowgill.james.jircd.util.NamesListBuilder;
 
 /**
  * The NAMES command - views the memberlist of a channel
- * 
+ *
  * @author James
  */
 public class Names implements Command

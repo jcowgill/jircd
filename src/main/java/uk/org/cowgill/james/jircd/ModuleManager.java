@@ -27,60 +27,60 @@ import org.apache.log4j.Logger;
 
 /**
  * Controls loading and unloading of modules, and keeping track of registered commands
- * 
+ *
  * @author James
  */
 public final class ModuleManager
 {
 	private static final Logger logger = Logger.getLogger(ModuleManager.class);
-	
+
 	private boolean started = false;
-	
+
 	/**
 	 * Map of all loaded modules
 	 */
 	private HashMap<Class<?>, Module> loadedModules = new HashMap<Class<?>, Module>();
-	
+
 	/**
 	 * Map of all commands on the system
 	 */
 	private HashMap<String, CommandInfo> commands = new HashMap<String, CommandInfo>();
-	
+
 	/**
 	 * Event which starts up the modules in the configuration file
-	 * 
+	 *
 	 * @return true if all modules started successfully
 	 */
 	boolean serverStartupEvent()
 	{
 		//Load modules in config
 		Collection<ConfigBlock> modules = Server.getServer().getConfig().modules;
-		
+
 		if(loadModules(modules) != modules.size())
 		{
 			//Module load failiure
 			serverStopEvent();
 			return false;
 		}
-		
+
 		started = true;
 		return true;
 	}
-	
+
 	/**
 	 * Raises the rehash event in all modules
-	 * 
+	 *
 	 * Note: Modules are not loaded or unloaded as a result of this
 	 */
 	void serverRehashEvent()
 	{
 		HashSet<Class<?>> rehashed = new HashSet<Class<?>>();
-		
+
 		if(!started)
 		{
 			return;
 		}
-		
+
 		//Rehash all modules
 		for(ConfigBlock block : Server.getServer().getConfig().modules)
 		{
@@ -89,14 +89,14 @@ public final class ModuleManager
 
 			//Find in loaded modules
 			Module module = loadedModules.get(clazz);
-			
+
 			if(module == null)
 			{
 				//Not already loaded
 				logger.warn("Module " + block.param + " has not been loaded - new modules require a server restart");
 				continue;
 			}
-			
+
 			//Rehash module
 			try
 			{
@@ -106,10 +106,10 @@ public final class ModuleManager
 			{
 				logger.error("Module " + block.param + " threw exception while rehashing", e);
 			}
-			
+
 			rehashed.add(clazz);
 		}
-		
+
 		//Anything which has not been rehashed will be notified
 		for(Class<?> clazz : loadedModules.keySet())
 		{
@@ -129,7 +129,7 @@ public final class ModuleManager
 			}
 		}
 	}
-	
+
 	/**
 	 * Shuts down all modules
 	 */
@@ -140,16 +140,16 @@ public final class ModuleManager
 		{
 			module.shutdown();
 		}
-		
+
 		loadedModules.clear();
 		started = false;
 	}
-	
+
 	/**
 	 * Finds the class for a given string
-	 * 
+	 *
 	 * Errors are displayed
-	 * 
+	 *
 	 * @param module Module string
 	 * @return the class or null on error
 	 */
@@ -177,12 +177,12 @@ public final class ModuleManager
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Loads a module with the given class and configuration
-	 * 
+	 *
 	 * This silently returns true if the module has been loaded
-	 * 
+	 *
 	 * @param moduleClass class of the module to load
 	 * @param config configuration
 	 * @return true if the module has been loaded
@@ -191,7 +191,7 @@ public final class ModuleManager
 	{
 		//Find module in hashmap
 		Module module = loadedModules.get(moduleClass);
-		
+
 		//If null, create module
 		if(module == null)
 		{
@@ -210,21 +210,21 @@ public final class ModuleManager
 				logger.error("Error loading module " + moduleClass.getName(), e);
 				return false;
 			}
-			
+
 			//Add module to loadedModules
 			loadedModules.put(moduleClass, module);
 		}
-		
+
 		//Module loaded
 		return true;
 	}
 
 	/**
 	 * Loads a module with the given class name and configuration
-	 * 
+	 *
 	 * This silently returns true if the module has been loaded.
 	 * This function will also attempt to load any jar files in the module configuration.
-	 * 
+	 *
 	 * @param className class name of the module to load
 	 * @param config configuration
 	 * @return true if the module has been loaded
@@ -233,7 +233,7 @@ public final class ModuleManager
 	{
 		//If config block contains a jar directive, load the jars
 		Collection<ConfigBlock> jars = config.subBlocks.get("jar");
-		
+
 		if(jars != null)
 		{
 			for(ConfigBlock jarBlock : jars)
@@ -259,25 +259,25 @@ public final class ModuleManager
 				}
 			}
 		}
-		
+
 		//Attempt to find class
 		Class<?> moduleClass = getClassFromString(className);
-		
+
 		if(moduleClass == null)
 		{
 			return false;
 		}
-		
+
 		//Call startup commands
 		return loadModule(moduleClass, config);
 	}
 
 	/**
 	 * Loads a module with the given configuration
-	 * 
+	 *
 	 * This silently returns true if the module has been loaded.
 	 * This function will also attempt to load any jar files in the module configuration.
-	 * 
+	 *
 	 * @param config configuration for module
 	 * @return true if the module has been loaded
 	 */
@@ -286,10 +286,10 @@ public final class ModuleManager
 		//Load module using parameter as class name
 		return loadModule(config.param, config);
 	}
-	
+
 	/**
 	 * Loads all the modules from the given module collection
-	 * 
+	 *
 	 * @param moduleBlocks configuration blocks to load from
 	 * @return number of modules which were loaded successfully
 	 */
@@ -297,7 +297,7 @@ public final class ModuleManager
 	{
 		//Load each module in turn
 		int moduleCount = 0;
-		
+
 		for(ConfigBlock block : moduleBlocks)
 		{
 			if(loadModule(block))
@@ -305,13 +305,13 @@ public final class ModuleManager
 				moduleCount++;
 			}
 		}
-		
+
 		return moduleCount;
 	}
-	
+
 	/**
 	 * Registers a command to receive events when it is used by a client
-	 * 
+	 *
 	 * @param command Command object to register
 	 * @throws ModuleLoadException thrown if the command has already been registered
 	 */
@@ -325,19 +325,19 @@ public final class ModuleManager
 		{
 			throw new ModuleLoadException("Command " + modName + " is already registered");
 		}
-		
+
 		//Add command if it has any valid flags
 		if((command.getFlags() & (Command.FLAG_NORMAL | Command.FLAG_REGISTRATION)) != 0)
 		{
 			commands.put(modName, new CommandInfo(command));
 		}
 	}
-	
+
 	/**
 	 * Unregisters a command
-	 * 
+	 *
 	 * You do not need to do this when shutting down - it is done automatically
-	 * 
+	 *
 	 * @param command Command to unregister
 	 */
 	public void unregisterCommand(Command command)
@@ -345,17 +345,17 @@ public final class ModuleManager
 		//Find module
 		String modName = command.getName();
 		CommandInfo foundModule = commands.get(modName);
-		
+
 		//Delete of the command is the same
 		if(foundModule.getCommand() == command)
 		{
 			commands.remove(modName);
 		}
 	}
-	
+
 	/**
 	 * Dispatches a message to the correct command handler
-	 * 
+	 *
 	 * @param client Client who sent the message
 	 * @param msg Message to dispatch
 	 */
@@ -364,7 +364,7 @@ public final class ModuleManager
 		//Find command
 		boolean registeredCheck = false;
 		CommandInfo commandInfo = commands.get(msg.getCommand());
-		
+
 		if(commandInfo == null)
 		{
 			//Only notify if command != nothing
@@ -378,10 +378,10 @@ public final class ModuleManager
 
 			return;
 		}
-		
+
 		//Extract command
 		Command command = commandInfo.getCommand();
-		
+
 		//Check max params
 		if(msg.paramCount() < command.getMinParameters())
 		{
@@ -392,7 +392,7 @@ public final class ModuleManager
 
 			return;
 		}
-		
+
 		//Check if registered
 		if(client.isRegistered())
 		{
@@ -402,7 +402,7 @@ public final class ModuleManager
 				client.send(client.newNickMessage("462")
 								.appendParam(msg.getCommand())
 								.appendParam("You cannot reregister"));
-				
+
 				return;
 			}
 		}
@@ -414,13 +414,13 @@ public final class ModuleManager
 				client.send(client.newNickMessage("451").appendParam("You have not registered"));
 				return;
 			}
-			
+
 			registeredCheck = true;
 		}
-		
+
 		//Increment execute counter
 		commandInfo.incrementCounter();
-		
+
 		try
 		{
 			//Dispatch message
@@ -430,14 +430,14 @@ public final class ModuleManager
 		{
 			logger.error("Exception occured while dispatching command", e);
 		}
-		
+
 		//Check if registered
 		if(registeredCheck)
 		{
 			client.registeredEvent();
 		}
 	}
-	
+
 	/**
 	 * Returns an unmodifiable map of all registered commands
 	 * @return an unmodifiable map of all registered commands
@@ -446,27 +446,27 @@ public final class ModuleManager
 	{
 		return Collections.unmodifiableMap(commands);
 	}
-	
+
 	/**
 	 * Information about a command
-	 * 
+	 *
 	 * @author James
 	 */
 	public static class CommandInfo
 	{
 		private final Command command;
 		private int timesRun;
-		
+
 		/**
 		 * Creates a new command information class from a command
-		 * 
+		 *
 		 * @param command command to use
 		 */
 		CommandInfo(Command command)
 		{
 			this.command = command;
 		}
-		
+
 		/**
 		 * Increment numer of times this command has been run
 		 */
@@ -474,7 +474,7 @@ public final class ModuleManager
 		{
 			++timesRun;
 		}
-		
+
 		/**
 		 * Gets the number of times this command has been run
 		 */
@@ -482,7 +482,7 @@ public final class ModuleManager
 		{
 			return timesRun;
 		}
-		
+
 		/**
 		 * Gets the raw command interface
 		 */

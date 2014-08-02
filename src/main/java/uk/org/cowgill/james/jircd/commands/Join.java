@@ -31,7 +31,7 @@ import uk.org.cowgill.james.jircd.util.ChannelChecks;
 
 /**
  * The JOIN command - joins a channel
- * 
+ *
  * @author James
  */
 public class Join implements Command
@@ -44,7 +44,7 @@ public class Join implements Command
 		{
 			//Part all channels
 			List<Channel> channelsCopy = new ArrayList<Channel>(client.getChannels());
-			
+
 			for(Channel channel : channelsCopy)
 			{
 				channel.part(client, client.id.nick);
@@ -54,7 +54,7 @@ public class Join implements Command
 		{
 			String[] chanStrings = msg.getParam(0).split(",");
 			String[] keyStrings;
-			
+
 			if(msg.paramCount() >= 2)
 			{
 				//Split keys
@@ -64,7 +64,7 @@ public class Join implements Command
 			{
 				keyStrings = new String[0];
 			}
-			
+
 			//Process joins
 			for(int i = 0; i < chanStrings.length; ++i)
 			{
@@ -74,8 +74,8 @@ public class Join implements Command
 	}
 
 	/**
-	 * Processes a channel join request 
-	 * 
+	 * Processes a channel join request
+	 *
 	 * @param client client who's joining
 	 * @param chanString channel being joined
 	 * @param keyStrings all the keystrings that are searched
@@ -88,10 +88,10 @@ public class Join implements Command
 		{
 			chanString = "#" + chanString;
 		}
-		
+
 		//Find channel
 		Channel channel = Server.getServer().getChannel(chanString);
-		
+
 		if(channel == null)
 		{
 			//Create channel
@@ -100,7 +100,7 @@ public class Join implements Command
 		else
 		{
 			ChannelCheckError error;
-			
+
 			//Check join
 			if(keyStrings.length > i)
 			{
@@ -108,9 +108,9 @@ public class Join implements Command
 			}
 			else
 			{
-				error = ChannelChecks.canJoin(channel, client, null, allowJoinAny());	
+				error = ChannelChecks.canJoin(channel, client, null, allowJoinAny());
 			}
-			
+
 			//Display error
 			if(error == ChannelCheckError.JoinAlreadyInChannel)
 			{
@@ -124,25 +124,25 @@ public class Join implements Command
 				return;
 			}
 		}
-		
+
 		//Join channel
 		channel.join(client, true);
 		postJoin(channel, client);
 	}
-	
+
 	/**
 	 * Called after the the client has joined the channel specified
-	 * 
+	 *
 	 * @param channel channel to join
 	 * @param client client who's joining
 	 */
 	protected void postJoin(Channel channel, Client client)
 	{
 	}
-	
+
 	/**
 	 * Called to delect whether operators are allowed to use joinAnyChannel permission
-	 * 
+	 *
 	 * @return if joinAnyChannel is allowed
 	 */
 	protected boolean allowJoinAny()
@@ -167,11 +167,11 @@ public class Join implements Command
 	{
 		return FLAG_NORMAL;
 	}
-	
+
 	public static class JoinA extends Join
 	{
 		private static final Logger logger = Logger.getLogger(JoinA.class);
-		
+
 		@Override
 		public void run(Client client, Message msg)
 		{
@@ -188,20 +188,20 @@ public class Join implements Command
 				client.send(client.newNickMessage("481").appendParam("JOINA: Permission Denied"));
 			}
 		}
-		
+
 		@Override
 		protected void postJoin(Channel channel, Client client)
 		{
 			//Set admin
 			channel.setMode(null, true, 'a', client);
 		}
-		
+
 		@Override
 		protected boolean allowJoinAny()
 		{
 			return true;
 		}
-		
+
 		@Override
 		public String getName()
 		{

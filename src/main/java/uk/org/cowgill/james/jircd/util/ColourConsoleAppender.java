@@ -19,11 +19,11 @@ import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Layout;
 import org.apache.log4j.Level;
 import org.apache.log4j.Priority;
-import org.apache.log4j.spi.LoggingEvent;   
- 
+import org.apache.log4j.spi.LoggingEvent;
+
 /**
  * Colour-coded console appender for Log4J.
- * 
+ *
  * <p>This only works on UNIX terminals (not Windows)
  */
 public class ColourConsoleAppender extends ConsoleAppender
@@ -34,13 +34,13 @@ public class ColourConsoleAppender extends ConsoleAppender
     private static final int FOREGROUND_GREEN = 32;
     private static final int FOREGROUND_YELLOW = 33;
     private static final int FOREGROUND_BLUE = 34;
-    private static final int FOREGROUND_CYAN = 36;   
- 
+    private static final int FOREGROUND_CYAN = 36;
+
     private static final String PREFIX = "\u001b[";
     private static final String SUFFIX = "m";
     private static final char SEPARATOR = ';';
-    private static final String END_COLOUR = PREFIX + SUFFIX;   
- 
+    private static final String END_COLOUR = PREFIX + SUFFIX;
+
     private static final String FATAL_COLOUR = PREFIX
       + BRIGHT + SEPARATOR + FOREGROUND_RED + SUFFIX;
     private static final String ERROR_COLOUR = PREFIX
@@ -52,23 +52,23 @@ public class ColourConsoleAppender extends ConsoleAppender
     private static final String DEBUG_COLOUR = PREFIX
       + NORMAL + SEPARATOR + FOREGROUND_CYAN + SUFFIX;
     private static final String TRACE_COLOUR = PREFIX
-      + NORMAL + SEPARATOR + FOREGROUND_BLUE + SUFFIX;   
- 
+      + NORMAL + SEPARATOR + FOREGROUND_BLUE + SUFFIX;
+
     public ColourConsoleAppender()
     {
     	super();
     }
-    
+
     public ColourConsoleAppender(Layout layout)
     {
     	super(layout);
     }
-    
+
     public ColourConsoleAppender(Layout layout, String target)
     {
     	super(layout, target);
     }
-    
+
     /**
      * Wraps the ANSI control characters around the
      * output from the super-class Appender.
@@ -78,14 +78,14 @@ public class ColourConsoleAppender extends ConsoleAppender
     {
         this.qw.write(getColour(event.getLevel()));
         super.subAppend(event);
-        this.qw.write(END_COLOUR);   
- 
+        this.qw.write(END_COLOUR);
+
         if(this.immediateFlush)
         {
             this.qw.flush();
         }
-    }   
- 
+    }
+
     /**
      * Get the appropriate control characters to change
      * the colour for the specified logging level.

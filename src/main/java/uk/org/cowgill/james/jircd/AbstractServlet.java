@@ -19,23 +19,23 @@ import uk.org.cowgill.james.jircd.util.ModeUtils;
 
 /**
  * An abstract servelt helper class
- * 
+ *
  * @author James
  */
 public abstract class AbstractServlet extends Client
 {
 	/**
 	 * Event occurs when a message is received by this servlet
-	 * 
+	 *
 	 * @param msg message received
 	 */
 	public abstract void messageReceived(Message msg);
-	
+
 	/**
 	 * Creates a new servlet with the given ID
-	 * 
+	 *
 	 * To avoid confusion - servlets should use either 127.0.0.1 or localhost as the hostname
-	 * 
+	 *
 	 * @param id ID of this servlet
 	 * @throws ModuleLoadException thrown if the nickname already exists
 	 */
@@ -43,26 +43,26 @@ public abstract class AbstractServlet extends Client
 	{
 		//Set ID
 		super(id, ModeUtils.setMode(0, 'B'));
-		
+
 		//Validate nickname
 		Server server = Server.getServer();
 		if(server.clientsByNick.containsKey(id.nick))
 		{
 			//Error
 			server.clients.remove(this);
-			throw new ModuleLoadException("Nickname for servlet already registered"); 
+			throw new ModuleLoadException("Nickname for servlet already registered");
 		}
-		
+
 		//Register
 		this.setRegistrationFlag(RegistrationFlags.AllFlags);
 		server.clientsByNick.put(id.nick, this);
 	}
-	
+
 	@Override
 	public final void send(Object data)
 	{
 		Message msg;
-		
+
 		//Redirect to received message
 		if(data instanceof Message)
 		{
@@ -72,7 +72,7 @@ public abstract class AbstractServlet extends Client
 		{
 			msg = Message.parse(data.toString());
 		}
-		
+
 		messageReceived(msg);
 	}
 
@@ -99,7 +99,7 @@ public abstract class AbstractServlet extends Client
 	{
 		return false;
 	}
-	
+
 	@Override
 	public long getIdleTime()
 	{

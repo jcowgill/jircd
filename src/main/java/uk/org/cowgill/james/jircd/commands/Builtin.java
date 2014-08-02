@@ -28,14 +28,14 @@ public class Builtin implements Module
 	{
 		//Add commands
 		ModuleManager modMan = Server.getServer().getModuleManager();
-		
+
 		modMan.registerCommand(new Nick());
 		modMan.registerCommand(new User());
 		modMan.registerCommand(new Quit());
-		
+
 		modMan.registerCommand(new Oper());
 		modMan.registerCommand(new Mode());
-		
+
 		modMan.registerCommand(new Join());
 		modMan.registerCommand(new Join.JoinA());
 		modMan.registerCommand(new Part());
@@ -45,12 +45,12 @@ public class Builtin implements Module
 		modMan.registerCommand(new Invite());
 		modMan.registerCommand(new Names());
 		modMan.registerCommand(new Protoctl());
-		
+
 		modMan.registerCommand(new Msg.PrivMsg());
 		modMan.registerCommand(new Msg.Notice());
-		
+
 		modMan.registerCommand(new List());
-		
+
 		modMan.registerCommand(new Admin());
 		modMan.registerCommand(new Info());
 		modMan.registerCommand(new Links());
@@ -58,23 +58,23 @@ public class Builtin implements Module
 		modMan.registerCommand(new MotD());
 		modMan.registerCommand(new Time());
 		modMan.registerCommand(new Version());
-		
+
 		modMan.registerCommand(new Who());
 		modMan.registerCommand(new Whois());
 		modMan.registerCommand(new Ison());
-		
+
 		modMan.registerCommand(new Kill());
 		modMan.registerCommand(new Rehash());
 		modMan.registerCommand(new RestartDie.Die());
 		modMan.registerCommand(new RestartDie.Restart());
 		modMan.registerCommand(new Wall());
 		modMan.registerCommand(new WallOps());
-		
+
 		modMan.registerCommand(new Stats());
 		modMan.registerCommand(new Away());
 		modMan.registerCommand(new UserHostIp.UserHost());
 		modMan.registerCommand(new UserHostIp.UserIp());
-		
+
 		modMan.registerCommand(new Xyzzy());
 
 		return true;

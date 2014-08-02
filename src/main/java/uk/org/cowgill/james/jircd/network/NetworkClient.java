@@ -37,41 +37,41 @@ import uk.org.cowgill.james.jircd.Server;
 
 /**
  * A networking client implementation
- * 
+ *
  * @author James
  */
 class NetworkClient extends Client
 {
 	private static final ConnectionClass DEFAULT_CONN_CLASS = new ConnectionClass();
-	
+
 	private static final SecureRandom randomGen = new SecureRandom();
-	
+
 	/**
 	 * Timeout after a ping has been sent to the client
 	 */
 	public static final int AFTER_PING_TIMEOUT = 5;
-	
+
 	//----------------------------------
 
 	private static final Logger logger = Logger.getLogger(NetworkClient.class);
-	
+
 	/**
 	 * UTF-8 character set encoder
 	 */
 	private static final CharsetEncoder cEncoder = Charset.forName("UTF-8").newEncoder();
-	
+
 	/**
 	 * UTF-8 character set decoder
 	 */
 	private static final CharsetDecoder cDecoder = Charset.forName("UTF-8").newDecoder();
-	
+
 	/**
 	 * ByteBuffer containing a carriage return then a line feed
 	 */
 	private static final byte[] CRLF = new byte[] { '\r', '\n' };
 
 	//-----------------------------------
-	
+
 	/**
 	 * Channel this client is connected to
 	 */
@@ -81,37 +81,37 @@ class NetworkClient extends Client
 	 * Data for byte buffer
 	 */
 	private byte[] localBufferData = new byte[1025];
-	
+
 	/**
 	 * Byte buffer to recent messages
 	 */
 	private ByteBuffer localBuffer = ByteBuffer.wrap(localBufferData);
-	
+
 	/**
 	 * Time of the last message to be received by the server
 	 */
 	private long lastMessageTime;
-	
+
 	/**
 	 * Timer used for the flood limiter
 	 */
 	private FloodTimer floodTimer = new FloodTimer(this);
-	
+
 	/**
 	 * Spoof check string
 	 */
 	String spoofCheckChars;
-	
+
 	/**
 	 * Default connection class
 	 */
 	private ConnectionClass defaultConnClass;
-	
+
 	/**
 	 * Current connection class
 	 */
 	private ConnectionClass connClass;
-	
+
 	//Static constructor
 	static
 	{
@@ -124,9 +124,9 @@ class NetworkClient extends Client
 
 	/**
 	 * Creates a new NetworkClient from a SocketChannel
-	 * 
+	 *
 	 * You almost always want to call setup() after this
-	 * 
+	 *
 	 * @param channel channel to setup from
 	 * @throws IOException thrown when an error occurs in setting socket options
 	 */
@@ -137,9 +137,9 @@ class NetworkClient extends Client
 
 	/**
 	 * Creates a new NetworkClient from a SocketChannel
-	 * 
+	 *
 	 * You almost always want to call setup() after this
-	 * 
+	 *
 	 * @param channel channel to setup from
 	 * @param mode the initial mode of the client
 	 * @throws IOException thrown when an error occurs in setting socket options
@@ -149,10 +149,10 @@ class NetworkClient extends Client
 		super(new IRCMask(), mode);
 		this.channel = channel;
 	}
-	
+
 	/**
 	 * Called to complete setting up a new connection
-	 * 
+	 *
 	 * Only call immediately after creating the NetworkClient
 	 */
 	void setup() throws IOException
@@ -162,19 +162,19 @@ class NetworkClient extends Client
 		channel.socket().setReceiveBufferSize(1024);
 		channel.socket().setSoLinger(true, 5);
 		changeClass(DEFAULT_CONN_CLASS, true);
-		
+
 		//Begin spoof check
 		final StringBuffer buffer = new StringBuffer(10);
 		for(int i = 0; i < 10; ++i)
 		{
 			buffer.append((char) (randomGen.nextInt('z' - 'A') + 'A'));
 		}
-		
+
 		spoofCheckChars = buffer.toString();
-		
+
 		send("PING :" + spoofCheckChars);
 	}
-	
+
 	/**
 	 * Called when a read event occurs
 	 */
@@ -195,7 +195,7 @@ class NetworkClient extends Client
 			close("Read error");
 			return;
 		}
-		
+
 		//Check exceeding ReadQ
 		if(localBuffer.remaining() <= 0)
 		{
@@ -203,11 +203,11 @@ class NetworkClient extends Client
 			close("ReadQ Limit Exceeded");
 			return;
 		}
-		
+
 		//Check flood timer
 		if(!floodTimer.checkTimer())
 			return;
-		
+
 		//Read message into buffer
 		int endByte = localBuffer.position();
 		localBuffer.position(0);
@@ -215,10 +215,10 @@ class NetworkClient extends Client
 		//Exit now if there is nothing to do
 		if (endByte == 0)
 			return;
-		
+
 		//Update message time
 		lastMessageTime = System.currentTimeMillis();
-		
+
 		//Find messages in buffer
 		for(int i = 1; i < endByte; i++)
 		{
@@ -291,7 +291,7 @@ class NetworkClient extends Client
 	{
 		//Check for ping timeout
 		long diffInSeconds = (System.currentTimeMillis() - lastMessageTime) / 1000;
-		
+
 		if(diffInSeconds >= connClass.pingFreq)
 		{
 			//Check if completely timed out
@@ -306,7 +306,7 @@ class NetworkClient extends Client
 			}
 		}
 	}
-	
+
 	@Override
 	public void send(Object data)
 	{
@@ -320,12 +320,12 @@ class NetworkClient extends Client
 		{
 			strData = data.toString();
 		}
-		
+
 		try
 		{
 			//Encode object and write to socket with CRLF
 			ByteBuffer encoded = cEncoder.encode(CharBuffer.wrap(strData));
-			
+
 			if(!writeWrapper(encoded) || !writeWrapper(ByteBuffer.wrap(CRLF)))
 			{
 				queueClose("SendQ Limit Exceeded");
@@ -344,7 +344,7 @@ class NetworkClient extends Client
 
 	/**
 	 * Allows wrapping of the raw read operation
-	 * 
+	 *
 	 * @param buffer buffer to read from
 	 * @return number of characters read
 	 */
@@ -352,10 +352,10 @@ class NetworkClient extends Client
 	{
 		return channel.read(buffer);
 	}
-	
+
 	/**
 	 * Allows wrapping of the raw write operation
-	 * 
+	 *
 	 * @param buffer buffer to write
 	 * @return number of characters written
 	 */
@@ -377,30 +377,30 @@ class NetworkClient extends Client
 		catch(IOException e)
 		{
 		}
-		
+
 		return true;
 	}
-	
+
 	@Override
 	protected void registeredEvent()
 	{
 		//Purpose of this is to allow NetworkServer access to this method
 		super.registeredEvent();
 	}
-	
+
 	/**
 	 * Gets the remote address of this client
-	 * 
+	 *
 	 * @return the remote address of this client
 	 */
 	InetAddress getRemoteAddress()
 	{
 		return channel.socket().getInetAddress();
 	}
-	
+
 	/**
 	 * Returns the ip address corresponding to a given channel
-	 * 
+	 *
 	 * @param channel network channel to check
 	 * @return ip address string
 	 */
@@ -408,7 +408,7 @@ class NetworkClient extends Client
 	{
 		return channel.socket().getInetAddress().getHostAddress();
 	}
-	
+
 	@Override
 	public String getIpAddress()
 	{
@@ -422,35 +422,35 @@ class NetworkClient extends Client
 		{
 			return;
 		}
-		
+
 		//Update link count
 		clazz.currentLinks++;
-		
+
 		if(connClass != null)
 		{
 			connClass.currentLinks--;
 		}
-		
+
 		//Update buffer sizes
 		try
 		{
 			localBufferData = Arrays.copyOf(localBufferData, clazz.readQueue + 1);
 			localBuffer = ByteBuffer.wrap(localBufferData);
-			
+
 			channel.socket().setSendBufferSize(clazz.sendQueue);
 		}
 		catch(IOException e)
 		{
 			logger.error("Error setting buffer sizes for client " + id.toString());
 		}
-		
+
 		//Class changing causes an update in last message time
 		lastMessageTime = System.currentTimeMillis();
-		
+
 		//Set class
 		connClass = clazz;
 	}
-	
+
 	@Override
 	protected boolean changeClass(ConnectionClass clazz, boolean defaultClass)
 	{
@@ -459,25 +459,25 @@ class NetworkClient extends Client
 		{
 			return false;
 		}
-		
+
 		//Force class change
 		forceChangeClass(clazz);
-		
+
 		//Copy default class
 		if(defaultClass)
 		{
 			this.defaultConnClass = clazz;
 		}
-		
+
 		return true;
 	}
-	
+
 	@Override
 	public void restoreClass()
 	{
 		forceChangeClass(defaultConnClass);
 	}
-	
+
 	@Override
 	public long getIdleTime()
 	{

@@ -20,9 +20,9 @@ import java.util.Map;
 
 /**
  * A case insensitive hash map class
- * 
+ *
  * <p>Note that keyset and entryset return keys in lowercase
- * 
+ *
  * @author James
  *
  * @param <V> type of the value of the map
@@ -43,7 +43,7 @@ public class CaseInsensitiveHashMap<V> extends HashMap<String, V>
 			return super.containsKey(key.toString().toLowerCase());
 		}
 	}
-	
+
 	@Override
 	public V get(Object key)
 	{
@@ -56,7 +56,7 @@ public class CaseInsensitiveHashMap<V> extends HashMap<String, V>
 			return super.get(key.toString().toLowerCase());
 		}
 	}
-	
+
 	@Override
 	public V put(String key, V value)
 	{
@@ -69,7 +69,7 @@ public class CaseInsensitiveHashMap<V> extends HashMap<String, V>
 			return super.put(key.toLowerCase(), value);
 		}
 	}
-	
+
 	@Override
 	public void putAll(Map<? extends String, ? extends V> paramMap)
 	{
@@ -79,7 +79,7 @@ public class CaseInsensitiveHashMap<V> extends HashMap<String, V>
 			put(entry.getKey(), entry.getValue());
 		}
 	}
-	
+
 	@Override
 	public V remove(Object key)
 	{

@@ -25,7 +25,7 @@ import uk.org.cowgill.james.jircd.Server;
 
 /**
  * The WHOIS command - displays information about a client
- * 
+ *
  * @author James
  */
 public class Whois implements Command
@@ -36,7 +36,7 @@ public class Whois implements Command
 		//Lookup client
 		Config config = Server.getServer().getConfig();
 		Client other = Server.getServer().getClient(msg.getParam(0));
-		
+
 		if(other == null)
 		{
 			//No such nickname
@@ -52,7 +52,7 @@ public class Whois implements Command
 						appendParam(other.id.nick).
 						appendParam(client.id.nick + " whoised you"));
 			}
-			
+
 			//Send information
 			client.send(client.newNickMessage("311").
 					appendParam(other.id.nick).
@@ -60,22 +60,22 @@ public class Whois implements Command
 					appendParam(other.id.host).
 					appendParam("*").
 					appendParam(other.realName));
-			
+
 			client.send(client.newNickMessage("312").
 					appendParam(other.id.nick).
 					appendParam(config.serverName).
 					appendParam(config.serverDescription));
-			
+
 			//IRC operator?
 			if(other.isModeSet('o') || other.isModeSet('O'))
 			{
 				String superStr = other.isModeSet('O') ? "super " : " ";
-				
+
 				client.send(client.newNickMessage("313").
 						appendParam(other.id.nick).
 						appendParam("is an IRC " + superStr + "operator"));
 			}
-			
+
 			//Secure?
 			if(other.isModeSet('z'))
 			{
@@ -83,13 +83,13 @@ public class Whois implements Command
 						appendParam(other.id.nick).
 						appendParam("is using a Secure Connection"));
 			}
-			
+
 			//Display channels
 			// Send up to 8 channels per line
 			StringBuilder builder = new StringBuilder();
 			int namesThisLine = 0;
 			Message chanMsg = null;
-			
+
 			for(Channel channel : other.getChannels())
 			{
 				String chanName;
@@ -119,29 +119,29 @@ public class Whois implements Command
 				{
 					builder.append(' ');
 				}
-				
+
 				//Add channel
 				builder.append(chanName);
 				namesThisLine++;
-				
+
 				//If 8 names, send message
 				if(namesThisLine >= 8)
 				{
 					chanMsg.appendParam(builder.toString());
 					client.send(msg);
-					
+
 					chanMsg = null;
 					namesThisLine = 0;
 				}
 			}
-			
+
 			//Send ending
 			if(chanMsg != null)
 			{
 				chanMsg.appendParam(builder.toString());
 				client.send(chanMsg);
 			}
-			
+
 			//Away message
 			other.sendAwayMsgTo(client);
 
@@ -150,7 +150,7 @@ public class Whois implements Command
 					appendParam(Long.toString(other.getIdleTime() / 1000)).
 					appendParam(Long.toString(other.getSignonTime() / 1000)).
 					appendParam("seconds idle, signon time"));
-			
+
 			client.send(client.newNickMessage("318").
 					appendParam(other.id.nick).
 					appendParam("End of /WHOIS list"));

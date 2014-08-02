@@ -17,15 +17,15 @@ package uk.org.cowgill.james.jircd.util;
 
 /**
  * Provides a mutable Integer
- * 
+ *
  * @author James
  */
 public final class MutableInteger extends Number implements Comparable<MutableInteger>
 {
 	private static final long serialVersionUID = 1L;
-	
+
 	private int value;
-	
+
 	/**
 	 * Creates a new MutableInteger with the specified starting value
 	 * @param newValue value to start with
@@ -52,7 +52,7 @@ public final class MutableInteger extends Number implements Comparable<MutableIn
 	{
 		value = newValue;
 	}
-	
+
 	/**
 	 * Sets the value of this MutableInteger
 	 * @param value new value for this MutableInteger
@@ -61,7 +61,7 @@ public final class MutableInteger extends Number implements Comparable<MutableIn
 	{
 		this.value = value;
 	}
-	
+
 	/**
 	 * Increments this MutableInteger
 	 */
@@ -69,7 +69,7 @@ public final class MutableInteger extends Number implements Comparable<MutableIn
 	{
 		value++;
 	}
-	
+
 	/**
 	 * Decrements this MutableInteger
 	 */
@@ -77,7 +77,7 @@ public final class MutableInteger extends Number implements Comparable<MutableIn
 	{
 		value--;
 	}
-	
+
 	/**
 	 * Adds a value to this MutableInteger
 	 * @param data value to add
@@ -95,19 +95,19 @@ public final class MutableInteger extends Number implements Comparable<MutableIn
 	{
 		value -= data;
 	}
-	
+
 	@Override
 	public String toString()
 	{
 		return Integer.toString(value);
 	}
-	
+
 	@Override
 	public int hashCode()
 	{
 		return value;
 	}
-	
+
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -116,13 +116,13 @@ public final class MutableInteger extends Number implements Comparable<MutableIn
 		{
 			return true;
 		}
-		
+
 		//Check instace
 		if(!(obj instanceof MutableInteger))
 		{
 			return false;
 		}
-		
+
 		//Check value
 		return value == ((MutableInteger) obj).value;
 	}

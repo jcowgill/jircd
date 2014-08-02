@@ -26,33 +26,33 @@ import uk.org.cowgill.james.jircd.util.ModeUtils;
 
 /**
  * Represents a client in the server
- * 
+ *
  * Clients are users on the server with a nickname, modes and can join channels
- * 
+ *
  * This could be a remote client or a local servlet
- * 
+ *
  * @author James
  */
 public abstract class Client
 {
 	private static final Logger logger = Logger.getLogger(Client.class);
-	
+
 	/**
 	 * Modes which are restricted from changing using setMode
 	 */
 	private static long RESTRICTED_MODES;
-	
+
 	static
 	{
 		RESTRICTED_MODES = ModeUtils.setMode(0,                'B');	//Bot
 		RESTRICTED_MODES = ModeUtils.setMode(RESTRICTED_MODES, 'z');	//Secure
 	}
-	
+
 	/**
 	 * List of clients to be closed when close queue is processed
 	 */
 	private static ArrayList<Client> queuedClosures = new ArrayList<Client>();
-	
+
 	/**
 	 * Reason for this client's closure
 	 */
@@ -67,46 +67,46 @@ public abstract class Client
 	 * The client's real name
 	 */
 	public String realName = "";
-	
+
 	/**
 	 * The client's away message or null if the client is not away
 	 */
 	public String awayMsg;
-	
+
 	/**
 	 * Set of joined channels
 	 */
 	Set<Channel> channels = new HashSet<Channel>();
-	
+
 	/**
 	 * Set of channels you've been invited
 	 */
 	Set<Channel> invited = new HashSet<Channel>();
-	
+
 	/**
 	 * Flags used to see what parts of the registration process has been completed
-	 * 
+	 *
 	 * @see RegistrationFlags
 	 */
 	private int registrationFlags;
-	
+
 	/**
 	 * This client's IRC user mode
 	 */
 	private long mode;
-	
+
 	/**
 	 * Flags containing protocol enhancements
-	 * 
+	 *
 	 * @see ProtocolEnhancments
 	 */
 	private int protocolEnhancements;
-	
+
 	/**
 	 * True if client is closed
 	 */
 	private boolean closed = false;
-	
+
 	/**
 	 * Time of login
 	 */
@@ -116,7 +116,7 @@ public abstract class Client
 
 	/**
 	 * Creates a new client and adds it to global collections
-	 * 
+	 *
 	 * @param id the IRCMask representing this client's id
 	 * @param mode initial mode of the client (allows setting restricted modes)
 	 */
@@ -125,11 +125,11 @@ public abstract class Client
 		//Set id and mode
 		this.id = id;
 		this.mode = mode;
-		
+
 		//Add to global collections
 		Server.getServer().clients.add(this);
 	}
-	
+
 	/**
 	 * Returns true if this client is away
 	 * @return true if this client is away
@@ -141,9 +141,9 @@ public abstract class Client
 
 	/**
 	 * Sends this client's away message to the specified client if there is one
-	 * 
+	 *
 	 * <p>If this client does not have an away message, nothing is sent
-	 * 
+	 *
 	 * @param client client to send away message to
 	 */
 	public void sendAwayMsgTo(Client client)
@@ -153,7 +153,7 @@ public abstract class Client
 			client.send(client.newNickMessage("301").appendParam(id.nick).appendParam(awayMsg));
 		}
 	}
-	
+
 	/**
 	 * Gets weather this client has been fully registered
 	 * @return true if this client has been fully registered
@@ -162,19 +162,19 @@ public abstract class Client
 	{
 		return (~registrationFlags & RegistrationFlags.AllFlags) == 0;
 	}
-	
+
 	/**
 	 * Sets a set of registration flags
-	 * 
+	 *
 	 * If the client is already registered, this doesn't do anything useful
-	 * 
+	 *
 	 * @param flags flags to set
 	 */
 	public void setRegistrationFlag(int flags)
 	{
 		registrationFlags |= flags;
 	}
-	
+
 	/**
 	 * Returns this client's registration flags
 	 * @return registration flags
@@ -183,20 +183,20 @@ public abstract class Client
 	{
 		return registrationFlags;
 	}
-	
+
 	/**
 	 * Sets a protocol enhancement
-	 * 
+	 *
 	 * @param enhancement protocol enhancement this client now has
 	 */
 	public void setProtocolEnhancement(int enhancement)
 	{
 		protocolEnhancements |= enhancement;
 	}
-	
+
 	/**
 	 * Returns true if this client has a protocol enhancement
-	 * 
+	 *
 	 * @param enhancement protocol enhancement to check
 	 * @return true if this client has it
 	 */
@@ -204,7 +204,7 @@ public abstract class Client
 	{
 		return (protocolEnhancements & enhancement) != 0;
 	}
-	
+
 	/**
 	 * Event which should be fired after all registration information has been set
 	 */
@@ -219,7 +219,7 @@ public abstract class Client
 		Message msg;
 		Server server = Server.getServer();
 		Config config = server.getConfig();
-		
+
 		// * Check nick is not registered
 		if(server.clientsByNick.containsKey(id.nick))
 		{
@@ -228,12 +228,12 @@ public abstract class Client
 			msg.appendParam(id.nick);
 			msg.appendParam("Nickname already in use");
 			send(msg);
-			
-			id.nick = null;			
+
+			id.nick = null;
 			registrationFlags &= ~ RegistrationFlags.NickSet;
 			return;
 		}
-		
+
 		// * Check bans
 		for(Config.Ban ban : config.banNick)
 		{
@@ -245,8 +245,8 @@ public abstract class Client
 				msg.appendParam(id.nick);
 				msg.appendParam("Nickname banned: " + ban.reason);
 				send(msg);
-				
-				id.nick = null;			
+
+				id.nick = null;
 				registrationFlags &= ~ RegistrationFlags.NickSet;
 				return;
 			}
@@ -260,15 +260,15 @@ public abstract class Client
 				msg = newNickMessage("465");
 				msg.appendParam("Banned: " + ban.reason);
 				send(msg);
-				
+
 				close("Banned");
 				return;
 			}
 		}
-		
+
 		// * Check accept lines
 		Config.Accept myAcceptLine = null;
-		
+
 		for(Config.Accept accept : config.accepts)
 		{
 			if(IRCMask.wildcardCompare(id.user + "@" + id.host, accept.hostMask) ||
@@ -279,85 +279,85 @@ public abstract class Client
 				break;
 			}
 		}
-		
+
 		if(myAcceptLine == null)
 		{
 			msg = newNickMessage("465");
 			msg.appendParam("No accept lines for your host");
 			send(msg);
-			
+
 			close("No accept lines for your host");
 			return;
 		}
-		
+
 		// * Check max ip clones
 		if(isRemote() && !server.ipClonesIncrement(getIpAddress(), myAcceptLine.maxClones))
 		{
 			msg = newNickMessage("465");
 			msg.appendParam("Too many connections from your host");
 			send(msg);
-			
+
 			close("Too many connections from your host");
 			return;
 		}
-		
+
 		// * Change default connection class
 		if(!this.changeClass(myAcceptLine.classLine, true))
 		{
 			msg = newNickMessage("465");
 			msg.appendParam("The server is full");
 			send(msg);
-			
+
 			close("The server is full");
 			return;
 		}
-		
+
 		// * Mark registered
 		setRegistrationFlag(RegistrationFlags.RegComplete);
-		
+
 		// * Add to global nick arrays
 		server.clientsByNick.put(id.nick, this);
-		
+
 		// * Update peek users
 		int clientCount = server.getClientCount();
 		if(clientCount > server.peekClients)
 		{
 			server.peekClients = clientCount;
 		}
-		
+
 		//Display welcome messages
 		send(this.newNickMessage("001").appendParam("Welcome to the Internet Relay Network " + id.toString()));
 		send(this.newNickMessage("002").appendParam("Your host is " + config.serverName +
 				" running version " + Server.VERSION_STR));
 		send(this.newNickMessage("003").appendParam("This server was created " + server.creationTimeStr));
 		server.getISupport().sendISupportMsgs(this);		//Sends 004 and 005
-		
+
 		// * Display LUSERS, MOTD and MODE
 		ModuleManager moduleMan = server.getModuleManager();
 		moduleMan.executeCommand(this, new Message("LUSERS"));
 		moduleMan.executeCommand(this, new Message("MOTD"));
-		
+
 		if(this.mode != 0)
 		{
 			send(new Message("MODE", this).appendParam(id.nick).appendParam(ModeUtils.toString(mode)));
 		}
-		
+
 		signonTime = System.currentTimeMillis();
 	}
-	
+
 	/**
 	 * Returns the time the client signed on in mulliseconds since the UNIX Epoch
-	 * 
+	 *
 	 * @return the time the client signed on
 	 */
 	public long getSignonTime()
 	{
 		return signonTime;
 	}
-	
+
 	/**
 	 * Requests that this client be closed
-	 * 
+	 *
 	 * @param quitMsg the string told to other users about why this client is exiting
 	 */
 	public final void close(String quitMsg)
@@ -366,7 +366,7 @@ public abstract class Client
 		if(!this.closeForShutdown(quitMsg))
 		{
 			return;
-		}		
+		}
 
 		//Generate client collection to send to
 		HashSet<Client> toSendTo = new HashSet<Client>();
@@ -376,7 +376,7 @@ public abstract class Client
 		{
 			//Part channel
 			chanSet = channel.partForQuit(this);
-			
+
 			//Organise sending
 			if(chanSet != null)
 			{
@@ -392,15 +392,15 @@ public abstract class Client
 		{
 			invite.invited.remove(this);
 		}
-		
+
 		//Remove nick from global nick array
 		Server server = Server.getServer();
-		
+
 		if (isRegistered())
 		{
 			//Remove from clients by nick
 			server.clientsByNick.remove(id.nick);
-			
+
 			//Ip Clone check
 			if(isRemote())
 			{
@@ -412,10 +412,10 @@ public abstract class Client
 		server.operators.remove(this);
 		server.clients.remove(this);
 	}
-	
+
 	/**
 	 * Closes a client connection but does not bother with freeing resources
-	 * 
+	 *
 	 * @param quitMsg quit message
 	 * @return whether the close was successful
 	 */
@@ -445,12 +445,12 @@ public abstract class Client
 		closed = this.rawClose();
 		return closed;
 	}
-	
+
 	/**
 	 * Sets the nickname of this client
-	 * 
+	 *
 	 * <p>This does not perform any checks whether the user is allowed to change nickname
-	 * 
+	 *
 	 * @param nick new nickname
 	 * @return false if the nick is in use
 	 */
@@ -461,32 +461,32 @@ public abstract class Client
 		{
 			return true;
 		}
-		
+
 		//Check whether nick is in use
 		Server server = Server.getServer();
 		if(server.clientsByNick.containsKey(nick))
 		{
 			return false;
 		}
-		
+
 		//Do extra stuff if registered
 		if(isRegistered())
 		{
 			//Generate nick change message
 			Message msg = new Message("NICK", this);
 			msg.appendParam(nick);
-			
+
 			//Find all members of all joined channels to send to
 			Set<Client> toSendTo = new HashSet<Client>();
 			for(Channel channel : channels)
 			{
 				toSendTo.addAll(channel.getMembers().keySet());
 			}
-			
+
 			//Send to self also
 			toSendTo.add(this);
 			sendTo(toSendTo, msg);
-			
+
 			//Change nick
 			server.clientsByNick.remove(id.nick);
 			id.nick = nick;
@@ -497,10 +497,10 @@ public abstract class Client
 			//Set provisional nick
 			id.nick = nick;
 		}
-		
+
 		return true;
 	}
-	
+
 	/**
 	 * Returns true if this client has been closed
 	 * @return true if this client has been closed
@@ -509,7 +509,7 @@ public abstract class Client
 	{
 		return closed;
 	}
-	
+
 	/**
 	 * Returns the permissions granted to this client
 	 * @return permission mask of this client
@@ -528,9 +528,9 @@ public abstract class Client
 		else
 		{
 			return 0;
-		}	
+		}
 	}
-	
+
 	/**
 	 * Determines whether a client has an extra permission
 	 * @param permission permission to check
@@ -540,7 +540,7 @@ public abstract class Client
 	{
 		return (getPermissionMask() & permission) != 0;
 	}
-	
+
 	/**
 	 * Gets the client's mode
 	 * @return mode of the client
@@ -549,10 +549,10 @@ public abstract class Client
 	{
 		return mode;
 	}
-	
+
 	/**
 	 * Gets whether a user mode is set
-	 * 
+	 *
 	 * @param mode the mode to test
 	 * @return true if the mode is set
 	 */
@@ -560,10 +560,10 @@ public abstract class Client
 	{
 		return ModeUtils.isModeSet(this.mode, mode);
 	}
-	
+
 	/**
 	 * Sets a usermode and tells the client
-	 * 
+	 *
 	 * @param mode mode to set
 	 * @param adding whether to add the mode (false to delete it)
 	 */
@@ -571,10 +571,10 @@ public abstract class Client
 	{
 		setMode(mode, adding, null);
 	}
-	
+
 	/**
 	 * Sets a usermode and tells the client and another person
-	 * 
+	 *
 	 * @param mode mode to set
 	 * @param adding whether to add the mode (false to delete it)
 	 * @param other additional client to notify
@@ -586,7 +586,7 @@ public abstract class Client
 		{
 			//Change mode
 			String str = (adding ? "+" : "-") + mode;
-			
+
 			//Check for special modes
 			if(mode == 'o' || mode == 'O')
 			{
@@ -605,7 +605,7 @@ public abstract class Client
 						{
 							c = 'o';
 						}
-						
+
 						this.mode = ModeUtils.clearMode(this.mode, c);
 						str += "-" + c;
 					}
@@ -614,7 +614,7 @@ public abstract class Client
 						//Add to oper cache
 						Server.getServer().operators.add(this);
 					}
-	
+
 					//Log change
 					logger.info(id.toString() + " has set mode " + str);
 				}
@@ -629,30 +629,30 @@ public abstract class Client
 				//Ignore this change
 				return;
 			}
-			
+
 			//Change mode
 			this.mode = ModeUtils.changeMode(this.mode, mode, adding);
-			
+
 			Message msg = new Message("MODE", this).appendParam(id.nick).appendParam(str);
 			send(msg);
-			
+
 			if(other != null && this != other)
 			{
 				other.send(msg);
 			}
 		}
 	}
-	
+
 	/**
 	 * Returns the channels which this client has joined
-	 * 
+	 *
 	 * @return channels this client has joined
 	 */
 	public Set<Channel> getChannels()
 	{
 		return Collections.unmodifiableSet(channels);
 	}
-	
+
 	/**
 	 * Changes the class of this client
 	 * @param clazz Class to change to
@@ -660,14 +660,14 @@ public abstract class Client
 	 * @return false if there are not enough links in a class to change
 	 */
 	protected abstract boolean changeClass(ConnectionClass clazz, boolean defaultClass);
-	
+
 	/**
 	 * Restores this client's class to the default class
-	 * 
+	 *
 	 * (default class restores override the max links)
 	 */
 	public abstract void restoreClass();
-	
+
 	/**
 	 * Changes the class of this client
 	 * @param clazz Class to change to
@@ -676,29 +676,29 @@ public abstract class Client
 	{
 		changeClass(clazz, false);
 	}
-	
+
 	/**
 	 * Returns the ip address for this client
-	 * 
+	 *
 	 * Servlets always return 127.0.0.1
-	 * 
+	 *
 	 * @return The ip address of the client
 	 */
 	public abstract String getIpAddress();
-	
+
 	/**
 	 * Returns true if this client is a remote user
-	 * 
+	 *
 	 * @return true if this client is a remote user
 	 */
 	public boolean isRemote()
 	{
 		return !ModeUtils.isModeSet(mode, 'B');
 	}
-	
+
 	/**
 	 * Marks this client for closure after the current client has finished processing
-	 * 
+	 *
 	 * @param quitStatus the string told to other users about why this client is exiting
 	 */
 	public final void queueClose(String quitStatus)
@@ -709,7 +709,7 @@ public abstract class Client
 			queuedClosures.add(this);
 		}
 	}
-	
+
 	/**
 	 * Gets weather this client is queued for closure
 	 * @return weather this client is queued for closure
@@ -718,7 +718,7 @@ public abstract class Client
 	{
 		return queuedCloseReason != null;
 	}
-	
+
 	/**
 	 * Processes the close queue - closes all queued clients
 	 */
@@ -728,13 +728,13 @@ public abstract class Client
 		{
 			client.close(client.queuedCloseReason);
 		}
-		
+
 		queuedClosures.clear();
 	}
-	
+
 	/**
 	 * Sends a message to a collection of clients
-	 * 
+	 *
 	 * @param clients clients to send data to
 	 * @param data data to send
 	 */
@@ -742,10 +742,10 @@ public abstract class Client
 	{
 		sendTo(clients, data, null);
 	}
-	
+
 	/**
 	 * Sends a message to a collection of clients
-	 * 
+	 *
 	 * @param clients clients to send data to
 	 * @param data data to send
 	 * @param except do not send message to this client
@@ -754,7 +754,7 @@ public abstract class Client
 	{
 		//Send strings to remote clients
 		String remoteSend = data.toString();
-		
+
 		for(Client client : clients)
 		{
 			if(client != except)
@@ -770,10 +770,10 @@ public abstract class Client
 			}
 		}
 	}
-	
+
 	/**
 	 * Creates a new message from this server with this client's nickname as the first parameter
-	 * 
+	 *
 	 * @param command command of the message
 	 */
 	public Message newNickMessage(String command)
@@ -782,24 +782,24 @@ public abstract class Client
 		String nick = (id.nick == null) ? "*" : id.nick;
 		return Message.newMessageFromServer(command).appendParam(nick);
 	}
-	
+
 	/**
 	 * Sends IRC data to a client (data is converted to string with toString)
-	 * 
+	 *
 	 * @param data Data to send
 	 */
 	public abstract void send(Object data);
-	
+
 	/**
 	 * Performs client sepific close routines
-	 * 
+	 *
 	 * @return Returns true if the close was a sucess. Returns false to abort the close.
 	 */
 	protected abstract boolean rawClose();
-	
+
 	/**
 	 * Returns the the in milliseconds this cient has been idle for
-	 * 
+	 *
 	 * @return idle time of this client in milliseconds
 	 */
 	public abstract long getIdleTime();

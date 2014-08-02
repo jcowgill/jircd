@@ -22,7 +22,7 @@ import uk.org.cowgill.james.jircd.ProtocolEnhancements;
 
 /**
  * The PROTOCTL command - enables protocol enhancements
- * 
+ *
  * @author James
  */
 public class Protoctl implements Command

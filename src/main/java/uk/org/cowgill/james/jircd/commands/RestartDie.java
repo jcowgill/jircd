@@ -24,13 +24,13 @@ import org.apache.log4j.Logger;
 
 /**
  * The RESTART and DIE commands - restarts or dies the server
- * 
+ *
  * @author James
  */
 public abstract class RestartDie implements Command
 {
 	private static final Logger logger = Logger.getLogger(RestartDie.class);
-	
+
 	@Override
 	public void run(Client client, Message msg)
 	{
@@ -60,10 +60,10 @@ public abstract class RestartDie implements Command
 	}
 
 	protected abstract void action(String reason);
-	
+
 	/**
 	 * The DIE command - stops the server
-	 * 
+	 *
 	 * @author James
 	 */
 	public static class Die extends RestartDie
@@ -80,10 +80,10 @@ public abstract class RestartDie implements Command
 			Server.getServer().requestStop(reason);
 		}
 	}
-	
+
 	/**
 	 * The RESTART command - restarts the server
-	 * 
+	 *
 	 * @author James
 	 */
 	public static class Restart extends RestartDie

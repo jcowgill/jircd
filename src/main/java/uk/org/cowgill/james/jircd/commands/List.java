@@ -26,7 +26,7 @@ import uk.org.cowgill.james.jircd.Server;
 
 /**
  * The LIST command - lists all the channels on the server
- * 
+ *
  * @author James
  */
 public class List implements Command
@@ -36,13 +36,13 @@ public class List implements Command
 	{
 		int privateMembers = 0;
 		Set<Channel> clientChannels = client.getChannels();
-		
+
 		//All seeing?
 		boolean allSeeing = client.hasPermission(Permissions.seeAllChannels);
-		
+
 		//Prepare reply
 		String prefix = Message.newStringFromServer("322") + " " + client.id.nick + " ";
-		
+
 		//Process channel list
 		for(Channel channel : Server.getServer().getChannels())
 		{
@@ -56,10 +56,10 @@ public class List implements Command
 					//Add members to private category
 					privateMembers += channel.getMembers().size();
 				}
-				
+
 				continue;
 			}
-			
+
 			//Send channel
 			String reply = prefix + channel.getName() + " " + channel.getMembers().size() + " :";
 			if (channel.getTopic() != null)
@@ -67,13 +67,13 @@ public class List implements Command
 
 			client.send(reply);
 		}
-		
+
 		//Send private members
 		if(privateMembers > 0)
 		{
 			client.send(prefix + "* " + privateMembers + " :");
 		}
-		
+
 		//Send end of list
 		client.send(client.newNickMessage("323").appendParam("End of /LIST"));
 	}

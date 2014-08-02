@@ -22,7 +22,7 @@ import java.util.List;
 
 /**
  * A parsed irc message
- * 
+ *
  * @author James
  */
 public class Message implements Serializable
@@ -33,12 +33,12 @@ public class Message implements Serializable
 	 * The prefix (sender) of the message
 	 */
 	private String prefix;
-	
+
 	/**
 	 * Command of the message
 	 */
 	private String command;
-	
+
 	/**
 	 * Message parameters
 	 */
@@ -46,7 +46,7 @@ public class Message implements Serializable
 
 	/**
 	 * Creates a new message as a copy of another message
-	 * 
+	 *
 	 * @param msg message to copy
 	 */
 	public Message(Message msg)
@@ -55,10 +55,10 @@ public class Message implements Serializable
 		this.command = msg.command;
 		this.parameters = new ArrayList<String>(msg.parameters);
 	}
-	
+
 	/**
 	 * Creates a new message with a blank prefix
-	 * 
+	 *
 	 * @param command command for the message
 	 */
 	public Message(String command)
@@ -68,7 +68,7 @@ public class Message implements Serializable
 
 	/**
 	 * Creates a new message from a Client
-	 * 
+	 *
 	 * @param command command for the message (if null is passed, the server will be used)
 	 * @param client origin of this message
 	 */
@@ -79,7 +79,7 @@ public class Message implements Serializable
 
 	/**
 	 * Creates a new message with an IRCMask prefix
-	 * 
+	 *
 	 * @param command command for the message
 	 * @param id origin of this message
 	 */
@@ -87,17 +87,17 @@ public class Message implements Serializable
 	{
 		this(command, id.toString());
 	}
-	
+
 	/**
 	 * Creates a new message
-	 * 
+	 *
 	 * @param command command for the message
 	 * @param prefix origin of this message
 	 */
 	public Message(String command, String prefix)
 	{
 		this.parameters = new ArrayList<String>();
-		
+
 		if(prefix == null)
 		{
 			this.prefix = "";
@@ -106,7 +106,7 @@ public class Message implements Serializable
 		{
 			this.prefix = prefix;
 		}
-		
+
 		if(command == null)
 		{
 			this.command = "";
@@ -116,10 +116,10 @@ public class Message implements Serializable
 			this.command = command;
 		}
 	}
-	
+
 	/**
 	 * Creates a new message from the server
-	 * 
+	 *
 	 * @param command command for the message
 	 * @return the new message
 	 */
@@ -127,10 +127,10 @@ public class Message implements Serializable
 	{
 		return new Message(command, Server.getServer().getConfig().serverName);
 	}
-	
+
 	/**
 	 * Creates a new message as a string from the server
-	 * 
+	 *
 	 * @param command command for the message - you are allowed to add parameters here as well
 	 * @return the new message as a string
 	 */
@@ -138,7 +138,7 @@ public class Message implements Serializable
 	{
 		return ":" + Server.getServer().getConfig().serverName + " " + command;
 	}
-	
+
 	/**
 	 * Returns this message's command in upper case
 	 * @return this message's command in upper case
@@ -147,7 +147,7 @@ public class Message implements Serializable
 	{
 		return command;
 	}
-	
+
 	/**
 	 * Returns this message's prefix
 	 * @return this message's prefix
@@ -156,7 +156,7 @@ public class Message implements Serializable
 	{
 		return prefix;
 	}
-	
+
 	/**
 	 * Gets a parameter from the message
 	 * @param index array index to get
@@ -166,7 +166,7 @@ public class Message implements Serializable
 	{
 		return parameters.get(index);
 	}
-	
+
 	/**
 	 * Appends a parameter to this message
 	 * @param str parameter to append
@@ -179,7 +179,7 @@ public class Message implements Serializable
 		{
 			parameters.add(str);
 		}
-		
+
 		return this;
 	}
 
@@ -187,30 +187,30 @@ public class Message implements Serializable
 	public int hashCode()
 	{
 		int hash = prefix.hashCode();
-		
+
 		hash = hash * 47 + command.hashCode();
 		hash = hash * 37 + parameters.hashCode();
-		
+
 		return hash;
 	}
-	
+
 	@Override
 	public boolean equals(Object object)
 	{
 		if(object == null)
 			return false;
-		
+
 		if(object == this)
 			return true;
-		
+
 		if(object.getClass() != this.getClass())
 			return false;
-		
+
 		Message other = (Message) object;
-		
+
 		return toString().equals(other.toString());
 	}
-	
+
 	/**
 	 * Returns an iteration which can iterate over the parameters array
 	 * @return parameters iterator
@@ -218,7 +218,7 @@ public class Message implements Serializable
 	public Iterator<String> paramIterator()
 	{
 		final Iterator<String> source = parameters.iterator();
-		
+
 		return new Iterator<String>()
 			{
 				@Override
@@ -240,7 +240,7 @@ public class Message implements Serializable
 				}
 			};
 	}
-	
+
 	/**
 	 * Returns the number of parameters in this message
 	 * @return the number of parameters in this message
@@ -249,7 +249,7 @@ public class Message implements Serializable
 	{
 		return parameters.size();
 	}
-	
+
 	/**
 	 * Returns the raw parameter list of this message
 	 */
@@ -257,13 +257,13 @@ public class Message implements Serializable
 	{
 		return parameters;
 	}
-	
+
 	@Override
 	public String toString()
 	{
 		//Convert message to string
 		final StringBuilder builder = new StringBuilder();
-		
+
 		//Check for prefix
 		if(prefix.length() != 0)
 		{
@@ -271,22 +271,22 @@ public class Message implements Serializable
 			builder.append(prefix);
 			builder.append(' ');
 		}
-		
+
 		//Add command
 		builder.append(command);
-		
+
 		//Add parameters
 		final Iterator<String> paramIter = parameters.iterator();
 		String param;
-		
+
 		while(paramIter.hasNext())
 		{
 			//Get param
 			param = paramIter.next();
-			
+
 			//Add space before param
 			builder.append(' ');
-			
+
 			//Check if parameter has spaces
 			// of if it is not the last parameter
 			if(!paramIter.hasNext() && param.indexOf(' ') != -1)
@@ -294,16 +294,16 @@ public class Message implements Serializable
 				//Use prefix if last param has spaces
 				builder.append(':');
 			}
-			
+
 			builder.append(param);
 		}
-		
+
 		return builder.toString();
 	}
-	
+
 	/**
 	 * Creates a new message from the given string
-	 * 
+	 *
 	 * @param data message data
 	 * @return the new message
 	 */
@@ -311,12 +311,12 @@ public class Message implements Serializable
 	{
 		int pos = 0;	//Current position in string
 		int oldPos;
-		
+
 		String prefix = "";
-		
+
 		//Trim the data
 		data = data.trim();
-		
+
 		try
 		{
 			//Extract prefix
@@ -325,7 +325,7 @@ public class Message implements Serializable
 				//Find first space and extract until that
 				pos = data.indexOf(' ') + 1;
 				prefix = data.substring(1, pos - 1);
-				
+
 				//Suck up spaces
 				while(data.charAt(pos) == ' ')
 				{
@@ -338,13 +338,13 @@ public class Message implements Serializable
 			//Invalid message
 			return new Message((String) null);
 		}
-		
+
 		//Extract command
 		String command;
-		
+
 		oldPos = pos;
 		pos = data.indexOf(' ', pos) + 1;
-		
+
 		if(pos == 0)
 		{
 			//Get till end of string
@@ -356,11 +356,11 @@ public class Message implements Serializable
 			//Get till space
 			command = data.substring(oldPos, pos - 1);
 		}
-		
+
 		//Create base message
 		final Message baseMsg = new Message(command.toUpperCase(), prefix);
-		
-		
+
+
 		//Extract parameters
 		while(pos < data.length())
 		{
@@ -369,7 +369,7 @@ public class Message implements Serializable
 			{
 				pos++;
 			}
-			
+
 			//Test if character is a :
 			if(data.charAt(pos) == ':')
 			{
@@ -382,7 +382,7 @@ public class Message implements Serializable
 				{
 					baseMsg.appendParam(data.substring(pos + 1));
 				}
-				
+
 				break;
 			}
 			else
@@ -390,7 +390,7 @@ public class Message implements Serializable
 				//Find next space
 				oldPos = pos;
 				pos = data.indexOf(' ', pos) + 1;
-				
+
 				//Append parameter
 				if(pos == 0)
 				{
@@ -403,7 +403,7 @@ public class Message implements Serializable
 				}
 			}
 		}
-		
+
 		//Return finished message
 		return baseMsg;
 	}

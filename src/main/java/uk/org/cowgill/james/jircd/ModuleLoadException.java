@@ -17,7 +17,7 @@ package uk.org.cowgill.james.jircd;
 
 /**
  * Exception which can be thrown when an error occurs in loading a module
- * 
+ *
  * @author James
  */
 public class ModuleLoadException extends Exception
@@ -33,7 +33,7 @@ public class ModuleLoadException extends Exception
 
 	/**
 	 * Creates a new ModuleLoadException with a reason
-	 * 
+	 *
 	 * @param reason the reason for throwing this exception
 	 */
 	public ModuleLoadException(String reason)
@@ -43,7 +43,7 @@ public class ModuleLoadException extends Exception
 
 	/**
 	 * Creates a new ModuleLoadException with a cause
-	 * 
+	 *
 	 * @param cause the exception which caused this exception
 	 */
 	public ModuleLoadException(Throwable cause)
@@ -53,7 +53,7 @@ public class ModuleLoadException extends Exception
 
 	/**
 	 * Creates a new ModuleLoadException with a reason and cause
-	 * 
+	 *
 	 * @param reason the reason for throwing this exception
 	 * @param cause the exception which caused this exception
 	 */
