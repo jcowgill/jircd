@@ -1092,7 +1092,7 @@ public final class Channel
 	 * @param mask mask to compare with
 	 * @return true if the mask matches any 1 of the entries in the list
 	 */
-	private static boolean tranverseList(Map<String, SetInfo> list, String mask)
+	private static boolean traverseList(Map<String, SetInfo> list, String mask)
 	{
 		//Check each entry in the list
 		for(String entry : list.keySet())
@@ -1158,7 +1158,7 @@ public final class Channel
 		
 		//Tranverse ban lists
 		String mask = client.id.toString();
-		boolean banned = tranverseList(banList, mask) && !tranverseList(banExceptList, mask);
+		boolean banned = traverseList(banList, mask) && !traverseList(banExceptList, mask);
 		
 		//Cache result
 		if(mode != null)
@@ -1213,7 +1213,7 @@ public final class Channel
 	public boolean isOnInviteExceptList(Client client)
 	{
 		//No caching here
-		return tranverseList(inviteExceptList, client.id.toString());
+		return traverseList(inviteExceptList, client.id.toString());
 	}
 	
 	/**
