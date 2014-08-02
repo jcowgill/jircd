@@ -157,7 +157,7 @@ public abstract class Server
 	 *
 	 * @param configFile Configuration file location
 	 */
-	public Server(File configFile)
+	protected Server(File configFile)
 	{
 		//Set config file
 		this.configFile = configFile;
@@ -495,7 +495,7 @@ public abstract class Server
 			//Setup defaults
 			PatternLayout layout = new PatternLayout("%-5p - %m%n");
 
-			if(System.getProperty("os.name").toLowerCase().indexOf("win") >= 0 || System.console() == null)
+			if(System.getProperty("os.name").toLowerCase().contains("win") || System.console() == null)
 			{
 				root.addAppender(new ConsoleAppender(layout));
 			}

@@ -279,7 +279,7 @@ public class IRCMask implements Comparable<IRCMask>
 	 * @param mask The mask to complete
 	 * @return The completed mask
 	 */
-	public String completeWildMask(String mask)
+	public static String completeWildMask(String mask)
 	{
 		//Check for user part
 		if(mask.indexOf('@') == -1)

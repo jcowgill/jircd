@@ -32,7 +32,6 @@ public class Part implements Command
 	public void run(Client client, Message msg)
 	{
 		//Parse the part parameters
-		String[] channelStrings = msg.getParam(0).split(",");
 		String partMsg;
 
 		if(msg.paramCount() >= 2)
@@ -45,14 +44,14 @@ public class Part implements Command
 		}
 
 		//Process requests
-		for(int i = 0; i < channelStrings.length; ++i)
+		for(String channelString : msg.getParam(0).split(","))
 		{
 			//Lookup channel
-			Channel channel = Server.getServer().getChannel(channelStrings[i]);
+			Channel channel = Server.getServer().getChannel(channelString);
 
 			if(channel == null)
 			{
-				client.send(client.newNickMessage("403").appendParam(channelStrings[i]).
+				client.send(client.newNickMessage("403").appendParam(channelString).
 						appendParam("No such channel"));
 				continue;
 			}
@@ -60,7 +59,7 @@ public class Part implements Command
 			//Part
 			if(!channel.part(client, partMsg))
 			{
-				client.send(client.newNickMessage("442").appendParam(channelStrings[i]).
+				client.send(client.newNickMessage("442").appendParam(channelString).
 						appendParam("You're not on that channel"));
 				continue;
 			}

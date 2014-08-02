@@ -142,9 +142,8 @@ class NetworkClient extends Client
 	 *
 	 * @param channel channel to setup from
 	 * @param mode the initial mode of the client
-	 * @throws IOException thrown when an error occurs in setting socket options
 	 */
-	NetworkClient(SocketChannel channel, long mode) throws IOException
+	NetworkClient(SocketChannel channel, long mode)
 	{
 		super(new IRCMask(), mode);
 		this.channel = channel;
@@ -164,13 +163,13 @@ class NetworkClient extends Client
 		changeClass(DEFAULT_CONN_CLASS, true);
 
 		//Begin spoof check
-		final StringBuffer buffer = new StringBuffer(10);
+		StringBuilder builder = new StringBuilder(10);
 		for(int i = 0; i < 10; ++i)
 		{
-			buffer.append((char) (randomGen.nextInt('z' - 'A') + 'A'));
+			builder.append((char) (randomGen.nextInt('z' - 'A') + 'A'));
 		}
 
-		spoofCheckChars = buffer.toString();
+		spoofCheckChars = builder.toString();
 
 		send("PING :" + spoofCheckChars);
 	}

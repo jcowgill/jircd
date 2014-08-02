@@ -130,7 +130,7 @@ public final class ModeUtils
 		StringBuilder modeStr = new StringBuilder("+");
 
 		//Lowercase first
-		int lowerSet = (int) (modeSet & 0xFFFFFFFF);
+		int lowerSet = (int) modeSet;
 		for(char c = 'a'; c <= 'z'; c++)
 		{
 			//Test most significant bit

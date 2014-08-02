@@ -39,7 +39,7 @@ public abstract class AbstractServlet extends Client
 	 * @param id ID of this servlet
 	 * @throws ModuleLoadException thrown if the nickname already exists
 	 */
-	public AbstractServlet(IRCMask id) throws ModuleLoadException
+	protected AbstractServlet(IRCMask id) throws ModuleLoadException
 	{
 		//Set ID
 		super(id, ModeUtils.setMode(0, 'B'));

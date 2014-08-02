@@ -224,6 +224,7 @@ class TlsNetworkClient extends NetworkClient
 		}
 	}
 
+	@Override
 	protected boolean rawClose()
 	{
 		//Close SSL Engine

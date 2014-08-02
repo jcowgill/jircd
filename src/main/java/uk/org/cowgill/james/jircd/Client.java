@@ -120,7 +120,7 @@ public abstract class Client
 	 * @param id the IRCMask representing this client's id
 	 * @param mode initial mode of the client (allows setting restricted modes)
 	 */
-	public Client(IRCMask id, long mode)
+	protected Client(IRCMask id, long mode)
 	{
 		//Set id and mode
 		this.id = id;

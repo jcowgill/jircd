@@ -447,11 +447,9 @@ public final class Config
 				for(ConfigBlock line : motdBlock)
 				{
 					//Split line and add to list
-					String[] subLines = line.param.split("\n");
-
-					for(int i = 0; i < subLines.length; ++i)
+					for(String subLine : line.param.split("\n"))
 					{
-						config.motd.add(subLines[i].trim());
+						config.motd.add(subLine.trim());
 					}
 				}
 			}

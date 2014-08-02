@@ -199,7 +199,7 @@ final class NetworkServer extends Server
 							}
 
 							//Create correct client (for TLS ports)
-							if((Config.PortType) key.attachment() == Config.PortType.SSL)
+							if(key.attachment() == Config.PortType.SSL)
 							{
 								client = new TlsNetworkClient(sockChannel, getConfig().sslContext);
 							}
@@ -355,7 +355,7 @@ final class NetworkServer extends Server
 			//Create address
 			try
 			{
-				sockAddr = new InetSocketAddress(port.getKey().intValue());
+				sockAddr = new InetSocketAddress(port.getKey());
 			}
 			catch(IllegalArgumentException e)
 			{

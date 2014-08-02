@@ -197,7 +197,7 @@ public final class ModuleManager
 		{
 			try
 			{
-				module = (Module) moduleClass.newInstance();
+				module = (Module) moduleClass.getDeclaredConstructor().newInstance();
 				if(!module.startup(config))
 				{
 					//Failed to load

@@ -922,7 +922,7 @@ public final class Channel
 
 				if(param instanceof Integer)
 				{
-					newLimit = ((Integer) param).intValue();
+					newLimit = (Integer) param;
 				}
 				else
 				{

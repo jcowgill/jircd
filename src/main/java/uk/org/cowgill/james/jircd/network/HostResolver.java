@@ -93,9 +93,10 @@ final class HostResolver
 	}
 
 	@Override
-	protected void finalize()
+	protected void finalize() throws Throwable
 	{
 		//Ensure service is shutdown
-		eService.shutdownNow();
+		super.finalize();
+		shutdown();
 	}
 }

@@ -276,7 +276,7 @@ public final class ChannelChecks
 		}
 
 		//Must be half-op to set anything
-		boolean canSet = true;
+		boolean canSet;
 		int modeHigh = clientMode.getHighestMode();
 
 		if(modeHigh < ChannelMemberMode.HALFOP)
